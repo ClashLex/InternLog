@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Profile — InternLog</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/script.js" defer></script>
 </head>
@@ -23,40 +24,56 @@
     <div class="main">
       <header class="topbar">
         <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button>
-        <h1>Profile</h1>
+        <h1>Student Profile</h1>
+        <div class="spacer"></div>
+        <div class="user-chip">
+          <span class="avatar" data-avatar>U</span>
+          <span><strong data-user-name>Student</strong><br><span class="muted" data-user-email></span></span>
+        </div>
       </header>
       <main class="content" id="profileWrap" data-kind="user">
         <section class="card">
           <div class="profile-head">
             <span class="profile-avatar" id="avatarBig">U</span>
-            <div><h2 id="profileName" style="margin:0">Student</h2><p class="muted" id="profileEmail" style="margin:2px 0"></p><p class="muted" id="profileMeta" style="margin:2px 0;font-size:13.5px"></p></div>
+            <div>
+              <h2 id="profileName" style="margin:0">Student</h2>
+              <p class="muted" id="profileEmail" style="margin:4px 0"></p>
+              <p class="muted" id="profileMeta" style="margin:2px 0;font-size:13.5px"></p>
+            </div>
           </div>
         </section>
-        <section class="card" style="margin-top:16px" aria-label="Internship statistics">
-          <h3>Internship Statistics</h3>
+        <section class="card" style="margin-top:18px" aria-label="Internship statistics">
+          <h3 style="margin-top:0">Internship Statistics</h3>
           <div class="stat-grid cols-4" id="profileStats"></div>
         </section>
-        <div class="grid-2" style="margin-top:16px">
+        <div class="grid-2" style="margin-top:18px">
           <section class="card" aria-label="Edit profile">
-            <h3>Edit Profile</h3>
+            <h3>Academic &amp; Personal Info</h3>
             <form id="profileForm">
-              <div class="form-group"><label for="fullName">Full Name</label><input type="text" id="fullName" required></div>
-              <div class="form-group"><label for="college">College / University</label><input type="text" id="college" required></div>
+              <div class="form-group"><label for="fullName">Full Name *</label><input type="text" id="fullName" required></div>
+              <div class="form-group"><label for="college">College / University *</label><input type="text" id="college" required></div>
               <div class="form-row">
-                <div class="form-group"><label for="course">Course</label><input type="text" id="course" required></div>
-                <div class="form-group"><label for="gradYear">Graduation Year</label><select id="gradYear"><option>2026</option><option>2027</option><option>2028</option><option>2029</option></select></div>
+                <div class="form-group"><label for="course">Course / Branch *</label><input type="text" id="course" required></div>
+                <div class="form-group">
+                  <label for="gradYear">Graduation Year *</label>
+                  <select id="gradYear">
+                    <option>2025</option><option>2026</option><option>2027</option><option>2028</option><option>2029</option>
+                  </select>
+                </div>
               </div>
-              <p><button class="btn btn-sm" type="submit">Save Profile</button></p>
+              <p style="margin-top:16px"><button class="btn btn-sm" type="submit">Save Profile</button></p>
             </form>
           </section>
           <section class="card" aria-label="Account settings">
-            <h3>Account Settings</h3>
+            <h3>Change Password</h3>
             <form id="passwordForm">
               <div class="form-group"><label for="currentPassword">Current Password</label><input type="password" id="currentPassword" required></div>
               <div class="form-group"><label for="newPassword">New Password</label><input type="password" id="newPassword" placeholder="Min. 8 chars, letters + numbers" required></div>
-              <p><button class="btn btn-secondary btn-sm" type="submit">Change Password</button></p>
+              <div class="form-group"><label for="confirmNewPassword">Confirm New Password</label><input type="password" id="confirmNewPassword" placeholder="Repeat new password" required></div>
+              <p style="margin-top:16px"><button class="btn btn-secondary btn-sm" type="submit">Change Password</button></p>
             </form>
-            <p><a class="btn btn-secondary btn-sm" href="../index.html" data-logout>Logout</a></p>
+            <hr style="border:0;border-top:1px solid var(--border);margin:20px 0">
+            <p><a class="btn btn-secondary btn-sm" href="../index.html" data-logout>Logout from Account</a></p>
           </section>
         </div>
       </main>

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Login — InternLog</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/script.js" defer></script>
 </head>
@@ -12,9 +13,13 @@
     <section class="auth-panel" aria-label="Admin area">
       <a class="brand" href="../index.html" style="color:#fff"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog Admin<small style="color:#bfdbfe">Administration Area</small></span></a>
       <h1>InternLog Administration</h1>
-      <p>Monitor students, review internship applications, and track system-wide progress from a dedicated admin workspace.</p>
-      <div class="admin-note" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#fff">This is the restricted administration area. Student accounts cannot access admin functionality.</div>
-      <p style="margin-top:14px;font-size:13.5px">Demo admin: <strong>admin@internlog.com</strong> / <strong>admin123</strong></p>
+      <p>Monitor students, review internship applications, audit statuses, and track system-wide progress from a dedicated admin workspace.</p>
+      <div class="admin-note" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#fff">
+        Restricted administration area for placement officers and platform administrators.
+      </div>
+      <p style="margin-top:20px;font-size:13.5px;background:rgba(255,255,255,.1);padding:10px 14px;border-radius:8px">
+        Authorized administrators only. Please sign in with your provisioned admin credentials.
+      </p>
     </section>
     <section class="auth-form-side">
       <div class="auth-card">
@@ -28,18 +33,18 @@
             <div class="field-error" id="email-error" role="alert"></div>
           </div>
           <div class="form-group">
-            <label for="password">Password</label>
+            <label for="password">Admin Password</label>
             <div class="password-wrap">
               <input type="password" id="password" autocomplete="current-password" placeholder="Enter admin password" required>
               <button type="button" class="password-toggle" data-password-toggle="password">Show</button>
             </div>
             <div class="field-error" id="password-error" role="alert"></div>
           </div>
-          <p><button class="btn" type="submit" style="width:100%">Admin Login</button></p>
+          <p style="margin-top:16px"><button class="btn" type="submit" style="width:100%">Sign In as Administrator</button></p>
         </form>
         <div class="auth-links">
-          <span><a href="../user/login.html">Back to User Login</a></span>
-          <span><a href="../index.html">← Home</a></span>
+          <span><a href="../user/login.html">← Back to Student Login</a></span>
+          <span><a href="../index.html">Home</a></span>
         </div>
       </div>
     </section>

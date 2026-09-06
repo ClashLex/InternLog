@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Manage Users — InternLog Admin</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/script.js" defer></script>
 </head>
@@ -23,18 +24,25 @@
     <div class="main">
       <header class="topbar">
         <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button>
-        <h1>Users</h1>
+        <h1>Manage Student Accounts</h1>
+        <div class="spacer"></div>
+        <div class="user-chip">
+          <span class="avatar" data-avatar>A</span>
+          <span><strong data-user-name>Admin</strong><br><span class="muted" data-user-email></span></span>
+        </div>
       </header>
       <main class="content">
         <div class="toolbar" role="search">
           <input type="text" id="userSearch" class="search-input" placeholder="Search by name, email, or college…" aria-label="Search users">
           <select id="userStatusFilter" aria-label="Filter by account status">
-            <option value="All">All statuses</option><option>Active</option><option>Disabled</option>
+            <option value="All">All statuses</option>
+            <option>Active</option>
+            <option>Disabled</option>
           </select>
         </div>
         <div class="table-wrap">
           <table aria-label="Registered users">
-            <thead><tr><th>User ID</th><th>Name</th><th>Email</th><th>College</th><th>Course</th><th>Registered Date</th><th>Applications</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead><tr><th>User ID</th><th>Name</th><th>Email</th><th>College</th><th>Course</th><th>Registered</th><th>Applications</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody id="usersBody"></tbody>
           </table>
         </div>

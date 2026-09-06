@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Register — InternLog</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/script.js" defer></script>
 </head>
@@ -12,11 +13,12 @@
     <section class="auth-panel" aria-label="Why InternLog">
       <a class="brand" href="../index.html" style="color:#fff"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog<small style="color:#bfdbfe">Track. Apply. Grow.</small></span></a>
       <h1>Create your InternLog account</h1>
-      <p>Join thousands of students organizing their internship search with InternLog.</p>
+      <p>Join students organizing their internship search with clean, placement-ready tracking.</p>
       <ul>
         <li>Free personal internship dashboard</li>
         <li>Status tracking from Applied to Selected</li>
         <li>Search, filter, and deadline reminders</li>
+        <li>Export application logs for your college placement cell</li>
       </ul>
     </section>
     <section class="auth-form-side">
@@ -25,55 +27,55 @@
         <p class="muted">Create an account to start tracking internships.</p>
         <form id="registerForm" novalidate>
           <div class="form-group">
-            <label for="fullName">Full Name</label>
+            <label for="fullName">Full Name *</label>
             <input type="text" id="fullName" autocomplete="name" placeholder="e.g. Ananya Nair" required>
             <div class="field-error" id="fullName-error" role="alert"></div>
           </div>
           <div class="form-group">
-            <label for="email">Email</label>
+            <label for="email">College / Personal Email *</label>
             <input type="email" id="email" autocomplete="email" placeholder="you@college.edu" required>
             <div class="field-error" id="email-error" role="alert"></div>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label for="password">Password</label>
+              <label for="password">Password *</label>
               <div class="password-wrap">
-                <input type="password" id="password" autocomplete="new-password" placeholder="Min. 8 chars, letters + numbers" required>
+                <input type="password" id="password" autocomplete="new-password" placeholder="Min. 8 chars (letters + numbers)" required>
                 <button type="button" class="password-toggle" data-password-toggle="password">Show</button>
               </div>
               <div class="field-error" id="password-error" role="alert"></div>
             </div>
             <div class="form-group">
-              <label for="confirmPassword">Confirm Password</label>
+              <label for="confirmPassword">Confirm Password *</label>
               <input type="password" id="confirmPassword" autocomplete="new-password" placeholder="Repeat password" required>
               <div class="field-error" id="confirmPassword-error" role="alert"></div>
             </div>
           </div>
           <div class="form-group">
-            <label for="college">College / University</label>
+            <label for="college">College / University *</label>
             <input type="text" id="college" placeholder="e.g. College of Engineering Trivandrum" required>
             <div class="field-error" id="college-error" role="alert"></div>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label for="course">Course</label>
+              <label for="course">Course / Degree *</label>
               <input type="text" id="course" placeholder="e.g. B.Tech Computer Science" required>
               <div class="field-error" id="course-error" role="alert"></div>
             </div>
             <div class="form-group">
-              <label for="gradYear">Graduation Year</label>
+              <label for="gradYear">Graduation Year *</label>
               <select id="gradYear" required>
                 <option value="">Select year</option>
-                <option>2026</option><option>2027</option><option>2028</option><option>2029</option>
+                <option>2025</option><option>2026</option><option>2027</option><option>2028</option><option>2029</option>
               </select>
               <div class="field-error" id="gradYear-error" role="alert"></div>
             </div>
           </div>
           <div class="checkbox-row">
-            <input type="checkbox" id="terms">
-            <label for="terms" style="font-weight:400">I agree to the <a href="register.html" onclick="return false;">terms and conditions</a> of InternLog.</label>
+            <input type="checkbox" id="terms" required>
+            <label for="terms" style="font-weight:400">I agree to the <a href="#" id="termsLink">terms and conditions</a> of InternLog.</label>
           </div>
-          <p style="margin-top:14px"><button class="btn" type="submit" style="width:100%">Register</button></p>
+          <p style="margin-top:16px"><button class="btn" type="submit" style="width:100%">Register Account</button></p>
         </form>
         <div class="auth-links">
           <span>Already have an account? <a href="login.html">Login</a></span>
@@ -82,5 +84,23 @@
       </div>
     </section>
   </main>
+
+  <div class="modal-backdrop" id="termsModal" role="dialog" aria-modal="true" aria-label="Terms and Conditions">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>InternLog Terms &amp; Student Pledge</h3>
+        <button class="modal-close-icon" id="termsClose" aria-label="Close dialog">&times;</button>
+      </div>
+      <p>By registering on InternLog, you agree to keep your application records accurate and truthful for your own growth and placement cell reviews.</p>
+      <ul style="padding-left:20px;margin-bottom:20px">
+        <li>Your application data belongs to you.</li>
+        <li>You can export your complete history anytime as a CSV spreadsheet.</li>
+        <li>Placement administrators may review overall metrics to assist in recruitment drives.</li>
+      </ul>
+      <div class="modal-footer">
+        <button class="btn btn-sm" onclick="document.getElementById('termsModal').classList.remove('open');document.getElementById('terms').checked=true;">I Agree</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login — InternLog</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/script.js" defer></script>
 </head>
@@ -18,7 +19,7 @@
         <li>See interviews and deadlines clearly</li>
         <li>Keep your profile placement-ready</li>
       </ul>
-      <p style="margin-top:18px;font-size:13.5px">Demo student: <strong>ananya.nair@example.com</strong> / <strong>password123</strong></p>
+      <p style="margin-top:22px;font-size:13.5px;background:rgba(255,255,255,.1);padding:10px 14px;border-radius:8px">New here? Create a free student account to start tracking internships.</p>
     </section>
     <section class="auth-form-side">
       <div class="auth-card">
@@ -27,7 +28,7 @@
         <div class="alert alert-error" id="formAlert" role="alert" style="display:none"></div>
         <form id="loginForm" novalidate>
           <div class="form-group">
-            <label for="email">Email</label>
+            <label for="email">Email Address</label>
             <input type="email" id="email" name="email" autocomplete="email" placeholder="you@college.edu" required>
             <div class="field-error" id="email-error" role="alert"></div>
           </div>
@@ -41,15 +42,15 @@
           </div>
           <div class="checkbox-row" style="justify-content:space-between">
             <label style="font-weight:400;display:flex;gap:8px;align-items:center"><input type="checkbox" id="remember"> Remember me</label>
-            <a href="login.html" onclick="alert('Password reset will be handled by the backend in production.');return false;">Forgot password?</a>
+            <a href="#" id="forgotPasswordLink">Forgot password?</a>
           </div>
-          <p style="margin-top:14px"><button class="btn" type="submit" style="width:100%">Login</button></p>
+          <p style="margin-top:16px"><button class="btn" type="submit" style="width:100%">Login</button></p>
         </form>
         <div class="auth-links">
           <span>New to InternLog? <a href="register.html">Create account</a></span>
           <span><a href="../admin/login.html">Admin Login</a></span>
         </div>
-        <p class="muted" style="font-size:13px"><a href="../index.html">← Back to home</a></p>
+        <p class="muted" style="font-size:13px;margin-top:16px"><a href="../index.html">← Back to home</a></p>
       </div>
     </section>
   </main>

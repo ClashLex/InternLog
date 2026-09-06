@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard — InternLog</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/script.js" defer></script>
 </head>
@@ -25,24 +26,30 @@
         <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button>
         <h1>Admin Dashboard</h1>
         <div class="spacer"></div>
-        <div class="user-chip"><span class="avatar" data-avatar>A</span><span><strong data-user-name>Admin</strong><br><span class="muted" data-user-email></span></span></div>
+        <div class="user-chip">
+          <span class="avatar" data-avatar>A</span>
+          <span><strong data-user-name>Admin</strong><br><span class="muted" data-user-email></span></span>
+        </div>
       </header>
       <main class="content">
         <div class="stat-grid" id="adminStats" aria-label="System statistics"></div>
         <div class="grid-2">
           <section class="card" aria-label="Application overview">
-            <h3>Application Overview</h3>
-            <p class="muted">Status breakdown across all students.</p>
+            <h3>System Status Breakdown</h3>
+            <p class="muted">Distribution of student internship applications.</p>
             <div class="status-bars" id="adminOverview"></div>
           </section>
           <section class="card" aria-label="Recent activity">
-            <h3>Recent Activity</h3>
-            <div id="recentActivity"><p class="muted">Loading…</p></div>
-            <p style="margin-top:12px"><a class="btn btn-secondary btn-sm" href="applications.html">Review applications</a></p>
+            <h3>Recent Student Activity</h3>
+            <div id="recentActivity"><p class="muted">Loading activity feed…</p></div>
+            <p style="margin-top:16px"><a class="btn btn-secondary btn-sm" href="applications.html">Review all applications</a></p>
           </section>
         </div>
       </main>
     </div>
+  </div>
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-label="Application details">
+    <div class="modal"><div id="modalBody"></div></div>
   </div>
 </body>
 </html>

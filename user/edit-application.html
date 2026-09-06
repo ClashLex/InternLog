@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Edit Application — InternLog</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/script.js" defer></script>
 </head>
@@ -24,6 +25,11 @@
       <header class="topbar">
         <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button>
         <h1>Edit Internship Application</h1>
+        <div class="spacer"></div>
+        <div class="user-chip">
+          <span class="avatar" data-avatar>U</span>
+          <span><strong data-user-name>Student</strong><br><span class="muted" data-user-email></span></span>
+        </div>
       </header>
       <main class="content">
         <div class="card">
@@ -42,18 +48,20 @@
             </div>
             <div class="form-row">
               <div class="form-group"><label for="stipend">Stipend (₹ / month)</label><input type="number" id="stipend" min="0" step="500"><div class="field-error" id="stipend-error" role="alert"></div></div>
-              <div class="form-group"><label for="status">Status *</label><select id="status"><option>Applied</option><option>Shortlisted</option><option>Interview</option><option>Selected</option><option>Rejected</option></select><div class="field-error" id="status-error" role="alert"></div></div>
+              <div class="form-group"><label for="status">Current Status *</label><select id="status"><option>Applied</option><option>Shortlisted</option><option>Interview</option><option>Selected</option><option>Rejected</option></select><div class="field-error" id="status-error" role="alert"></div></div>
             </div>
             <div class="form-row">
-              <div class="form-group"><label for="url">Application URL</label><input type="url" id="url"><div class="field-error" id="url-error" role="alert"></div></div>
-              <div class="form-group"><label for="interviewDate">Interview Date (if scheduled)</label><input type="date" id="interviewDate"></div>
+              <div class="form-group"><label for="url">Job Posting URL</label><input type="url" id="url"><div class="field-error" id="url-error" role="alert"></div></div>
+              <div class="form-group"><label for="interviewDate">Interview Date (if scheduled)</label><input type="date" id="interviewDate"><div class="field-error" id="interviewDate-error" role="alert"></div></div>
             </div>
-            <div class="form-group"><label for="notes">Notes</label><textarea id="notes"></textarea></div>
-            <p>
-              <button class="btn" type="submit">Save Changes</button>
-              <a class="btn btn-secondary" href="applications.html">Cancel</a>
-              <button class="btn btn-danger" type="button" id="deleteBtn" style="float:right">Delete</button>
-            </p>
+            <div class="form-group"><label for="notes">Notes &amp; Updates</label><textarea id="notes"></textarea></div>
+            <div class="form-actions">
+              <div class="form-actions-left">
+                <button class="btn" type="submit">Save Changes</button>
+                <a class="btn btn-secondary" href="applications.html">Cancel</a>
+              </div>
+              <button class="btn btn-danger" type="button" id="deleteBtn">Delete Application</button>
+            </div>
           </form>
         </div>
       </main>

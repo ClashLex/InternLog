@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard — InternLog</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/script.js" defer></script>
 </head>
@@ -25,38 +26,43 @@
         <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button>
         <h1>Dashboard</h1>
         <div class="spacer"></div>
-        <div class="user-chip"><span class="avatar" data-avatar>U</span><span><strong data-user-name>Student</strong><br><span class="muted" data-user-email></span></span></div>
+        <div class="user-chip">
+          <span class="avatar" data-avatar>U</span>
+          <span><strong data-user-name>Student</strong><br><span class="muted" data-user-email></span></span>
+        </div>
       </header>
       <main class="content">
-        <p class="muted">Welcome back, <strong data-user-name>Student</strong>. Here is your internship progress.</p>
+        <p class="muted">Welcome back, <strong data-user-name>Student</strong>. Here is your internship progress overview.</p>
         <div class="stat-grid" id="userStats" aria-label="Application statistics"></div>
         <div class="grid-2">
           <section class="card" aria-label="Status overview">
             <h3>Application Status Overview</h3>
-            <p class="muted">Derived live from your application records.</p>
+            <p class="muted">Derived live from your current internship applications.</p>
             <div class="status-bars" id="statusOverview"></div>
           </section>
           <section class="card" aria-label="Upcoming interviews">
             <h3>Upcoming Interviews</h3>
             <div id="upcomingList"><p class="muted">Loading…</p></div>
-            <p style="margin-top:12px"><a class="btn btn-secondary btn-sm" href="applications.html">View all applications</a></p>
+            <p style="margin-top:14px"><a class="btn btn-secondary btn-sm" href="applications.html">View all applications</a></p>
           </section>
         </div>
-        <section class="card" style="margin-top:16px" aria-label="Recent applications">
-          <h3>Recent Applications</h3>
+        <section class="card" style="margin-top:18px" aria-label="Recent applications">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <h3 style="margin:0">Recent Applications</h3>
+            <a class="btn btn-sm" href="add-application.html">+ Add Internship</a>
+          </div>
           <div class="table-wrap" id="recentTable">
             <table>
               <thead><tr><th>Company</th><th>Internship Role</th><th>Applied Date</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody id="recentBody"></tbody>
             </table>
           </div>
-          <p style="margin-top:12px"><a class="btn btn-sm" href="add-application.html">+ Add Internship</a></p>
         </section>
       </main>
     </div>
   </div>
   <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-label="Application details">
-    <div class="modal"><div id="modalBody"></div><p><button class="btn btn-secondary btn-sm" id="modalClose">Close</button></p></div>
+    <div class="modal"><div id="modalBody"></div></div>
   </div>
 </body>
 </html>

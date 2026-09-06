@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Applications — InternLog</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/script.js" defer></script>
 </head>
@@ -25,25 +26,38 @@
         <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button>
         <h1>My Applications</h1>
         <div class="spacer"></div>
-        <a class="btn btn-sm" href="add-application.html">+ Add Internship</a>
+        <div class="user-chip">
+          <span class="avatar" data-avatar>U</span>
+          <span><strong data-user-name>Student</strong><br><span class="muted" data-user-email></span></span>
+        </div>
       </header>
       <main class="content">
-        <div class="toolbar" role="search">
-          <input type="text" id="searchInput" class="search-input" placeholder="Search by company or role…" aria-label="Search applications">
-          <select id="statusFilter" aria-label="Filter by status">
-            <option value="All">All</option><option>Applied</option><option>Shortlisted</option>
-            <option>Interview</option><option>Selected</option><option>Rejected</option>
-          </select>
-          <span class="muted" id="resultCount"></span>
+        <div class="toolbar" role="search" style="justify-content:space-between">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search company, role, or location…" aria-label="Search applications">
+            <select id="statusFilter" aria-label="Filter by status">
+              <option value="All">All statuses</option>
+              <option>Applied</option>
+              <option>Shortlisted</option>
+              <option>Interview</option>
+              <option>Selected</option>
+              <option>Rejected</option>
+            </select>
+            <span class="muted" id="resultCount" style="font-size:13.5px"></span>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-secondary btn-sm" id="exportCsvBtn" title="Download applications as CSV for placement cell">Export CSV</button>
+            <a class="btn btn-sm" href="add-application.html">+ Add Internship</a>
+          </div>
         </div>
         <div class="empty" id="emptyState" style="display:none">
           <h3>No internship applications yet</h3>
-          <p>Start tracking your first internship application.</p>
+          <p>Start tracking your first internship application today.</p>
           <a class="btn" href="add-application.html">Add Your First Internship</a>
         </div>
         <div class="empty" id="noResults" style="display:none">
           <h3>No matching applications</h3>
-          <p>Try a different search term or status filter.</p>
+          <p>Try a different keyword or change your status filter.</p>
         </div>
         <div class="table-wrap" id="appsTableWrap">
           <table aria-label="Internship applications">
@@ -55,7 +69,7 @@
     </div>
   </div>
   <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-label="Application details">
-    <div class="modal"><div id="modalBody"></div><p><button class="btn btn-secondary btn-sm" id="modalClose">Close</button></p></div>
+    <div class="modal"><div id="modalBody"></div></div>
   </div>
 </body>
 </html>
