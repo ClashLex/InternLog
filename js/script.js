@@ -1036,7 +1036,7 @@
           "<td><strong>" + esc(a.company) + "</strong></td><td>" + esc(a.role) + "</td><td>" + fmtDate(a.appliedDate) + "</td>" +
           "<td>" + statusBadge(a.status) + "</td>" +
           '<td><div class="actions"><button class="link-btn" data-view="' + a.id + '">View</button>' +
-          '<select data-status-for="' + a.id + '" aria-label="Update status" style="font-size:13px;padding:4px 8px;border-radius:6px">' +
+          '<select data-status-for="' + a.id + '" aria-label="Update status" class="row-select">' +
           STATUSES.map(function (x) { return '<option value="' + x + '"' + (x === a.status ? " selected" : "") + ">" + x + "</option>"; }).join("") +
           "</select><button class='link-btn danger' data-delete='" + a.id + "'>Delete</button></div></td></tr>";
       }).join("") : '<tr><td colspan="7" class="muted">No applications match your search.</td></tr>';
