@@ -63,8 +63,11 @@ InternLog/
 │   ├── profile.html            # Profile info & password management
 │   └── register.html           # New student registration
 ├── index.html                  # Landing page & feature showcase
+├── 404.html                    # Custom not-found page (auto-served by GitHub Pages for unknown URLs)
 └── README.md                   # Project documentation
 ```
+
+Any address that doesn't match a real page — including guessed paths — renders `404.html` with links back to Home and Login. There is intentionally no sitemap or index of restricted areas.
 
 ---
 
