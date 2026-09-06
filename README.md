@@ -31,6 +31,7 @@ Create a new account from the [Registration Page](https://clashlex.github.io/Int
 
 ### Design & Accessibility
 - **Modern Design System**: Instrument Serif voice with Helvetica metadata, high-contrast blue palette, clean cards and tables, and status color coding.
+- **Dark Mode**: One-tap light/dark switch on every page (black surfaces, yellow accent in dark). Choice persists per device; otherwise follows the OS setting.
 - **Mobile Responsive**: Adaptive grid layouts with collapsible sidebar drawer and mobile hamburger navigation on the landing page.
 - **Accessible & Clean**: Semantic landmarks, keyboard dismissal with ESC, visible focus states, and readable contrast.
 - **Zero-Dependency Core**: Pure Vanilla JavaScript and CSS — zero bloated dependencies or heavy build processes.
