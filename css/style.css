@@ -84,7 +84,7 @@ h1, h2, h3 { font-family: var(--ff-serif); font-weight: 400; letter-spacing: -0.
 .landing-mobile-nav a { padding: 8px 0; font-family: var(--ff-serif); font-style: italic; font-size: 19px; color: var(--text); }
 .landing-mobile-nav a:hover { color: var(--primary); }
 
-.hero { display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(1.25rem, 1rem + 3vw, 2.25rem); padding: clamp(2.5rem, 1.5rem + 6vh, 3.75rem) 0 clamp(1.5rem, 1rem + 3vh, 2.5rem); align-items: center; }
+.hero { display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(1.25rem, 1rem + 3vw, 2.25rem); padding-block: clamp(2.5rem, 1.5rem + 6vh, 3.75rem) clamp(1.5rem, 1rem + 3vh, 2.5rem); align-items: center; }
 /* Single-column hero (landing): one centered narrow column at every width */
 .hero-single { grid-template-columns: 1fr; max-width: 760px; }
 /* CTA button row: wraps cleanly instead of colliding on narrow screens */
@@ -99,7 +99,7 @@ h1, h2, h3 { font-family: var(--ff-serif); font-weight: 400; letter-spacing: -0.
 .mini-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-top: 1px solid var(--border); font-size: 14px; gap: 12px; }
 .mini-row:first-of-type { border-top: 0; }
 .mini-row strong { font-family: var(--ff-serif); font-weight: 400; font-size: 15.5px; }
-.section { padding: clamp(1.75rem, 1rem + 4vw, 2.75rem) 0; }
+.section { padding-block: clamp(1.75rem, 1rem + 4vw, 2.75rem); }
 /* Roomier section rhythm (keeps the shared side gutters, unlike inline padding) */
 .section-roomy { padding-top: clamp(2rem, 1.5rem + 5vw, 3.5rem); padding-bottom: clamp(2rem, 1.5rem + 5vw, 3.5rem); }
 .section h2 { font-size: clamp(1.5rem, 1.2rem + 1.6vw, 1.75rem); margin: 0 0 8px; font-weight: 400; letter-spacing: -.02em; }
@@ -387,10 +387,10 @@ table strong { font-family: var(--ff-serif); font-weight: 400; font-size: 16px; 
 }
 /* Short landscape screens (phones held sideways): tighten vertical rhythm */
 @media (max-height: 540px) and (orientation: landscape) {
-  .hero { padding: 28px 0 20px; }
+  .hero { padding-block: 28px 20px; }
   .auth-panel { padding: 24px; }
   .auth-form-side { padding: 24px 20px; }
-  .section { padding: 24px 0; }
+  .section { padding-block: 24px; }
 }
 
 /* ---------- Reduced motion ---------- */
