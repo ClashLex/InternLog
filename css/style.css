@@ -1,8 +1,8 @@
 /* InternLog — shared stylesheet.
    Design language: calm editorial premium, light-only.
    Warm white/peach canvas, frosted-glass surfaces, hairline dividers,
-   Instrument Serif voice + Inter metadata. No dark tokens. */
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap');
+   Instrument Serif voice + Helvetica metadata. No dark tokens. */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
 
 :root {
   color-scheme: light;
@@ -42,7 +42,7 @@
   --radius-sm: 12px;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --ff-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
-  --ff-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --ff-sans: "Helvetica Neue", Helvetica, Arial, "Segoe UI", Roboto, sans-serif;
 }
 
 * { box-sizing: border-box; }

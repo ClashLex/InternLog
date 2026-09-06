@@ -30,7 +30,7 @@ Create a new account from the [Registration Page](https://clashlex.github.io/Int
 - **Account & Security**: Profile editor with college/course info, password manager, and persistent session memory.
 
 ### 🎨 Design & Accessibility
-- **Modern Design System**: Powered by Google Fonts (*Inter*), curated HSL/hex palettes, subtle elevations, and status color coding.
+- **Modern Design System**: Instrument Serif voice with Helvetica metadata, warm editorial palette, frosted-glass surfaces, and status color coding.
 - **Mobile Responsive**: Adaptive grid layouts with collapsible sidebar drawer and mobile hamburger navigation on the landing page.
 - **Accessible & Clean**: ARIA landmarks, modal dialog focus traps, ESC-key dismissals, and high-contrast focus rings.
 - **Zero-Dependency Core**: Pure Vanilla JavaScript and CSS — zero bloated dependencies or heavy build processes.
