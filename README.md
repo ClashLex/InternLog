@@ -12,14 +12,11 @@
 
 **InternLog** replaces disorganized spreadsheets and missed deadlines with an internship-first management system. Students can monitor every stage of their recruitment process from initial application to final offer letter, complete with interview dates, stipends, notes, and instant CSV export for placement compliance.
 
-Administrators and college placement cells gain a high-level command center to monitor student engagement, review application logs, and audit outcomes.
-
 ---
 
 ## 🔑 Getting Access
 
-- **Students:** create a new account from the [Registration Page](https://clashlex.github.io/InternLog/user/register.html), then sign in at the [Student Portal](https://clashlex.github.io/InternLog/user/login.html). The app starts with no prebuilt profiles or records — every entry is created by its owner.
-- **Administrators:** sign in at the [Admin Portal](https://clashlex.github.io/InternLog/admin/login.html) with a provisioned admin account. Admin credentials are shared privately and are never published in this repository or on the website.
+Create a new account from the [Registration Page](https://clashlex.github.io/InternLog/user/register.html), then sign in at the [Student Portal](https://clashlex.github.io/InternLog/user/login.html). The app starts with no prebuilt profiles or records — every entry is created by its owner.
 
 ---
 
@@ -31,12 +28,6 @@ Administrators and college placement cells gain a high-level command center to m
 - **Search & Filter**: Instant client-side search across company names, roles, locations, and status categories.
 - **CSV Data Export**: One-click RFC 4180 compliant CSV export ready for college placement cell record submissions.
 - **Account & Security**: Profile editor with college/course info, password manager, and persistent session memory.
-
-### 🛡️ Admin Management Console
-- **System Metrics**: Real-time aggregated statistics across all registered students and active applications.
-- **Student User Management**: View all student profiles, application counts, and enable/disable/delete accounts.
-- **Application Auditing**: Inspect, filter, and adjust application statuses in real-time.
-- **Global CSV Reporting**: Download complete system-wide application records with student attribution.
 
 ### 🎨 Design & Accessibility
 - **Modern Design System**: Powered by Google Fonts (*Inter*), curated HSL/hex palettes, subtle elevations, and status color coding.
@@ -53,11 +44,11 @@ InternLog/
 ├── .github/
 │   └── workflows/
 │       └── static.yml          # GitHub Pages automated deployment workflow
-├── admin/                      # Administration portal
+├── admin/                      # Restricted console (not linked anywhere in the UI)
 │   ├── applications.html       # All student applications & status editor
 │   ├── dashboard.html          # Global statistics & activity feed
-│   ├── login.html              # Admin authentication
-│   ├── profile.html            # Admin profile settings
+│   ├── login.html              # Console authentication
+│   ├── profile.html            # Console profile settings
 │   └── users.html              # Student accounts & moderation
 ├── css/
 │   └── style.css               # Shared design system, layout, & responsive styling
@@ -85,12 +76,12 @@ The data layer in `js/script.js` has been explicitly designed to mirror RESTful 
 | :--- | :--- | :--- |
 | `loginUser(creds)` | `POST /api/auth/login` | Authenticate user session |
 | `registerUser(data)` | `POST /api/auth/register` | Register new student account |
-| `getApplications()` | `GET /api/applications` | Fetch all applications (Admin) |
+| `getApplications()` | `GET /api/applications` | Fetch all applications (console) |
 | `getApplicationsByUser()` | `GET /api/applications?user={id}` | Fetch student applications |
 | `addApplication(data)` | `POST /api/applications` | Create new application |
 | `updateApplication(id, patch)` | `PUT /api/applications/{id}` | Update application fields or status |
 | `deleteApplication(id)` | `DELETE /api/applications/{id}` | Remove application record |
-| `getUsers()` | `GET /api/users` | List registered students (Admin) |
+| `getUsers()` | `GET /api/users` | List registered students (console) |
 
 Replacing the local storage handlers with `fetch()` requires zero changes to the presentation layer.
 

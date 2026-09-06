@@ -420,10 +420,8 @@
       if (!ok) return;
       try {
         var session = await loginUser({ email: email.value.trim(), password: password.value });
-        if (session.role === "admin") {
-          showNotification("Admin account detected — redirecting to admin portal.", "warning");
-          setTimeout(function () { window.location.href = "../admin/dashboard.html"; }, 700);
-          return;
+        if (session.role !== "user") {
+          throw new Error("Invalid email or password");
         }
         session.remember = !!(remember && remember.checked);
         setSession(session);
@@ -1077,10 +1075,48 @@
     });
   }
 
+  /* ---------------- Secret console access ----------------
+     Tapping the InternLog logo 5 times within 3 seconds opens the
+     restricted console login. Tap timestamps are kept in sessionStorage
+     so rapid taps still count even if a tap navigates between pages.
+     There is intentionally no visible hint of this anywhere in the UI. */
+  function initSecretConsoleAccess() {
+    var REQUIRED_TAPS = 5;
+    var WINDOW_MS = 3000;
+    var STORE_KEY = "internlog_logo_taps";
+    if (document.getElementById("adminLoginForm")) return; // already there
+
+    function readTaps() {
+      try { return JSON.parse(sessionStorage.getItem(STORE_KEY) || "[]"); }
+      catch (e) { return []; }
+    }
+    function resolveConsoleLogin() {
+      var here = window.location.pathname.replace(/\\/g, "/");
+      if (here.indexOf("/admin/") !== -1) return "login.html";
+      if (here.indexOf("/user/") !== -1) return "../admin/login.html";
+      return "admin/login.html";
+    }
+
+    document.querySelectorAll(".brand").forEach(function (brand) {
+      brand.addEventListener("click", function (e) {
+        var now = Date.now();
+        var taps = readTaps().filter(function (t) { return now - t < WINDOW_MS; });
+        taps.push(now);
+        try { sessionStorage.setItem(STORE_KEY, JSON.stringify(taps)); } catch (err) {}
+        if (taps.length >= REQUIRED_TAPS) {
+          e.preventDefault();
+          try { sessionStorage.removeItem(STORE_KEY); } catch (err) {}
+          window.location.href = resolveConsoleLogin();
+        }
+      });
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     injectFavicon();
     seedIfNeeded();
     initNavigation();
+    initSecretConsoleAccess();
     initUserLogin();
     initAdminLogin();
     initRegister();
