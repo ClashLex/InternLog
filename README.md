@@ -77,25 +77,6 @@ InternLog/
 
 ---
 
-## 🚀 Getting Started Locally
-
-Because InternLog uses standard static web technologies, no installation or build step is required!
-
-### Option 1: Live Server or Local HTTP Server
-```bash
-# Using Python
-python -m http.server 8000
-
-# Using Node.js (npx)
-npx serve .
-```
-Then visit `http://localhost:8000` in your browser.
-
-### Option 2: Direct File Open
-Simply open `index.html` in any modern web browser (Chrome, Edge, Firefox, Safari).
-
----
-
 ## 🔌 Backend Roadmap (Java / Spring Boot)
 
 The data layer in `js/script.js` has been explicitly designed to mirror RESTful API endpoints:
