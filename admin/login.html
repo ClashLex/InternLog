@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login — InternLog</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/script.js" defer></script>
+</head>
+<body>
+  <main class="auth-wrap">
+    <section class="auth-panel" aria-label="Admin area">
+      <a class="brand" href="../index.html" style="color:#fff"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog Admin<small style="color:#bfdbfe">Administration Area</small></span></a>
+      <h1>InternLog Administration</h1>
+      <p>Monitor students, review internship applications, and track system-wide progress from a dedicated admin workspace.</p>
+      <div class="admin-note" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#fff">This is the restricted administration area. Student accounts cannot access admin functionality.</div>
+      <p style="margin-top:14px;font-size:13.5px">Demo admin: <strong>admin@internlog.com</strong> / <strong>admin123</strong></p>
+    </section>
+    <section class="auth-form-side">
+      <div class="auth-card">
+        <h2>Admin Login</h2>
+        <p class="muted">Sign in to the InternLog admin console.</p>
+        <div class="alert alert-error" id="formAlert" role="alert" style="display:none"></div>
+        <form id="adminLoginForm" novalidate>
+          <div class="form-group">
+            <label for="email">Admin Email / Username</label>
+            <input type="text" id="email" autocomplete="username" placeholder="admin@internlog.com" required>
+            <div class="field-error" id="email-error" role="alert"></div>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="password-wrap">
+              <input type="password" id="password" autocomplete="current-password" placeholder="Enter admin password" required>
+              <button type="button" class="password-toggle" data-password-toggle="password">Show</button>
+            </div>
+            <div class="field-error" id="password-error" role="alert"></div>
+          </div>
+          <p><button class="btn" type="submit" style="width:100%">Admin Login</button></p>
+        </form>
+        <div class="auth-links">
+          <span><a href="../user/login.html">Back to User Login</a></span>
+          <span><a href="../index.html">← Home</a></span>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

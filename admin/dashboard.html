@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — InternLog</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/script.js" defer></script>
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar" aria-label="Admin navigation">
+      <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog Admin</span></a>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="users.html">Users</a>
+        <a href="applications.html">Applications</a>
+        <a href="profile.html">Profile</a>
+      </nav>
+      <div class="side-foot"><nav><a href="../index.html" data-logout>Logout</a></nav></div>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button>
+        <h1>Admin Dashboard</h1>
+        <div class="spacer"></div>
+        <div class="user-chip"><span class="avatar" data-avatar>A</span><span><strong data-user-name>Admin</strong><br><span class="muted" data-user-email></span></span></div>
+      </header>
+      <main class="content">
+        <div class="stat-grid" id="adminStats" aria-label="System statistics"></div>
+        <div class="grid-2">
+          <section class="card" aria-label="Application overview">
+            <h3>Application Overview</h3>
+            <p class="muted">Status breakdown across all students.</p>
+            <div class="status-bars" id="adminOverview"></div>
+          </section>
+          <section class="card" aria-label="Recent activity">
+            <h3>Recent Activity</h3>
+            <div id="recentActivity"><p class="muted">Loading…</p></div>
+            <p style="margin-top:12px"><a class="btn btn-secondary btn-sm" href="applications.html">Review applications</a></p>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

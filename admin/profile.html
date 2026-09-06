@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Profile — InternLog</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/script.js" defer></script>
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar" aria-label="Admin navigation">
+      <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog Admin</span></a>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="users.html">Users</a>
+        <a href="applications.html">Applications</a>
+        <a href="profile.html">Profile</a>
+      </nav>
+      <div class="side-foot"><nav><a href="../index.html" data-logout>Logout</a></nav></div>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button>
+        <h1>Admin Profile</h1>
+      </header>
+      <main class="content" id="profileWrap" data-kind="admin">
+        <section class="card">
+          <div class="profile-head">
+            <span class="profile-avatar" id="avatarBig">A</span>
+            <div><h2 style="margin:0" data-user-name>InternLog Admin</h2><p class="muted" style="margin:2px 0" data-user-email>admin@internlog.com</p><p class="muted" style="margin:2px 0;font-size:13.5px">Role: Administrator</p></div>
+          </div>
+        </section>
+        <div class="grid-2" style="margin-top:16px">
+          <section class="card" aria-label="Edit admin profile">
+            <h3>Edit Profile</h3>
+            <form id="adminProfileForm">
+              <div class="form-group"><label for="adminName">Admin Name</label><input type="text" id="adminName" required></div>
+              <div class="form-group"><label for="adminEmail">Email</label><input type="email" id="adminEmail" readonly aria-readonly="true"></div>
+              <div class="form-group"><label for="adminRole">Role</label><input type="text" id="adminRole" value="Administrator" readonly></div>
+              <p><button class="btn btn-sm" type="submit">Save Changes</button></p>
+            </form>
+          </section>
+          <section class="card" aria-label="Admin account settings">
+            <h3>Account Settings</h3>
+            <p class="muted">Password changes for administrators will be enforced by the Java backend in production. For this frontend prototype, the demo admin password is managed centrally.</p>
+            <div class="admin-note">Demo credentials: admin@internlog.com / admin123</div>
+            <p style="margin-top:12px"><a class="btn btn-secondary btn-sm" href="../index.html" data-logout>Logout</a></p>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

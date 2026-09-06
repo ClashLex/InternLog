@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Application — InternLog</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/script.js" defer></script>
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar" aria-label="Student navigation">
+      <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog</span></a>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="applications.html">My Applications</a>
+        <a href="add-application.html">Add Application</a>
+        <a href="profile.html">Profile</a>
+      </nav>
+      <div class="side-foot"><nav><a href="../index.html" data-logout>Logout</a></nav></div>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button>
+        <h1>Edit Internship Application</h1>
+      </header>
+      <main class="content">
+        <div class="card">
+          <form id="editForm" novalidate>
+            <div class="form-row">
+              <div class="form-group"><label for="company">Company Name *</label><input type="text" id="company"><div class="field-error" id="company-error" role="alert"></div></div>
+              <div class="form-group"><label for="role">Internship Role *</label><input type="text" id="role"><div class="field-error" id="role-error" role="alert"></div></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label for="location">Location *</label><input type="text" id="location"><div class="field-error" id="location-error" role="alert"></div></div>
+              <div class="form-group"><label for="internshipType">Internship Type</label><select id="internshipType"><option>On-site</option><option>Remote</option><option>Hybrid</option></select></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label for="appliedDate">Application Date *</label><input type="date" id="appliedDate"><div class="field-error" id="appliedDate-error" role="alert"></div></div>
+              <div class="form-group"><label for="deadline">Application Deadline *</label><input type="date" id="deadline"><div class="field-error" id="deadline-error" role="alert"></div></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label for="stipend">Stipend (₹ / month)</label><input type="number" id="stipend" min="0" step="500"><div class="field-error" id="stipend-error" role="alert"></div></div>
+              <div class="form-group"><label for="status">Status *</label><select id="status"><option>Applied</option><option>Shortlisted</option><option>Interview</option><option>Selected</option><option>Rejected</option></select><div class="field-error" id="status-error" role="alert"></div></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label for="url">Application URL</label><input type="url" id="url"><div class="field-error" id="url-error" role="alert"></div></div>
+              <div class="form-group"><label for="interviewDate">Interview Date (if scheduled)</label><input type="date" id="interviewDate"></div>
+            </div>
+            <div class="form-group"><label for="notes">Notes</label><textarea id="notes"></textarea></div>
+            <p>
+              <button class="btn" type="submit">Save Changes</button>
+              <a class="btn btn-secondary" href="applications.html">Cancel</a>
+              <button class="btn btn-danger" type="button" id="deleteBtn" style="float:right">Delete</button>
+            </p>
+          </form>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

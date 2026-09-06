@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — InternLog</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/script.js" defer></script>
+</head>
+<body>
+  <main class="auth-wrap">
+    <section class="auth-panel" aria-label="About InternLog">
+      <a class="brand" href="../index.html" style="color:#fff"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog<small style="color:#bfdbfe">Track. Apply. Grow.</small></span></a>
+      <h1>Welcome back to InternLog</h1>
+      <p>Pick up your internship search exactly where you left off — applications, interviews, and offers in one dashboard.</p>
+      <ul>
+        <li>Track every internship application</li>
+        <li>See interviews and deadlines clearly</li>
+        <li>Keep your profile placement-ready</li>
+      </ul>
+      <p style="margin-top:18px;font-size:13.5px">Demo student: <strong>ananya.nair@example.com</strong> / <strong>password123</strong></p>
+    </section>
+    <section class="auth-form-side">
+      <div class="auth-card">
+        <h2>Student Login</h2>
+        <p class="muted">Log in to manage your internship applications.</p>
+        <div class="alert alert-error" id="formAlert" role="alert" style="display:none"></div>
+        <form id="loginForm" novalidate>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" autocomplete="email" placeholder="you@college.edu" required>
+            <div class="field-error" id="email-error" role="alert"></div>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="password-wrap">
+              <input type="password" id="password" name="password" autocomplete="current-password" placeholder="Enter your password" required>
+              <button type="button" class="password-toggle" data-password-toggle="password">Show</button>
+            </div>
+            <div class="field-error" id="password-error" role="alert"></div>
+          </div>
+          <div class="checkbox-row" style="justify-content:space-between">
+            <label style="font-weight:400;display:flex;gap:8px;align-items:center"><input type="checkbox" id="remember"> Remember me</label>
+            <a href="login.html" onclick="alert('Password reset will be handled by the backend in production.');return false;">Forgot password?</a>
+          </div>
+          <p style="margin-top:14px"><button class="btn" type="submit" style="width:100%">Login</button></p>
+        </form>
+        <div class="auth-links">
+          <span>New to InternLog? <a href="register.html">Create account</a></span>
+          <span><a href="../admin/login.html">Admin Login</a></span>
+        </div>
+        <p class="muted" style="font-size:13px"><a href="../index.html">← Back to home</a></p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

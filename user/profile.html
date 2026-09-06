@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile — InternLog</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/script.js" defer></script>
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar" aria-label="Student navigation">
+      <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog</span></a>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="applications.html">My Applications</a>
+        <a href="add-application.html">Add Application</a>
+        <a href="profile.html">Profile</a>
+      </nav>
+      <div class="side-foot"><nav><a href="../index.html" data-logout>Logout</a></nav></div>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button>
+        <h1>Profile</h1>
+      </header>
+      <main class="content" id="profileWrap" data-kind="user">
+        <section class="card">
+          <div class="profile-head">
+            <span class="profile-avatar" id="avatarBig">U</span>
+            <div><h2 id="profileName" style="margin:0">Student</h2><p class="muted" id="profileEmail" style="margin:2px 0"></p><p class="muted" id="profileMeta" style="margin:2px 0;font-size:13.5px"></p></div>
+          </div>
+        </section>
+        <section class="card" style="margin-top:16px" aria-label="Internship statistics">
+          <h3>Internship Statistics</h3>
+          <div class="stat-grid cols-4" id="profileStats"></div>
+        </section>
+        <div class="grid-2" style="margin-top:16px">
+          <section class="card" aria-label="Edit profile">
+            <h3>Edit Profile</h3>
+            <form id="profileForm">
+              <div class="form-group"><label for="fullName">Full Name</label><input type="text" id="fullName" required></div>
+              <div class="form-group"><label for="college">College / University</label><input type="text" id="college" required></div>
+              <div class="form-row">
+                <div class="form-group"><label for="course">Course</label><input type="text" id="course" required></div>
+                <div class="form-group"><label for="gradYear">Graduation Year</label><select id="gradYear"><option>2026</option><option>2027</option><option>2028</option><option>2029</option></select></div>
+              </div>
+              <p><button class="btn btn-sm" type="submit">Save Profile</button></p>
+            </form>
+          </section>
+          <section class="card" aria-label="Account settings">
+            <h3>Account Settings</h3>
+            <form id="passwordForm">
+              <div class="form-group"><label for="currentPassword">Current Password</label><input type="password" id="currentPassword" required></div>
+              <div class="form-group"><label for="newPassword">New Password</label><input type="password" id="newPassword" placeholder="Min. 8 chars, letters + numbers" required></div>
+              <p><button class="btn btn-secondary btn-sm" type="submit">Change Password</button></p>
+            </form>
+            <p><a class="btn btn-secondary btn-sm" href="../index.html" data-logout>Logout</a></p>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

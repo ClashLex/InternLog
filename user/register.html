@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register — InternLog</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/script.js" defer></script>
+</head>
+<body>
+  <main class="auth-wrap">
+    <section class="auth-panel" aria-label="Why InternLog">
+      <a class="brand" href="../index.html" style="color:#fff"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog<small style="color:#bfdbfe">Track. Apply. Grow.</small></span></a>
+      <h1>Create your InternLog account</h1>
+      <p>Join thousands of students organizing their internship search with InternLog.</p>
+      <ul>
+        <li>Free personal internship dashboard</li>
+        <li>Status tracking from Applied to Selected</li>
+        <li>Search, filter, and deadline reminders</li>
+      </ul>
+    </section>
+    <section class="auth-form-side">
+      <div class="auth-card">
+        <h2>Student Registration</h2>
+        <p class="muted">Create an account to start tracking internships.</p>
+        <form id="registerForm" novalidate>
+          <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" autocomplete="name" placeholder="e.g. Ananya Nair" required>
+            <div class="field-error" id="fullName-error" role="alert"></div>
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" autocomplete="email" placeholder="you@college.edu" required>
+            <div class="field-error" id="email-error" role="alert"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="password">Password</label>
+              <div class="password-wrap">
+                <input type="password" id="password" autocomplete="new-password" placeholder="Min. 8 chars, letters + numbers" required>
+                <button type="button" class="password-toggle" data-password-toggle="password">Show</button>
+              </div>
+              <div class="field-error" id="password-error" role="alert"></div>
+            </div>
+            <div class="form-group">
+              <label for="confirmPassword">Confirm Password</label>
+              <input type="password" id="confirmPassword" autocomplete="new-password" placeholder="Repeat password" required>
+              <div class="field-error" id="confirmPassword-error" role="alert"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="college">College / University</label>
+            <input type="text" id="college" placeholder="e.g. College of Engineering Trivandrum" required>
+            <div class="field-error" id="college-error" role="alert"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="course">Course</label>
+              <input type="text" id="course" placeholder="e.g. B.Tech Computer Science" required>
+              <div class="field-error" id="course-error" role="alert"></div>
+            </div>
+            <div class="form-group">
+              <label for="gradYear">Graduation Year</label>
+              <select id="gradYear" required>
+                <option value="">Select year</option>
+                <option>2026</option><option>2027</option><option>2028</option><option>2029</option>
+              </select>
+              <div class="field-error" id="gradYear-error" role="alert"></div>
+            </div>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="terms">
+            <label for="terms" style="font-weight:400">I agree to the <a href="register.html" onclick="return false;">terms and conditions</a> of InternLog.</label>
+          </div>
+          <p style="margin-top:14px"><button class="btn" type="submit" style="width:100%">Register</button></p>
+        </form>
+        <div class="auth-links">
+          <span>Already have an account? <a href="login.html">Login</a></span>
+          <span><a href="../index.html">← Back to home</a></span>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

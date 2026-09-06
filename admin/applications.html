@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Applications — InternLog Admin</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/script.js" defer></script>
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar" aria-label="Admin navigation">
+      <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog Admin</span></a>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="users.html">Users</a>
+        <a href="applications.html">Applications</a>
+        <a href="profile.html">Profile</a>
+      </nav>
+      <div class="side-foot"><nav><a href="../index.html" data-logout>Logout</a></nav></div>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button>
+        <h1>All Internship Applications</h1>
+      </header>
+      <main class="content">
+        <div class="toolbar" role="search">
+          <input type="text" id="adminSearch" class="search-input" placeholder="Search by student, company, or role…" aria-label="Search applications">
+          <select id="adminStatusFilter" aria-label="Filter by status">
+            <option value="All">All</option><option>Applied</option><option>Shortlisted</option>
+            <option>Interview</option><option>Selected</option><option>Rejected</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table aria-label="All internship applications">
+            <thead><tr><th>Application ID</th><th>Student</th><th>Company</th><th>Internship Role</th><th>Applied Date</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="adminAppsBody"></tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  </div>
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-label="Application details">
+    <div class="modal"><div id="modalBody"></div><p><button class="btn btn-secondary btn-sm" id="modalClose">Close</button></p></div>
+  </div>
+</body>
+</html>

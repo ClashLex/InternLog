@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Users — InternLog Admin</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/script.js" defer></script>
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar" aria-label="Admin navigation">
+      <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog Admin</span></a>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="users.html">Users</a>
+        <a href="applications.html">Applications</a>
+        <a href="profile.html">Profile</a>
+      </nav>
+      <div class="side-foot"><nav><a href="../index.html" data-logout>Logout</a></nav></div>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button>
+        <h1>Users</h1>
+      </header>
+      <main class="content">
+        <div class="toolbar" role="search">
+          <input type="text" id="userSearch" class="search-input" placeholder="Search by name, email, or college…" aria-label="Search users">
+          <select id="userStatusFilter" aria-label="Filter by account status">
+            <option value="All">All statuses</option><option>Active</option><option>Disabled</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table aria-label="Registered users">
+            <thead><tr><th>User ID</th><th>Name</th><th>Email</th><th>College</th><th>Course</th><th>Registered Date</th><th>Applications</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="usersBody"></tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
