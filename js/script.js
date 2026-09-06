@@ -49,7 +49,7 @@
   }
 
   function writeJSON(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
   }
 
   function esc(s) {
@@ -107,7 +107,7 @@
       });
       writeJSON(USERS_KEY, keptUsers);
       writeJSON(APPS_KEY, keptApps);
-      localStorage.setItem(SEEDED_KEY, "3");
+      try { localStorage.setItem(SEEDED_KEY, "3"); } catch (e) {}
     }
   }
 
@@ -190,7 +190,7 @@
 
   function getSession() { return readJSON(SESSION_KEY, null); }
   function setSession(s) { writeJSON(SESSION_KEY, s); }
-  function clearSession() { localStorage.removeItem(SESSION_KEY); }
+  function clearSession() { try { localStorage.removeItem(SESSION_KEY); } catch (e) {} }
 
   function computeStats(apps) {
     var s = { total: apps.length, Applied: 0, Shortlisted: 0, Interview: 0, Selected: 0, Rejected: 0 };

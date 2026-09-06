@@ -374,6 +374,11 @@ table strong { font-family: var(--ff-serif); font-weight: 400; font-size: 16px; 
 @media (max-width: 768px) {
   .nav-links { display: none; }
   .landing-menu-btn { display: inline-flex; }
+  /* Center the landing page content on phones */
+  .hero-single { text-align: center; }
+  .hero-single .cta-row { justify-content: center; }
+  .section { text-align: center; }
+  .section .card, .section .step { text-align: start; }
   .app-layout { grid-template-columns: 1fr; }
   .sidebar {
     position: fixed; left: 0; top: 0; bottom: 0; width: 260px; z-index: 1000;
