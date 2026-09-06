@@ -607,9 +607,9 @@
       "<dt>Internship Type</dt><dd>" + esc(a.internshipType || "—") + "</dd>" +
       "<dt>Applied Date</dt><dd>" + fmtDate(a.appliedDate) + "</dd>" +
       "<dt>Deadline</dt><dd>" + fmtDate(a.deadline) + "</dd>" +
-      (a.interviewDate ? "<dt>Interview Date</dt><dd><strong style='color:#4338ca'>" + fmtDate(a.interviewDate) + "</strong></dd>" : "") +
+      (a.interviewDate ? "<dt>Interview Date</dt><dd><strong>" + fmtDate(a.interviewDate) + "</strong></dd>" : "") +
       "<dt>Stipend</dt><dd>" + (a.stipend && Number(a.stipend) > 0 ? "₹" + Number(a.stipend).toLocaleString("en-IN") + " / month" : "Unpaid / Not specified") + "</dd>" +
-      (a.url ? "<dt>Posting URL</dt><dd><a href='" + esc(a.url) + "' target='_blank' rel='noopener'>Open job listing ↗</a></dd>" : "") +
+      (a.url ? "<dt>Posting URL</dt><dd><a href='" + esc(a.url) + "' target='_blank' rel='noopener'>Open posting ↗</a></dd>" : "") +
       "<dt>Status</dt><dd>" + statusBadge(a.status) + "</dd>" +
       "<dt>Notes</dt><dd>" + (a.notes ? esc(a.notes).replace(/\n/g, "<br>") : "<span class='muted'>No notes added.</span>") + "</dd>" +
       "</dl>" +

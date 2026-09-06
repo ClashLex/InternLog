@@ -1,4 +1,4 @@
-# InternLog — Track Your Internship Journey
+# InternLog — Every internship application, in one place
 
 > **Track. Apply. Grow.**  
 > A clean, responsive internship tracking web application designed for students and college placement coordinators.
@@ -8,36 +8,36 @@
 
 ---
 
-## 🌟 Overview
+## Overview
 
-**InternLog** replaces disorganized spreadsheets and missed deadlines with an internship-first management system. Students can monitor every stage of their recruitment process from initial application to final offer letter, complete with interview dates, stipends, notes, and instant CSV export for placement compliance.
+**InternLog** replaces disorganized spreadsheets and missed deadlines with an internship-first management system. Students can monitor every stage of their recruitment process from initial application to final offer letter, complete with interview dates, stipends, notes, and CSV export for placement compliance.
 
 ---
 
-## 🔑 Getting Access
+## Getting Access
 
 Create a new account from the [Registration Page](https://clashlex.github.io/InternLog/user/register.html), then sign in at the [Student Portal](https://clashlex.github.io/InternLog/user/login.html). The app starts with no prebuilt profiles or records — every entry is created by its owner.
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 🎓 Student Workspace
-- **Personal Dashboard**: Live metric counters, color-coded status breakdown, upcoming interview alerts, and recent application log.
+### Student Workspace
+- **Personal Dashboard**: Live counts, status breakdown, upcoming interviews, and recent application log.
 - **Application Tracker**: Add, edit, view, and delete internship applications with fields for company, role, location, internship mode (On-site/Hybrid/Remote), dates, stipend, URL, and interview notes.
-- **Search & Filter**: Instant client-side search across company names, roles, locations, and status categories.
+- **Search & Filter**: Search that filters as you type across company names, roles, locations, and status categories.
 - **CSV Data Export**: One-click RFC 4180 compliant CSV export ready for college placement cell record submissions.
-- **Account & Security**: Profile editor with college/course info, password manager, and persistent session memory.
+- **Account & Security**: Profile editor with college/course info, password change, and optional stay-signed-in.
 
-### 🎨 Design & Accessibility
-- **Modern Design System**: Instrument Serif voice with Helvetica metadata, warm editorial palette, frosted-glass surfaces, and status color coding.
+### Design & Accessibility
+- **Modern Design System**: Instrument Serif voice with Helvetica metadata, high-contrast blue palette, clean cards and tables, and status color coding.
 - **Mobile Responsive**: Adaptive grid layouts with collapsible sidebar drawer and mobile hamburger navigation on the landing page.
-- **Accessible & Clean**: ARIA landmarks, modal dialog focus traps, ESC-key dismissals, and high-contrast focus rings.
+- **Accessible & Clean**: Semantic landmarks, keyboard dismissal with ESC, visible focus states, and readable contrast.
 - **Zero-Dependency Core**: Pure Vanilla JavaScript and CSS — zero bloated dependencies or heavy build processes.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```text
 InternLog/
@@ -68,7 +68,7 @@ InternLog/
 
 ---
 
-## 🔌 Backend Roadmap (Java / Spring Boot)
+## Backend Roadmap (Java / Spring Boot)
 
 The data layer in `js/script.js` has been explicitly designed to mirror RESTful API endpoints:
 
@@ -87,6 +87,6 @@ Replacing the local storage handlers with `fetch()` requires zero changes to the
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License — feel free to customize and expand for your academic or personal use.
