@@ -438,6 +438,28 @@
     });
   }
 
+  /* Direct visits to the console login (typed address, bookmark, link)
+     with no fresh tap-through pass see a plain not-found page instead.
+     Signed-in console sessions are unaffected. */
+  function initConsoleGate() {
+    if (!document.getElementById("adminLoginForm")) return;
+    var s = getSession();
+    if (s && s.role === "admin") return;
+    if (hasConsolePass()) return;
+    document.title = "Page not found — InternLog";
+    document.body.innerHTML =
+      '<main style="min-height:100vh;display:flex;align-items:center;justify-content:center;' +
+      'font-family:\'Helvetica Neue\',Helvetica,Arial,sans-serif;background:#f8fafc;color:#0f172a;' +
+      'padding:24px;text-align:center;">' +
+      '<div style="max-width:560px;">' +
+      '<div style="font-family:Georgia,serif;font-style:italic;font-size:88px;line-height:1;">404</div>' +
+      "<h1 style=\"font-family:Georgia,serif;font-weight:400;font-size:28px;margin:12px 0 8px;\">This page doesn't exist.</h1>" +
+      '<p style="color:#64748b;font-size:15px;margin:0 0 24px;">The address may be mistyped, or the page may have moved.</p>' +
+      '<p><a href="../index.html" style="display:inline-block;border-radius:8px;padding:10px 22px;' +
+      'font-size:14px;font-weight:600;text-decoration:none;background:#1a56d5;color:#fff;">Back to home</a></p>' +
+      "</div></main>";
+  }
+
   async function initAdminLogin() {
     var form = document.getElementById("adminLoginForm");
     if (!form) return;
@@ -461,6 +483,7 @@
 
       try {
         var session = await loginAdmin({ email: email.value.trim(), password: password.value });
+        clearConsolePass();
         setSession(session);
         showNotification("Welcome, Admin!", "success");
         setTimeout(function () { window.location.href = "dashboard.html"; }, 500);
@@ -1079,7 +1102,25 @@
      Tapping the InternLog logo 5 times within 3 seconds opens the
      restricted console login. Tap timestamps are kept in sessionStorage
      so rapid taps still count even if a tap navigates between pages.
+     A successful tap-through also stamps a short-lived pass (valid 10
+     minutes). Without that pass — e.g. someone typing the console
+     address manually — the login page disguises itself as a 404.
      There is intentionally no visible hint of this anywhere in the UI. */
+  var CONSOLE_PASS_KEY = "internlog_console_pass";
+  var CONSOLE_PASS_MS = 10 * 60 * 1000;
+
+  function stampConsolePass() {
+    try { sessionStorage.setItem(CONSOLE_PASS_KEY, String(Date.now())); } catch (e) {}
+  }
+  function hasConsolePass() {
+    try {
+      var t = Number(sessionStorage.getItem(CONSOLE_PASS_KEY) || 0);
+      return Date.now() - t < CONSOLE_PASS_MS;
+    } catch (e) { return false; }
+  }
+  function clearConsolePass() {
+    try { sessionStorage.removeItem(CONSOLE_PASS_KEY); } catch (e) {}
+  }
   function initSecretConsoleAccess() {
     var REQUIRED_TAPS = 5;
     var WINDOW_MS = 3000;
@@ -1106,6 +1147,7 @@
         if (taps.length >= REQUIRED_TAPS) {
           e.preventDefault();
           try { sessionStorage.removeItem(STORE_KEY); } catch (err) {}
+          stampConsolePass();
           window.location.href = resolveConsoleLogin();
         }
       });
@@ -1117,6 +1159,7 @@
     seedIfNeeded();
     initNavigation();
     initSecretConsoleAccess();
+    initConsoleGate();
     initUserLogin();
     initAdminLogin();
     initRegister();
