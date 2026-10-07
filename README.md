@@ -2,7 +2,9 @@
 
 > **Track. Discover. Apply. Grow.**
 >
-> A responsive internship management prototype for students, companies, and administrators, built for static deployment on GitHub Pages.
+> A responsive internship platform for students, companies, and administrators.
+> Static frontend deploys to GitHub Pages; optional Java + MySQL backend provides
+> shared persistence via REST.
 
 [![Deploy static content to Pages](https://github.com/ClashLex/InternLog/actions/workflows/static.yml/badge.svg)](https://github.com/ClashLex/InternLog/actions/workflows/static.yml)
 [![GitHub Pages](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-2563eb?style=flat&logo=github)](https://clashlex.github.io/InternLog/)
@@ -11,13 +13,18 @@
 
 ## Overview
 
-InternLog started as a student-side internship application tracker and has been extended into a three-role prototype:
+Three roles in one product:
 
-- **Students** can track their own applications and discover internship opportunities published on the platform.
-- **Companies** can create a company account, maintain a company profile, publish internship opportunities, review applicants, and update application status.
-- **Admins** can monitor users and companies, verify or reject company accounts, and approve, reject, or archive internship opportunities.
+- **Students** track manual applications, discover company-posted opportunities, save and apply, get follow-up nudges and job alerts, and export CSV records.
+- **Companies** register (pending review), maintain a profile, publish internships (`Draft` / `Pending Review`), review applicants, and update applicant status.
+- **Admins** monitor students and companies, verify/reject/suspend/delete companies, and approve/reject/archive/delete internships.
 
-The current version is intentionally designed for **GitHub Pages and prototype/demo use**. Data is stored in the browser with `localStorage`; there is no server-side database or production authentication yet.
+Two run modes:
+
+- **Prototype (no backend):** everything runs in the browser with `localStorage`. Works on GitHub Pages with zero servers.
+- **Backend (Java + MySQL):** `js/api.js` swaps the same `window.InternLog.*` calls to REST (`API_BASE + /api/...`) with automatic fallback to `localStorage` when the API is unreachable.
+
+See `BACKEND.md` for the API table and run guide, and `PROJECT_STRUCTURE.md` for a file-by-file reference.
 
 ---
 
@@ -30,14 +37,14 @@ Register / Login
       ↓
 Browse internship opportunities
       ↓
-View internship details
+View details → Save or Apply
       ↓
-Save or apply
+Track status → Follow-up nudges → Interview prep
       ↓
-Track application status
+Saved-search alerts → New matches on dashboard
 ```
 
-Students can continue using the original application tracker for internships they record manually, while opportunities created by companies use the shared prototype data layer.
+Manual tracker rows and board applies share the same application pipeline.
 
 ### Company workflow
 
@@ -50,9 +57,7 @@ Admin verifies company
    ↓
 Company login unlocked
    ↓
-Create internship
-   ↓
-Pending review
+Create internship (Draft / Pending Review)
    ↓
 Admin approves
    ↓
@@ -63,20 +68,16 @@ Students apply
 Company manages applicants
 ```
 
-Company accounts can be **Pending, Verified/Active, Rejected, or Suspended**. Internship opportunities can be **Draft, Pending Review, Published, Rejected, Expired, or Archived**.
+Company accounts: **Pending, Active/Verified, Rejected, Suspended**.
+Internships: **Draft, Pending Review, Published, Rejected, Expired, Suspended, Archived**.
+Editing a published opportunity resubmits it for review.
 
 ### Admin workflow
 
-The admin area provides a moderation layer for the prototype:
-
-- Monitor registered students and companies
-- Verify or reject company accounts
-- Suspend or restore companies
-- Delete company records
-- Review pending internship opportunities
-- Approve or reject opportunities
-- Archive published opportunities
-- Review application activity
+- Monitor students, companies, internships, applications
+- Verify/reject/suspend/restore/delete companies (deletes cascade)
+- Approve/reject/archive/delete internships (deletes cascade applications)
+- Review application activity and dashboard stats
 
 ---
 
@@ -84,49 +85,40 @@ The admin area provides a moderation layer for the prototype:
 
 ### Student workspace
 
-- Personal dashboard with application counts and recent activity
-- Add, edit, view, and delete manually tracked applications
-- Company-created internship discovery
-- Save internship opportunities
-- Apply to published opportunities
-- Track application status
-- Search and filter internship/application records
-- CSV export for existing application records
-- Profile and password management
-- Responsive mobile layout
-- Persistent light/dark theme preference
+- Personal dashboard with counts, status overview, recent activity
+- Manual application tracker (add/edit/view/delete, search, filter)
+- Opportunity board discovery + save + one-click apply
+- Gentle follow-ups (Applied 7+ days, Shortlisted 5+ days, interview prep/thanks, snooze)
+- Saved-search job alerts with new-match badges
+- Needs-follow-up filter + pill in the applications table
+- CSV export, profile and password management
+- Responsive mobile layout, persistent light/dark theme
 
 ### Company workspace
 
-- Company registration and login
-- Admin verification gate before company access
-- Company profile management
-- Company dashboard with internship and applicant overview
-- Create and edit internship opportunities
-- Draft support
-- Internship moderation state handling
-- Deadline validation and expiry handling
-- View applicants for company opportunities
-- Update applicant status through the recruitment flow
+- Registration with pending-verification gate
+- Profile management with duplicate-email guard
+- Dashboard with opportunity/applicant overview
+- Create/edit internships with draft support and deadline validation
+- Applicant review with status updates
+- Public board doubles as student discovery (no login required to browse)
 
 ### Admin console
 
-- Admin authentication
-- Global dashboard statistics
-- Student account management
-- Company verification and moderation
-- Internship approval workflow
-- Internship rejection/archive controls
-- Application monitoring
+- Global dashboard statistics + moderation feed
+- Student enable/disable/delete
+- Company verification and full lifecycle control
+- Internship approval workflow with full matrix (every state has Approve/Reject/Archive/Delete as appropriate)
+- Application monitoring with per-row status control and CSV export
 
 ### Design & implementation
 
-- Vanilla HTML, CSS, and JavaScript
-- Shared responsive design system in `css/style.css`
-- No framework or build step required
+- Vanilla HTML, CSS, JavaScript frontend; no frontend build step
+- Shared responsive design system in `css/style.css` (blue brand in both themes)
+- `js/script.js`: data layer, validation, moderation rules, page logic
+- `js/api.js`: backend adapter, same signatures over `fetch()`
+- Java 17 + Spring Boot 3 + MySQL backend in `backend/` (optional)
 - GitHub Pages compatible
-- Browser `localStorage` used as the prototype data layer
-- Client-side validation and state handling
 
 ---
 
@@ -134,96 +126,42 @@ The admin area provides a moderation layer for the prototype:
 
 ```text
 InternLog/
-├── .github/
-│   └── workflows/
-│       └── static.yml               # GitHub Pages deployment workflow
-│
-├── admin/
-│   ├── applications.html            # Application monitoring
-│   ├── dashboard.html               # Admin overview
-│   ├── internships.html             # Internship moderation
-│   ├── login.html                   # Admin authentication
-│   ├── profile.html                 # Admin profile settings
-│   └── users.html                   # Student + company moderation
-│
-├── company/
-│   ├── add-internship.html          # Create/edit internship opportunity
-│   ├── applicants.html              # Company applicant management
-│   ├── dashboard.html               # Company overview
-│   ├── internships.html             # Company opportunities management
-│   ├── login.html                   # Company authentication
-│   ├── profile.html                 # Company profile
-│   └── register.html                # Company registration
-│
-├── css/
-│   └── style.css                    # Shared design system and responsive layout
-│
+├── .github/workflows/static.yml   # Pages deploy (auto-enables Pages)
+├── admin/                         # 6 pages: dashboard, users, internships, applications, login, profile
+├── company/                       # 7 pages: dashboard, internships (dual-mode board), add-internship, applicants, profile, login, register
+├── user/                          # 7 pages: dashboard (stats + follow-ups + alerts), applications, add/edit, profile, login, register
+├── css/style.css                  # shared design system + dark mode
 ├── js/
-│   └── script.js                    # Data layer, authentication, workflows, validation and UI handlers
-│
-├── user/
-│   ├── add-application.html         # Add manual application
-│   ├── applications.html            # Student applications and CSV export
-│   ├── dashboard.html               # Student overview
-│   ├── edit-application.html        # Edit/delete application
-│   ├── login.html                   # Student authentication
-│   ├── profile.html                 # Student profile
-│   └── register.html                # Student registration
-│
-├── index.html                       # Landing page
-├── 404.html                         # Custom GitHub Pages not-found page
-└── README.md                        # Project documentation
+│   ├── script.js                  # localStorage data layer + page logic
+│   └── api.js                     # REST adapter (same signatures over fetch)
+├── backend/                       # Spring Boot + MySQL (optional)
+│   ├── pom.xml / Dockerfile / docker-compose.yml
+│   └── src/main/java/com/internlog/
+│       ├── model/ / repository/ / dto/
+│       ├── service/ (+ impl) / controller/
+│       └── security/ / exception/
+├── index.html / 404.html
+├── README.md                      # this file
+├── BACKEND.md                     # API table + local/hosted run guide
+└── PROJECT_STRUCTURE.md           # file-by-file reference
 ```
 
 ---
 
-## Data Model (Prototype)
+## Data Model
 
-The browser-side data model separates the major entities used by the three roles.
-
-```text
-Users
-  └── Students
-
-Companies
-  └── Internships
-          └── Applications
-                └── Students
-```
-
-Typical company fields include:
+Frontend prototype (`localStorage`) and backend (MySQL) share the same entities:
 
 ```text
-id
-name
-email
-password
-website
-description
-logo
-status
-verified
-createdAt
+Users (students)
+Companies → Internships → Applications → Users
+SavedSearches → Users
 ```
 
-Typical internship fields include:
-
-```text
-id
-companyId
-title
-description
-skills
-location
-type
-stipend
-deadline
-positions
-status
-createdAt
-```
-
-Applications reference both the student and the internship so that the company can see applicants without mixing company-created opportunities with the older manually tracked student records.
+Backend tables: `users`, `companies`, `internships` (FK → companies),
+`applications` (FKs → users/internships/companies), `saved_searches` (FK → users).
+Passwords are BCrypt-hashed server-side; the browser prototype keeps its own
+local records per device.
 
 ---
 
@@ -233,77 +171,71 @@ Applications reference both the student and the internship so that the company c
 
 | State | Meaning |
 |---|---|
-| `Pending` | Registration submitted; waiting for admin review |
-| `Active` / `Verified` | Company can access its workspace |
+| `Pending` | Waiting for admin review |
+| `Active` / `Verified` | Can access the company workspace |
 | `Rejected` | Registration denied |
-| `Suspended` | Company access is blocked by admin |
+| `Suspended` | Access blocked by admin |
 
 ### Internship
 
 | State | Meaning |
 |---|---|
-| `Draft` | Saved by company but not submitted for publication |
+| `Draft` | Saved by company, not submitted |
 | `Pending Review` | Waiting for admin approval |
-| `Published` | Visible to eligible students |
+| `Published` | Visible to students |
 | `Rejected` | Publication denied |
-| `Expired` | Application deadline has passed |
-| `Archived` | Removed from active company listings |
-
-Editing an already published opportunity sends it back through the review flow in the prototype.
-
----
-
-## Running Locally
-
-No build process is required.
-
-1. Clone or download the repository.
-2. Open `index.html` in a browser, or serve the folder with a simple static server.
-3. Use the student, company, and admin pages from the navigation/known routes.
-
-For GitHub Pages, push the repository and let the included workflow deploy the static files.
+| `Expired` | Deadline passed |
+| `Suspended` | Removed by company moderation |
+| `Archived` | Removed from active listings |
 
 ---
 
-## GitHub Pages / Prototype Limitations
+## Running
 
-This project is **not a production authentication system**.
+### Frontend only (no backend)
 
-Because it runs entirely as a static site:
+1. Clone the repository.
+2. Open `index.html` directly, or serve the folder:
+   `python -m http.server 5500` → `http://localhost:5500`
+3. Use the student, company, and admin pages from the navigation.
 
-- Account records are stored in the browser's `localStorage`.
-- Different devices/browsers do not share the same data.
-- Client-side credentials and moderation logic are not suitable for production security.
-- There is no server-side authorization boundary.
-- There is no real email verification, password reset, file upload backend, or persistent database.
+Push to `main` to deploy via the included Pages workflow (Settings → Pages → Source: GitHub Actions).
 
-This architecture is intentional for the current prototype stage. A production version should replace the local data layer with a real backend, secure authentication, server-side authorization, and a persistent database.
+### With backend (local)
+
+Requires Java 17 + Docker (or a local MySQL with an `internlog` database).
+
+```bash
+docker compose -f backend/docker-compose.yml up -d mysql
+cd backend && ./mvnw spring-boot:run
+# API → http://localhost:8080, docs → http://localhost:8080/swagger-ui.html
+```
+
+Frontend connects automatically (`js/api.js` defaults to `http://localhost:8080`,
+backend primary with `localStorage` fallback). knobs in localStorage:
+`internlog_use_api` (`1`/`0`), `internlog_api_base`, `internlog_api_token` (auto).
+
+### With backend (hosted)
+
+- Build the jar (`mvn -DskipTests package`) and run `java -jar app.jar` on
+  Render/Railway/Fly with `DB_URL`, `DB_USER`, `DB_PASS`, `CORS_ORIGINS`, `JWT_SECRET` set.
+- Use a managed MySQL add-on for the database.
+- Point `internlog_api_base` at the HTTPS API URL (Pages requires HTTPS APIs).
+
+Full endpoint table and verification steps: `BACKEND.md`.
 
 ---
 
-## Future Backend Roadmap
+## Security Notes
 
-A future backend can map the prototype data layer to REST or similar APIs.
+This project ships as a prototype:
 
-| Prototype capability | Example future endpoint | Purpose |
-|---|---|---|
-| Student login | `POST /api/auth/login` | Authenticate users |
-| Student registration | `POST /api/auth/register` | Create student account |
-| Company registration | `POST /api/companies/register` | Submit company for review |
-| Company verification | `PATCH /api/companies/{id}/status` | Admin moderation |
-| Internship creation | `POST /api/internships` | Create opportunity |
-| Internship moderation | `PATCH /api/internships/{id}/status` | Approve/reject/archive |
-| Internship listing | `GET /api/internships` | Public opportunity discovery |
-| Application creation | `POST /api/internships/{id}/applications` | Apply to an opportunity |
-| Company applicants | `GET /api/internships/{id}/applications` | Review applicants |
-| Application status | `PATCH /api/applications/{id}` | Update recruitment status |
-| Student applications | `GET /api/applications?user={id}` | Fetch a student's applications |
-| Admin users | `GET /api/users` | Admin monitoring |
-
-A Java/Spring Boot, Node.js, Supabase, or similar backend can replace the browser storage layer without requiring the overall product model to change.
+- Browser-only mode stores records per device/browser and has no server-side authorization boundary.
+- Admin access in the static frontend is a demo gate; harden with real server-side roles before any production use.
+- When running the backend, set strong unique values for all credentials and secrets via environment variables — never commit them. Passwords are hashed with BCrypt; rotate tokens and secrets regularly.
 
 ---
 
 ## License
 
-This project is licensed under the MIT License. Customize and extend it for academic, portfolio, or prototype use.
+MIT License. Customize and extend for academic, portfolio, or prototype use.
