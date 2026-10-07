@@ -1945,17 +1945,13 @@
     }
   }
 
-  /* ---------------- Pill Nav hover/active (vanilla React-Bits port) ----------------
-     .pill contains .hover-circle (expanding dot) + .label-stack
-     (.pill-label slides up, .pill-label-hover slides in). Skipped entirely
-     with prefers-reduced-motion — CSS :hover colors still apply. */
+  /* ---------------- Pill Nav active state ----------------
+     Hover animation is CSS-only (see style.css). JS only sets
+     aria-current / .is-active and never touches transforms —
+     that split is what fixes the Register flicker. */
   function initPillNav() {
     var containers = document.querySelectorAll("[data-pill-nav]");
     if (!containers.length) return;
-    var reduceMotion = false;
-    try {
-      reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    } catch (e) {}
     // Active pill follows current page (hash links keep hardcoded Home active).
     try {
       var file = (window.location.pathname.replace(/\\/g, "/").split("/").pop() || "index.html").split("?")[0] || "index.html";
@@ -1973,55 +1969,6 @@
         }
       });
     } catch (e) {}
-    if (reduceMotion) return;
-    Array.prototype.forEach.call(containers, function (root) {
-      var pills = root.querySelectorAll(".pill");
-      Array.prototype.forEach.call(pills, function (pill) {
-        var circle = pill.querySelector(".hover-circle");
-        var label = pill.querySelector(".pill-label");
-        var labelHover = pill.querySelector(".pill-label-hover");
-        if (!circle || !label || !labelHover) return;
-        circle.style.transform = "translate(-50%, 0) scale(0)";
-        circle.style.transition = "transform .35s cubic-bezier(.22,.61,.36,1)";
-        label.style.transition = "transform .35s cubic-bezier(.22,.61,.36,1)";
-        labelHover.style.transition = "transform .35s cubic-bezier(.22,.61,.36,1), opacity .25s ease";
-        labelHover.style.transform = "translateY(100%)";
-        labelHover.style.opacity = "0";
-        function sizeCircle() {
-          var r = pill.getBoundingClientRect();
-          var d = Math.max(r.width, r.height) * 2.4;
-          circle.style.width = d + "px";
-          circle.style.height = d + "px";
-        }
-        sizeCircle();
-        pill.addEventListener("mouseenter", function () {
-          sizeCircle();
-          circle.style.transform = "translate(-50%, 50%) scale(1)";
-          label.style.transform = "translateY(-100%)";
-          labelHover.style.transform = "translateY(0)";
-          labelHover.style.opacity = "1";
-        });
-        pill.addEventListener("mouseleave", function () {
-          circle.style.transform = "translate(-50%, 0) scale(0)";
-          label.style.transform = "translateY(0)";
-          labelHover.style.transform = "translateY(100%)";
-          labelHover.style.opacity = "0";
-        });
-        pill.addEventListener("focusin", function () {
-          sizeCircle();
-          circle.style.transform = "translate(-50%, 50%) scale(1)";
-          label.style.transform = "translateY(-100%)";
-          labelHover.style.transform = "translateY(0)";
-          labelHover.style.opacity = "1";
-        });
-        pill.addEventListener("focusout", function () {
-          circle.style.transform = "translate(-50%, 0) scale(0)";
-          label.style.transform = "translateY(0)";
-          labelHover.style.transform = "translateY(100%)";
-          labelHover.style.opacity = "0";
-        });
-      });
-    });
   }
 
   function initSecretConsoleAccess() {
