@@ -910,6 +910,13 @@ table strong { font-family: var(--ff-sans); font-weight: 700; font-size: 14px; }
   display: flex;
   align-items: center;
   min-width: 0;
+  /* Vars live on the container so BOTH nav (button) and its sibling
+     .mobile-menu-popover inherit them. Previously they were only on
+     .pill-nav, leaving the popover on fallbacks = white text on white. */
+  --base: #000000;
+  --pill-bg: #ffffff;
+  --pill-text: #000000;
+  --hover-text: #ffffff;
 }
 .nav-bar--pill .pill-nav {
   --nav-h: 44px;
@@ -1057,6 +1064,7 @@ table strong { font-family: var(--ff-sans); font-weight: 700; font-size: 14px; }
   right: 0;
   min-width: min(320px, 80vw);
   padding: 3px;
+  background: var(--base);
   transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
   transform: translateY(-6px) scale(0.98);
 }
@@ -1134,6 +1142,15 @@ table strong { font-family: var(--ff-sans); font-weight: 700; font-size: 14px; }
 :root[data-theme="dark"] .nav-bar--pill .pill--cta:hover {
   background: #ffffff;
   color: #111418;
+}
+:root[data-theme="dark"] .nav-bar--pill .pill-nav-container {
+  --base: #000000;
+  --pill-bg: #1c1c1c;
+  --pill-text: #e5e5e5;
+  --hover-text: #ffffff;
+}
+:root[data-theme="dark"] .nav-bar--pill .hamburger-line {
+  background: #ffffff;
 }
 :root[data-theme="dark"] .nav-bar--pill .mobile-menu-button {
   background: #000;
