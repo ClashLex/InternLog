@@ -467,12 +467,17 @@
     if (path.indexOf("/company/") === -1) return;
     var file = (path.split("/").pop() || "").toLowerCase().split("?")[0];
     if (file === "login.html" || file === "register.html") return;
-    // Public opportunity board: company/internships.html supports publicMode()
-    // for students and visitors, so it must not force a company login here.
-    // Company-only actions inside that page still require a company session.
-    if (file === "internships.html") return;
+    // company/internships.html is company-only; students and visitors use
+    // user/internships.html (which redirects here only with a company session).
     var ctx = companySessionContext();
-    if (!ctx) { window.location.href = "login.html"; return; }
+    if (!ctx) {
+      var sess = getSession();
+      // Backend mode: a company session may exist without a localStorage
+      // record. Don't nuke it here — the page boot resolves via the API.
+      if (sess && sess.role === "company") return;
+      window.location.href = "login.html";
+      return;
+    }
     if (!companyIsApproved(ctx.company)) {
       clearSession();
       window.location.href = "login.html?pending=1";
@@ -1132,7 +1137,7 @@
 
       if (!ok) return;
       try {
-        var session = await loginUser({ email: email.value.trim(), password: password.value });
+        var session = await window.InternLog.loginUser({ email: email.value.trim(), password: password.value });
         if (session.role !== "user") {
           throw new Error("Invalid email or password");
         }
@@ -1254,7 +1259,7 @@
       if (!ok) return;
 
       try {
-        var user = await registerUser({
+        var user = await window.InternLog.registerUser({
           name: name.value.trim(), email: email.value.trim(), password: password.value,
           college: college.value.trim(), course: course.value.trim(), gradYear: gradYear.value
         });
@@ -1316,7 +1321,7 @@
       } else if (delBtn) {
         var d = delBtn.getAttribute("data-delete");
         if (!confirm("Delete this internship application? This cannot be undone.")) return;
-        await deleteApplication(Number(d));
+        await window.InternLog.deleteApplication(Number(d));
         showNotification("Application deleted", "success");
         if (onChange) onChange();
       }
@@ -1324,9 +1329,9 @@
   }
 
   async function openAppModal(id) {
-    var a = await getApplicationById(id);
+    var a = await window.InternLog.getApplicationById(id);
     if (!a) { showNotification("Application not found", "error"); return; }
-    var users = await getUsers();
+    var users = await window.InternLog.getUsers();
     var owner = users.find(function (u) { return String(u.id) === String(a.userId); });
     var backdrop = document.getElementById("modalBackdrop");
     var body = document.getElementById("modalBody");
@@ -1369,7 +1374,7 @@
     var s = requireAuth("user");
     if (!s) return;
 
-    var apps = await getApplicationsByUser(s.userId);
+    var apps = await window.InternLog.getApplicationsByUser(s.userId);
     var stats = computeStats(apps);
     renderStatGrid(document.getElementById("userStats"), stats, ["total", "Applied", "Shortlisted", "Interview", "Selected", "Rejected"]);
     renderStatusOverview(document.getElementById("statusOverview"), stats);
@@ -1434,14 +1439,14 @@
       var pubJobs = allJobs.filter(function (j) { return j.status === "Published"; });
       var alerts = getMatchedAlerts(s.userId, pubJobs);
       if (!alerts.length) {
-        alertsEl.innerHTML = '<p class="muted">Save a search on the <a href="../company/internships.html">opportunity board</a> (e.g. “React, Remote”) and new matches will appear here.</p>';
+        alertsEl.innerHTML = '<p class="muted">Save a search on the <a href="internships.html">opportunity board</a> (e.g. “React, Remote”) and new matches will appear here.</p>';
       } else {
         alertsEl.innerHTML = alerts.map(function (al) {
           var label = (al.search.query || al.search.location || al.search.type || "All internships");
           var fresh = al.freshCount ? ' <span class="badge badge-selected">' + al.freshCount + " new</span>" : "";
           var sample = al.sample.length ? '<br><span class="muted">' + al.sample.map(function (j) { return esc(j.title) + " @ " + esc(j.company); }).join(" · ") + "</span>" : '<br><span class="muted">No matches yet — we will flag new posts here.</span>';
           return '<div class="mini-row"><span><strong>' + esc(label) + "</strong>" + fresh + sample + "</span>" +
-            '<span class="actions"><a class="link-btn" href="../company/internships.html">View</a>' +
+            '<span class="actions"><a class="link-btn" href="internships.html">View</a>' +
             '<button class="link-btn danger" data-unsave-search="' + al.search.id + '">Remove</button></span></div>';
         }).join("");
         Array.prototype.slice.call(alertsEl.querySelectorAll("[data-unsave-search]")).forEach(function (btn) {
@@ -1474,7 +1479,7 @@
     var currentFilteredApps = [];
 
     async function render() {
-      var apps = await getApplicationsByUser(s.userId);
+      var apps = await window.InternLog.getApplicationsByUser(s.userId);
       var q = (search.value || "").toLowerCase().trim();
       var st = statusFilter.value || "All";
       var followIds = {};
@@ -1575,7 +1580,7 @@
         showNotification("Please fix the highlighted fields.", "error");
         return;
       }
-      await addApplication(Object.assign({ userId: s.userId }, d));
+      await window.InternLog.addApplication(Object.assign({ userId: s.userId }, d));
       showNotification("Application added successfully!", "success");
       setTimeout(function () { window.location.href = "applications.html"; }, 500);
     });
@@ -1593,7 +1598,7 @@
       window.location.href = "applications.html";
       return;
     }
-    var app = await getApplicationById(id);
+    var app = await window.InternLog.getApplicationById(id);
     if (!app || String(app.userId) !== String(s.userId)) {
       showNotification("Application not found.", "error");
       window.location.href = "applications.html";
@@ -1612,7 +1617,7 @@
         showNotification("Please fix the highlighted fields.", "error");
         return;
       }
-      await updateApplication(app.id, d);
+      await window.InternLog.updateApplication(app.id, d);
       showNotification("Changes saved successfully", "success");
       setTimeout(function () { window.location.href = "applications.html"; }, 500);
     });
@@ -1621,7 +1626,7 @@
     if (del) {
       del.addEventListener("click", async function () {
         if (!confirm("Delete this application? This cannot be undone.")) return;
-        await deleteApplication(app.id);
+        await window.InternLog.deleteApplication(app.id);
         showNotification("Application deleted", "success");
         setTimeout(function () { window.location.href = "applications.html"; }, 400);
       });
@@ -1634,10 +1639,10 @@
     var s = requireAuth("user");
     if (!s) return;
 
-    var user = await getUserById(s.userId);
+    var user = await window.InternLog.getUserById(s.userId);
     if (!user) { clearSession(); window.location.href = "login.html"; return; }
 
-    var apps = await getApplicationsByUser(s.userId);
+    var apps = await window.InternLog.getApplicationsByUser(s.userId);
     var stats = computeStats(apps);
 
     document.getElementById("profileName").textContent = user.name;
@@ -1667,7 +1672,7 @@
       if (!courseVal) { showNotification("Course is required.", "error"); return; }
 
       var patch = { name: nameVal, college: collegeVal, course: courseVal, gradYear: gradVal };
-      var updated = await updateUser(user.id, patch);
+      var updated = await window.InternLog.updateUser(user.id, patch);
       setSession({ role: "user", userId: updated.id, name: updated.name, email: updated.email });
       showNotification("Profile updated successfully", "success");
       setTimeout(function () { window.location.reload(); }, 500);
@@ -1686,7 +1691,19 @@
         var err = passwordStrength(nw);
         if (err) { showNotification(err, "error"); return; }
 
-        await updateUser(user.id, { password: nw });
+        if (user.password) {
+          // Local-prototype account: verify + store directly.
+          if (cur !== user.password) { showNotification("Current password is incorrect.", "error"); return; }
+          await window.InternLog.updateUser(user.id, { password: nw });
+        } else {
+          // Backend account (no local password hash): verify server-side.
+          try {
+            await window.InternLog.changeUserPassword(user.id, cur, nw);
+          } catch (pwErr) {
+            showNotification((pwErr && pwErr.message) || "Could not change password.", "error");
+            return;
+          }
+        }
         showNotification("Password changed successfully", "success");
         pwForm.reset();
       });
@@ -1699,8 +1716,8 @@
     var s = requireAuth("admin");
     if (!s) return;
 
-    var users = await getUsers();
-    var apps = await getApplications();
+    var users = await window.InternLog.getUsers();
+    var apps = await window.InternLog.getApplications();
     var stats = computeStats(apps);
     var grid = document.getElementById("adminStats");
 
@@ -1742,8 +1759,8 @@
     var statusFilter = document.getElementById("userStatusFilter");
 
     async function render() {
-      var users = await getUsers();
-      var apps = await getApplications();
+      var users = await window.InternLog.getUsers();
+      var apps = await window.InternLog.getApplications();
       var counts = {};
       apps.forEach(function (a) { counts[a.userId] = (counts[a.userId] || 0) + 1; });
       var q = (search.value || "").toLowerCase().trim();
@@ -1773,14 +1790,14 @@
       var t = e.target.getAttribute && e.target.getAttribute("data-toggle-user");
       var d = e.target.getAttribute && e.target.getAttribute("data-del-user");
       if (t) {
-        var u = await getUserById(t);
+        var u = await window.InternLog.getUserById(t);
         if (!u) { showNotification("User not found", "error"); return; }
-        await updateUser(t, { status: u.status === "Active" ? "Disabled" : "Active" });
+        await window.InternLog.updateUser(t, { status: u.status === "Active" ? "Disabled" : "Active" });
         showNotification("User " + (u.status === "Active" ? "disabled" : "enabled"), "success");
         render();
       } else if (d) {
         if (!confirm("Delete this user and all their applications? This cannot be undone.")) return;
-        await deleteUser(d);
+        await window.InternLog.deleteUser(d);
         showNotification("User deleted", "success");
         render();
       }
@@ -1803,11 +1820,11 @@
     var usersMap = {};
 
     async function render() {
-      var users = await getUsers();
+      var users = await window.InternLog.getUsers();
       usersMap = {};
       users.forEach(function (u) { usersMap[u.id] = u; });
 
-      var apps = await getApplications();
+      var apps = await window.InternLog.getApplications();
       var q = (search.value || "").toLowerCase().trim();
       var st = statusFilter.value || "All";
 
@@ -1849,7 +1866,7 @@
       } else if (delBtn) {
         var d = delBtn.getAttribute("data-delete");
         if (!confirm("Delete this application? This cannot be undone.")) return;
-        await deleteApplication(Number(d));
+        await window.InternLog.deleteApplication(Number(d));
         showNotification("Application deleted", "success");
         render();
       }
@@ -1858,7 +1875,7 @@
     tbody.addEventListener("change", async function (e) {
       var id = e.target.getAttribute && e.target.getAttribute("data-status-for");
       if (id) {
-        await updateApplication(Number(id), { status: e.target.value });
+        await window.InternLog.updateApplication(Number(id), { status: e.target.value });
         showNotification("Status updated to " + e.target.value, "success");
         render();
       }
@@ -1969,6 +1986,94 @@
         }
       });
     } catch (e) {}
+    // Scrollspy (landing only): move the dot as sections pass under the header.
+    // Without this the dot sat on Home forever since hash pills were skipped above.
+    try {
+      var spyLinks = {};
+      document.querySelectorAll("[data-pill-nav] .pill").forEach(function (a) {
+        var href = a.getAttribute("href") || "";
+        if (href.charAt(0) === "#") spyLinks[href] = a;
+      });
+      var spyIds = ["#about", "#features", "#how", "#get-started"];
+      var spyTargets = spyIds.map(function (sel) {
+        try { return document.querySelector(sel); } catch (err) { return null; }
+      }).filter(Boolean);
+      var homePill = document.querySelector('[data-pill-nav] .pill[href="index.html"]');
+      if (spyTargets.length && homePill && "IntersectionObserver" in window) {
+        var spyCurrent = null;
+        var reduceSpy = false;
+        try { reduceSpy = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (err) {}
+        function setActivePill(pill) {
+          if (spyCurrent === pill) return;
+          spyCurrent = pill;
+          document.querySelectorAll("[data-pill-nav] .pill.is-active").forEach(function (el) {
+            el.classList.remove("is-active");
+            el.removeAttribute("aria-current");
+          });
+          document.querySelectorAll(".mobile-menu-link[aria-current]").forEach(function (el) {
+            el.removeAttribute("aria-current");
+          });
+          if (pill) {
+            pill.classList.add("is-active");
+            pill.setAttribute("aria-current", "page");
+            var href = pill.getAttribute("href");
+            document.querySelectorAll('.mobile-menu-link[href="' + href + '"]').forEach(function (m) {
+              m.setAttribute("aria-current", "page");
+            });
+          }
+        }
+        var spy = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) {
+            if (en.isIntersecting) {
+              var link = spyLinks["#" + en.target.id];
+              if (link) setActivePill(link);
+            }
+          });
+        }, { rootMargin: "-40% 0px -55% 0px" });
+        spyTargets.forEach(function (t) { spy.observe(t); });
+        var spyT = null;
+        window.addEventListener("scroll", function () {
+          if (spyT) return;
+          spyT = setTimeout(function () {
+            spyT = null;
+            if (window.scrollY < 160) setActivePill(homePill);
+          }, 120);
+        }, { passive: true });
+        if (!reduceSpy && window.scrollY < 160) setActivePill(homePill);
+      }
+    } catch (e) {}
+  }
+
+  /* ---------------- Magic bento spotlight (landing features) ----------------
+     Tracks the cursor per card and feeds --glow-x/--glow-y/--glow-intensity
+     to the border-glow layer. Skipped with prefers-reduced-motion.
+     Pure decoration — no storage, no network, no backend contact. */
+  function initMagicBento() {
+    var cards = document.querySelectorAll(".bento .magic-bento-card--border-glow");
+    if (!cards.length) return;
+    var reduceMotion = false;
+    try {
+      reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    } catch (e) {}
+    if (reduceMotion) return;
+    if (window.matchMedia && !window.matchMedia("(hover: hover)").matches) return;
+    Array.prototype.forEach.call(cards, function (card) {
+      card.addEventListener("mousemove", function (e) {
+        var r = card.getBoundingClientRect();
+        card.style.setProperty("--glow-x", ((e.clientX - r.left) / Math.max(1, r.width) * 100).toFixed(1) + "%");
+        card.style.setProperty("--glow-y", ((e.clientY - r.top) / Math.max(1, r.height) * 100).toFixed(1) + "%");
+        card.style.setProperty("--glow-intensity", "1");
+      });
+      card.addEventListener("mouseleave", function () {
+        card.style.setProperty("--glow-intensity", "0");
+      });
+      card.addEventListener("focusin", function () {
+        card.style.setProperty("--glow-intensity", "0.6");
+      });
+      card.addEventListener("focusout", function () {
+        card.style.setProperty("--glow-intensity", "0");
+      });
+    });
   }
 
   function initSecretConsoleAccess() {
@@ -2242,6 +2347,7 @@
     initCompanyModerationControls();
     initNavigation();
     initPillNav();
+    initMagicBento();
     initThemeToggle();
     initSecretConsoleAccess();
     initConsoleGate();

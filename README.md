@@ -128,8 +128,8 @@ Editing a published opportunity resubmits it for review.
 InternLog/
 ├── .github/workflows/static.yml   # Pages deploy (auto-enables Pages)
 ├── admin/                         # 6 pages: dashboard, users, internships, applications, login, profile
-├── company/                       # 7 pages: dashboard, internships (dual-mode board), add-internship, applicants, profile, login, register
-├── user/                          # 7 pages: dashboard (stats + follow-ups + alerts), applications, add/edit, profile, login, register
+├── company/                       # 7 pages: dashboard, internships (company-only), add-internship, applicants, profile, login, register
+├── user/                          # 8 pages: dashboard (stats + follow-ups + alerts), internships (public board), applications, add/edit, profile, login, register
 ├── css/style.css                  # shared design system + dark mode
 ├── js/
 │   ├── script.js                  # localStorage data layer + page logic

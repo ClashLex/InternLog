@@ -43,7 +43,17 @@ public class UserController {
     if (body.get("course") != null) patch.setCourse(String.valueOf(body.get("course")));
     if (body.get("gradYear") != null) patch.setGradYear(String.valueOf(body.get("gradYear")));
     if (body.get("status") != null) patch.setStatus(String.valueOf(body.get("status")));
+    // Passwords never flow through the generic patch (BCrypt); use /password below.
     return users.toResponse(users.update(id, patch));
+  }
+
+  @PostMapping("/{id}/password")
+  public ResponseEntity<Map<String, String>> changePassword(
+      @PathVariable Long id, @RequestBody Map<String, Object> body) {
+    Object cur = body.get("currentPassword");
+    Object next = body.get("newPassword");
+    users.changePassword(id, cur == null ? null : String.valueOf(cur), next == null ? null : String.valueOf(next));
+    return ResponseEntity.ok(Map.of("message", "Password changed"));
   }
 
   @DeleteMapping("/{id}")

@@ -23,7 +23,7 @@
         <section class="card"><div class="profile-head"><span class="profile-avatar" id="avatarBig">C</span><div><h2 id="profileName">Company</h2><p class="muted" id="profileMeta"></p></div></div></section>
         <div class="grid-2" style="margin-top:18px">
           <section class="card"><h3>Company Information</h3><form id="profileForm"><div class="form-group"><label for="name">Company Name *</label><input id="name" type="text" required></div><div class="form-group"><label for="email">Work Email *</label><input id="email" type="email" required></div><div class="form-group"><label for="website">Website</label><input id="website" type="url" placeholder="https://example.com"></div><div class="form-group"><label for="location">Location *</label><input id="location" type="text" required></div><div class="form-group"><label for="industry">Industry</label><input id="industry" type="text"></div><div class="form-group"><label for="description">Company Description</label><textarea id="description" placeholder="What does your company build or work on?"></textarea></div><button class="btn btn-sm" type="submit">Save Company Profile</button></form></section>
-          <section class="card"><h3>Account Settings</h3><p class="muted">Change the prototype company password stored in this browser.</p><form id="passwordForm" style="margin-top:16px"><div class="form-group"><label for="current">Current Password</label><input id="current" type="password" required></div><div class="form-group"><label for="next">New Password</label><input id="next" type="password" required></div><div class="form-group"><label for="confirm">Confirm New Password</label><input id="confirm" type="password" required></div><button class="btn btn-secondary btn-sm" type="submit">Change Password</button></form><hr style="border:0;border-top:1px solid var(--border);margin:22px 0"><div class="admin-note">Prototype account status: <strong id="status"></strong>. Before production, passwords should never be stored in localStorage.</div></section>
+          <section class="card"><h3>Account Settings</h3><p class="muted">Change the password for this company account.</p><form id="passwordForm" style="margin-top:16px"><div class="form-group"><label for="current">Current Password</label><input id="current" type="password" required></div><div class="form-group"><label for="next">New Password</label><input id="next" type="password" required></div><div class="form-group"><label for="confirm">Confirm New Password</label><input id="confirm" type="password" required></div><button class="btn btn-secondary btn-sm" type="submit">Change Password</button></form><hr style="border:0;border-top:1px solid var(--border);margin:22px 0"><div class="admin-note">Prototype account status: <strong id="status"></strong>. Before production, passwords should never be stored in localStorage.</div></section>
         </div>
       </main>
     </div>
@@ -31,12 +31,47 @@
   <script>
     (function(){
       "use strict";
-      var S="internlog_session",K="internlog_companies";
+      var S="internlog_session";
       function read(k,f){try{var v=JSON.parse(localStorage.getItem(k));return v==null?f:v;}catch(e){return f;}}
       function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
       function auth(){var s=read(S,null);if(!s||s.role!=="company"){window.location.href="login.html";return null;}return s;}
       function validEmail(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);}
-      document.addEventListener("DOMContentLoaded",function(){var session=auth();if(!session)return;var companies=read(K,[]),index=companies.findIndex(function(c){return String(c.id)===String(session.userId);});if(index<0){localStorage.removeItem(S);window.location.href="login.html";return;}var c=companies[index];function paint(){document.getElementById("companyNameChip").textContent=c.name;document.getElementById("companyEmailChip").textContent=c.email;var _initial=((c.name||"C").trim().charAt(0)||"C").toUpperCase();document.getElementById("avatar").textContent=_initial;document.getElementById("avatarBig").textContent=_initial;document.getElementById("profileName").textContent=c.name;document.getElementById("profileMeta").textContent=[c.industry,c.location].filter(Boolean).join(" · ")||"Company profile";document.getElementById("name").value=c.name||"";document.getElementById("email").value=c.email||"";document.getElementById("website").value=c.website||"";document.getElementById("location").value=c.location||"";document.getElementById("industry").value=c.industry||"";document.getElementById("description").value=c.description||"";document.getElementById("status").textContent=c.status||"Active";}paint();// Logout handled by shared js/script.js [data-logout] handler.document.getElementById("profileForm").addEventListener("submit",function(e){e.preventDefault();var name=document.getElementById("name").value.trim(),email=document.getElementById("email").value.trim(),website=document.getElementById("website").value.trim(),location=document.getElementById("location").value.trim();if(name.length<2||!validEmail(email)||!location){if(window.InternLog)window.InternLog.showNotification("Check the required company fields.","warning");return;}var _dup=companies.some(function(o,i){return i!==index&&String(o.email||"").toLowerCase()===email.toLowerCase();});if(_dup){if(window.InternLog)window.InternLog.showNotification("Another company already uses this email.","error");return;}if(website){try{var u=new URL(website);if(!/^https?:$/.test(u.protocol))throw 0;}catch(x){if(window.InternLog)window.InternLog.showNotification("Use a valid http(s) website URL.","warning");return;}}c.name=name;c.email=email;c.website=website;c.location=location;c.industry=document.getElementById("industry").value.trim();c.description=document.getElementById("description").value.trim();companies[index]=c;write(K,companies);write(S,{role:"company",userId:c.id,name:c.name,email:c.email});paint();if(window.InternLog)window.InternLog.showNotification("Company profile saved.","success");});document.getElementById("passwordForm").addEventListener("submit",function(e){e.preventDefault();var cur=document.getElementById("current").value,next=document.getElementById("next").value,confirm=document.getElementById("confirm").value;if(cur!==c.password){if(window.InternLog)window.InternLog.showNotification("Current password is incorrect.","error");return;}if(next.length<8||!/[A-Za-z]/.test(next)||!/[0-9]/.test(next)){if(window.InternLog)window.InternLog.showNotification("New password must be 8+ characters with letters and numbers.","warning");return;}if(next!==confirm){if(window.InternLog)window.InternLog.showNotification("New passwords do not match.","warning");return;}c.password=next;companies[index]=c;write(K,companies);document.getElementById("passwordForm").reset();if(window.InternLog)window.InternLog.showNotification("Password changed.","success");});});
+      function notify(msg,type){if(window.InternLog)window.InternLog.showNotification(msg,type||"info");}
+      document.addEventListener("DOMContentLoaded",async function(){
+        var session=auth();if(!session)return;
+        var c=null;
+        try{c=await window.InternLog.getCompanyById(session.userId);}catch(e){c=null;}
+        if(!c){try{localStorage.removeItem(S);}catch(x){}window.location.href="login.html";return;}
+        function paint(){document.getElementById("companyNameChip").textContent=c.name;document.getElementById("companyEmailChip").textContent=c.email;var _initial=((c.name||"C").trim().charAt(0)||"C").toUpperCase();document.getElementById("avatar").textContent=_initial;document.getElementById("avatarBig").textContent=_initial;document.getElementById("profileName").textContent=c.name;document.getElementById("profileMeta").textContent=[c.industry,c.location].filter(Boolean).join(" · ")||"Company profile";document.getElementById("name").value=c.name||"";document.getElementById("email").value=c.email||"";document.getElementById("website").value=c.website||"";document.getElementById("location").value=c.location||"";document.getElementById("industry").value=c.industry||"";document.getElementById("description").value=c.description||"";document.getElementById("status").textContent=(c.status==="Active"&&c.verified===false)?"Pending":(c.status||"Active");}
+        paint();// Logout handled by shared js/script.js [data-logout] handler.
+        document.getElementById("profileForm").addEventListener("submit",async function(e){
+          e.preventDefault();
+          var name=document.getElementById("name").value.trim(),email=document.getElementById("email").value.trim(),website=document.getElementById("website").value.trim(),location=document.getElementById("location").value.trim();
+          if(name.length<2||!validEmail(email)||!location){notify("Check the required company fields.","warning");return;}
+          if(website){try{var u=new URL(website);if(!/^https?:$/.test(u.protocol))throw 0;}catch(x){notify("Use a valid http(s) website URL.","warning");return;}}
+          try{
+            c=await window.InternLog.updateCompany(c.id,{name:name,email:email,website:website,location:location,industry:document.getElementById("industry").value.trim(),description:document.getElementById("description").value.trim()});
+          }catch(err){notify((err&&err.message)||"Could not save company profile.","error");return;}
+          write(S,{role:"company",userId:c.id,name:c.name,email:c.email});
+          paint();notify("Company profile saved.","success");
+        });
+        document.getElementById("passwordForm").addEventListener("submit",async function(e){
+          e.preventDefault();
+          var cur=document.getElementById("current").value,next=document.getElementById("next").value,confirm=document.getElementById("confirm").value;
+          if(next.length<8||!/[A-Za-z]/.test(next)||!/[0-9]/.test(next)){notify("New password must be 8+ characters with letters and numbers.","warning");return;}
+          if(next!==confirm){notify("New passwords do not match.","warning");return;}
+          try{
+            if(c.password){
+              if(cur!==c.password){notify("Current password is incorrect.","error");return;}
+              c=await window.InternLog.updateCompany(c.id,{password:next});
+            }else{
+              await window.InternLog.changeCompanyPassword(c.id,cur,next);
+              c=await window.InternLog.getCompanyById(c.id);
+            }
+          }catch(err){notify((err&&err.message)||"Could not change password.","error");return;}
+          document.getElementById("passwordForm").reset();notify("Password changed.","success");
+        });
+      });
     }());
   </script>
 </body>

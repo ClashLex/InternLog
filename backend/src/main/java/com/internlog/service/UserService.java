@@ -10,5 +10,7 @@ public interface UserService {
   List<User> list();
   User update(Long id, User patch);
   void delete(Long id);
+  /** Verify current password (BCrypt) then store the new one hashed. */
+  void changePassword(Long id, String currentRaw, String newRaw);
   UserResponse toResponse(User user);
 }

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browse Internships — InternLog</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/script.js" defer></script>
+  <script src="../js/api.js" defer></script>
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar" aria-label="Student navigation">
+      <a class="brand" href="../index.html"><span class="brand-mark">IL</span><span>InternLog</span></a>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="applications.html">My Applications</a>
+        <a class="active" href="internships.html" aria-current="page">Browse Internships</a>
+        <a href="add-application.html">Add Application</a>
+        <a href="profile.html">Profile</a>
+      </nav>
+      <div class="side-foot"><nav><a href="../index.html" data-logout>Logout</a></nav></div>
+    </aside>
+    <div class="main">
+      <header class="topbar"><button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button><h1>Discover Internships</h1><div class="spacer"></div><div class="user-chip" id="studentChip"><span class="avatar" data-avatar>U</span><span><strong data-user-name>Student</strong><br><span class="muted" data-user-email></span></span></div></header>
+      <main class="content">
+        <div><h2 style="margin:0 0 6px">Internship Opportunities</h2><p class="muted" style="margin:0">Browse published internships and apply directly. No login needed to look around.</p></div>
+        <div class="toolbar"><input class="search-input" type="search" id="search" placeholder="Search internships, skills, or locations" aria-label="Search internships"><select id="typeFilter" aria-label="Filter by type"><option value="all">All types</option><option>On-site</option><option>Remote</option><option>Hybrid</option></select><button class="btn btn-secondary btn-sm" id="saveSearchBtn" style="display:none" title="Save current search as an alert">Save search</button></div>
+        <div id="alertsPanel" class="card" style="display:none;margin-bottom:16px"><h3 style="margin:0 0 4px">Your job alerts</h3><p class="muted" style="margin:0 0 10px">New Published matches appear on your dashboard.</p><div id="alertsList"></div></div>
+        <div id="cards" class="grid-2"></div>
+      </main>
+    </div>
+  </div>
+  <div class="modal-backdrop" id="jobModal" role="dialog" aria-modal="true" aria-label="Internship details"><div class="modal"><div class="modal-header"><h3 id="modalTitle">Internship</h3><button class="modal-close-icon" id="closeModal" aria-label="Close dialog">&times;</button></div><div id="modalBody"></div></div></div>
+  <script>
+    (function(){
+      "use strict";
+      var SESSION="internlog_session", USERS="internlog_users", COMPANY="internlog_companies", JOBS="internlog_internships", APPS="internlog_applications", SAVED="internlog_saved_internships", SEARCHES="internlog_saved_searches";
+      function read(k,f){try{var v=JSON.parse(localStorage.getItem(k));return v==null?f:v;}catch(e){return f;}}
+      function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+      function esc(s){return String(s==null?"":s).replace(/[&<>\"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];});}
+      function fmtDate(v){if(!v)return"—";var p=String(v).split("-");return p.length===3?new Date(Number(p[0]),Number(p[1])-1,Number(p[2])).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}):esc(v);}
+      function currentStudent(){var s=read(SESSION,null);if(!s||s.role!=="user")return null;return s;}
+      function norm(j){j=j||{};return{ id:j.id, companyId:j.companyId, company:j.company||"", title:j.title||"", location:j.location||"", internshipType:j.internshipType||j.type||"On-site", stipend:Number(j.stipend)||0, positions:Number(j.positions)||1, deadline:j.deadline||"", skills:Array.isArray(j.skills)?j.skills:[], description:j.description||"", education:j.education||"", applyUrl:j.applyUrl||"", status:j.status||"Published", createdAt:j.createdAt||"" };}
+      async function getBoard(){
+        try{
+          if(window.InternLog&&window.InternLog.getPublicInternships){
+            var rows=await window.InternLog.getPublicInternships();
+            if(Array.isArray(rows))return rows.map(norm);
+          }
+        }catch(e){}
+        return read(JOBS,[]).filter(function(j){return j.status==="Published";}).map(norm);
+      }
+      function openModal(job){
+        var modal=document.getElementById("jobModal"), body=document.getElementById("modalBody");
+        document.getElementById("modalTitle").textContent=job.title||"Internship";
+        var skills=(job.skills||[]).map(esc).join(", ")||"Not specified";
+        var stipend=job.stipend?"₹"+Number(job.stipend).toLocaleString("en-IN")+" / month":"Unpaid / not specified";
+        var st=currentStudent();
+        body.innerHTML='<dl><dt>Company</dt><dd>'+esc(job.company)+'</dd><dt>Location</dt><dd>'+esc(job.location)+'</dd><dt>Type</dt><dd>'+esc(job.internshipType)+'</dd><dt>Stipend</dt><dd>'+esc(stipend)+'</dd><dt>Positions</dt><dd>'+esc(job.positions||1)+'</dd><dt>Deadline</dt><dd>'+fmtDate(job.deadline)+'</dd><dt>Skills</dt><dd>'+skills+'</dd></dl><p>'+esc(job.description)+'</p>'+(job.education?'<p style="margin-top:10px"><strong>Preferred education:</strong> '+esc(job.education)+'</p>':'')+'<div class="modal-footer" style="margin-top:20px">'+(st?'<button class="btn btn-secondary btn-sm" id="saveJob">Save</button><button class="btn btn-sm" id="applyJob">Apply</button>':'<a class="btn btn-secondary btn-sm" href="login.html">Log in to save</a><a class="btn btn-sm" href="login.html">Log in to apply</a>')+'</div>';
+        modal.classList.add("open");
+        if(!st)return;
+        document.getElementById("saveJob").onclick=function(){
+          var saved=read(SAVED,[]).map(String);
+          if(saved.indexOf(String(job.id))===-1){saved.push(String(job.id));write(SAVED,saved);if(window.InternLog)window.InternLog.showNotification("Internship saved.","success");}
+          else if(window.InternLog)window.InternLog.showNotification("Already saved.","info");
+        };
+        document.getElementById("applyJob").onclick=function(){
+          var s=currentStudent();if(!s){window.location.href="login.html";return;}
+          var users=read(USERS,[]), user=users.find(function(u){return String(u.id)===String(s.userId);});
+          var apps=read(APPS,[]);
+          if(apps.some(function(a){return String(a.userId)===String(s.userId)&&String(a.internshipId)===String(job.id);})){if(window.InternLog)window.InternLog.showNotification("You already applied to this internship.","info");return;}
+          var id=apps.reduce(function(m,a){return Math.max(m,Number(a.id)||0);},0)+1;
+          apps.push({id:id,userId:s.userId,internshipId:job.id,companyId:job.companyId,company:job.company,role:job.title,location:job.location,internshipType:job.internshipType,appliedDate:new Date().toISOString().slice(0,10),deadline:job.deadline,stipend:job.stipend,status:"Applied",url:job.applyUrl||"",notes:"Applied from the InternLog opportunity board.",studentName:user?user.name:s.name,studentEmail:user?user.email:s.email});
+          write(APPS,apps);
+          try{if(window.InternLog&&window.InternLog._mirrorApply)window.InternLog._mirrorApply(s.userId,job.id);}catch(e){}
+          if(job.applyUrl){window.open(job.applyUrl,"_blank","noopener");}
+          document.getElementById("jobModal").classList.remove("open");
+          if(window.InternLog)window.InternLog.showNotification("Application recorded.","success");
+        };
+      }
+      function getSearches(uid){try{return read(SEARCHES,[]).filter(function(x){return String(x.userId)===String(uid);});}catch(e){return[];}}
+      function jobMatches(job,sq){
+        if(window.InternLog&&window.InternLog.matchesSearch){try{return window.InternLog.matchesSearch(job,sq);}catch(e){}}
+        var q=String(sq.query||"").toLowerCase().trim();
+        if(q){var hay=[job.title,job.company,job.location,job.description,(job.skills||[]).join(" ")].join(" ").toLowerCase();if(hay.indexOf(q)===-1)return false;}
+        return job.status==="Published";
+      }
+      var BOARD=[];
+      function renderAlerts(){
+        var panel=document.getElementById("alertsPanel"),list=document.getElementById("alertsList"),btn=document.getElementById("saveSearchBtn");
+        var st=currentStudent();
+        if(!st){if(btn)btn.style.display="none";if(panel)panel.style.display="none";return;}
+        if(btn)btn.style.display="";
+        var searches=getSearches(st.userId);
+        if(panel)panel.style.display="";
+        if(!list)return;
+        if(!searches.length){list.innerHTML='<p class="muted" style="margin:0">No alerts yet. Type a search above (e.g. “React”) and hit <strong>Save search</strong> — new matches will appear on your dashboard.</p>';return;}
+        list.innerHTML=searches.map(function(sq){var m=BOARD.filter(function(j){return jobMatches(j,sq);}).length;return '<div class="mini-row"><span><strong>'+esc(sq.query||"All internships")+'</strong><br><span class="muted">'+m+' match'+(m===1?"":"es")+' right now</span></span><span class="actions"><button class="link-btn danger" data-unsave="'+sq.id+'">Remove</button></span></div>';}).join("");
+        Array.prototype.slice.call(list.querySelectorAll("[data-unsave]")).forEach(function(b){b.addEventListener("click",function(){var allS=read(SEARCHES,[]).filter(function(x){return !(String(x.id)===String(b.getAttribute("data-unsave"))&&String(x.userId)===String(st.userId));});write(SEARCHES,allS);renderAlerts();if(window.InternLog)window.InternLog.showNotification("Alert removed","success");});});
+      }
+      async function render(){
+        var query=document.getElementById("search").value.trim().toLowerCase(), type=document.getElementById("typeFilter").value;
+        var all=BOARD.filter(function(j){
+          if(type!=="all"&&(j.internshipType||"")!==type)return false;
+          if(query)return [j.title,j.company,j.location,j.description,(j.skills||[]).join(" ")].join(" ").toLowerCase().indexOf(query)!==-1;
+          return true;
+        });
+        var wrap=document.getElementById("cards");
+        if(!all.length){wrap.innerHTML='<div class="empty" style="grid-column:1/-1"><h3>No published opportunities yet</h3><p>Company opportunities will appear here once they are published.</p></div>';return;}
+        wrap.innerHTML=all.sort(function(a,b){return String(b.createdAt).localeCompare(String(a.createdAt));}).map(function(j){
+          var stipend=j.stipend?"₹"+Number(j.stipend).toLocaleString("en-IN")+"/mo":"Stipend not specified";
+          return'<article class="card"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><h3>'+esc(j.title)+'</h3><p>'+esc(j.company)+' · '+esc(j.location)+'</p></div></div><p style="margin-top:10px">'+esc((j.description||"").length>170?(j.description||"").slice(0,167)+"…":(j.description||""))+'</p><div class="mini-row" style="margin-top:10px"><span>'+esc(stipend)+' · '+esc(j.internshipType)+'</span><span>Deadline '+fmtDate(j.deadline)+'</span></div><div class="actions" style="margin-top:10px"><button class="btn btn-sm" data-view="'+j.id+'">View</button></div></article>';
+        }).join("");
+        wrap.querySelectorAll("[data-view]").forEach(function(btn){btn.addEventListener("click",function(){var j=BOARD.find(function(x){return String(x.id)===String(btn.getAttribute("data-view"));});if(j)openModal(j);});});
+      }
+      document.addEventListener("DOMContentLoaded",async function(){
+        var st=currentStudent();
+        if(!st){
+          var chip=document.getElementById("studentChip");
+          if(chip)chip.innerHTML='<span class="muted">Browsing as guest</span><span class="actions"><a class="btn btn-secondary btn-sm" href="login.html">Login</a><a class="btn btn-sm" href="register.html">Register</a></span>';
+          var foot=document.querySelector("[data-logout]");
+          if(foot){foot.textContent="Back to Home";foot.removeAttribute("data-logout");foot.setAttribute("href","../index.html");}
+        }
+        BOARD=await getBoard();
+        var saveBtn=document.getElementById("saveSearchBtn");
+        if(saveBtn)saveBtn.addEventListener("click",function(){
+          var s=currentStudent();if(!s){window.location.href="login.html";return;}
+          var q=document.getElementById("search").value.trim();
+          if(!q){if(window.InternLog)window.InternLog.showNotification("Type a keyword first, then save it as an alert.","info");return;}
+          var allS=read(SEARCHES,[]);
+          if(allS.some(function(x){return String(x.userId)===String(s.userId)&&String(x.query||"").toLowerCase()===q.toLowerCase();})){if(window.InternLog)window.InternLog.showNotification("You already saved this search.","info");return;}
+          var nid=allS.reduce(function(m,x){return Math.max(m,Number(x.id)||0);},0)+1;
+          allS.push({id:nid,userId:s.userId,query:q,location:"",type:"",minStipend:0,createdAt:new Date().toISOString()});
+          write(SEARCHES,allS);renderAlerts();
+          if(window.InternLog)window.InternLog.showNotification("Search saved. New matches appear on your dashboard.","success");
+        });
+        document.getElementById("search").addEventListener("input",render);
+        document.getElementById("typeFilter").addEventListener("change",render);
+        document.getElementById("closeModal").addEventListener("click",function(){document.getElementById("jobModal").classList.remove("open");});
+        document.getElementById("jobModal").addEventListener("click",function(e){if(e.target===this)this.classList.remove("open");});
+        try{renderAlerts();}catch(e){}
+        try{
+          var s2=currentStudent();
+          if(s2){
+            var ids=BOARD.map(function(j){return String(j.id);});
+            if(window.InternLog&&window.InternLog.markInternshipsSeen)window.InternLog.markInternshipsSeen(s2.userId,ids);
+          }
+        }catch(e){}
+        render();
+      });
+    }());
+  </script>
+</body>
+</html>

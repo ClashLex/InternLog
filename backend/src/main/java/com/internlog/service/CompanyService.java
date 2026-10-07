@@ -11,5 +11,7 @@ public interface CompanyService {
   Company update(Long id, Company patch);
   Company setStatus(Long id, String status);
   void delete(Long id);
+  /** Verify current password (BCrypt) then store the new one hashed. */
+  void changePassword(Long id, String currentRaw, String newRaw);
   CompanyResponse toResponse(Company company, long internshipCount);
 }

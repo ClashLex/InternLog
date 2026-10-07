@@ -122,6 +122,7 @@ public class ApplicationServiceImpl implements ApplicationService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<Application> list(Long userId, String status, String query) {
     List<Application> all = userId != null ? applications.findByUserId(userId) : applications.findAll();
     if (status != null && !status.equalsIgnoreCase("all") && !status.equalsIgnoreCase("followup")) {
@@ -146,6 +147,7 @@ public class ApplicationServiceImpl implements ApplicationService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<Application> needsFollowup(Long userId) {
     List<Application> all = userId != null ? applications.findByUserId(userId) : applications.findAll();
     return all.stream().filter(a -> {

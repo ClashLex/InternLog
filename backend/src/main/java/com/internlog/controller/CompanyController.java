@@ -78,6 +78,15 @@ public class CompanyController {
     return ResponseEntity.ok(companies.toResponse(updated, internships.findByCompanyId(id).size()));
   }
 
+  @PostMapping("/{id}/password")
+  public ResponseEntity<Map<String, String>> changePassword(
+      @PathVariable Long id, @RequestBody Map<String, Object> body) {
+    Object cur = body.get("currentPassword");
+    Object next = body.get("newPassword");
+    companies.changePassword(id, cur == null ? null : String.valueOf(cur), next == null ? null : String.valueOf(next));
+    return ResponseEntity.ok(Map.of("message", "Password changed"));
+  }
+
   @DeleteMapping("/{id}")
   public ResponseEntity<Map<String, String>> delete(@PathVariable Long id) {
     companies.delete(id);

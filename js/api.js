@@ -11,7 +11,7 @@
      internlog_api_token JWT from login (auto-managed)
 
    Coverage: all window.InternLog CRUD + auth + moderation + alerts.
-   Board inline writers (company/internships.html apply/save, applicants
+   Board inline writers (user/internships.html apply/save, applicants
    status) additionally fire-and-forget to the backend — see bottom. */
 (function () {
   "use strict";
@@ -115,7 +115,9 @@
   }
 
   function install() {
+    if (install._done) return;
     if (!window.InternLog || !useApi()) return;
+    install._done = true;
     var local = {};
     Object.keys(window.InternLog).forEach(function (k) { local[k] = window.InternLog[k]; });
 
@@ -138,6 +140,62 @@
     window.InternLog.getUsers = withFallback(function () {
       return req("/api/users");
     }, local.getUsers);
+
+    function mapUser(u) {
+      if (!u) return null;
+      return {
+        id: u.id, name: u.name, email: u.email, college: u.college,
+        course: u.course, gradYear: u.gradYear,
+        registeredDate: u.registeredDate, status: u.status
+      };
+    }
+
+    window.InternLog.getUserById = withFallback(function (id) {
+      return req("/api/users/" + encodeURIComponent(id)).then(mapUser);
+    }, local.getUserById);
+
+    window.InternLog.updateUser = withFallback(function (id, patch) {
+      return req("/api/users/" + encodeURIComponent(id), { method: "PUT", body: patch }).then(mapUser);
+    }, local.updateUser);
+
+    window.InternLog.deleteUser = withFallback(function (id) {
+      return req("/api/users/" + encodeURIComponent(id), { method: "DELETE" });
+    }, local.deleteUser);
+
+    async function localChangePassword(kind, id, currentPassword, newPassword) {
+      var list = kind === "company" ? await local.getCompanies() : await local.getUsers();
+      var rec = list.find(function (r) { return String(r.id) === String(id); });
+      if (!rec) throw new Error(kind === "company" ? "Company not found." : "User not found.");
+      if (rec.password !== currentPassword) throw new Error("Current password is incorrect.");
+      if (kind === "company") return local.updateCompany(id, { password: newPassword });
+      return local.updateUser(id, { password: newPassword });
+    }
+
+    window.InternLog.changeUserPassword = async function (id, currentPassword, newPassword) {
+      if (!useApi()) return localChangePassword("user", id, currentPassword, newPassword);
+      try {
+        return await req("/api/users/" + encodeURIComponent(id) + "/password",
+          { method: "POST", body: { currentPassword: currentPassword, newPassword: newPassword } });
+      } catch (e) {
+        if (String(e.message).indexOf("Failed to fetch") !== -1) {
+          return localChangePassword("user", id, currentPassword, newPassword);
+        }
+        throw e;
+      }
+    };
+
+    window.InternLog.changeCompanyPassword = async function (id, currentPassword, newPassword) {
+      if (!useApi()) return localChangePassword("company", id, currentPassword, newPassword);
+      try {
+        return await req("/api/companies/" + encodeURIComponent(id) + "/password",
+          { method: "POST", body: { currentPassword: currentPassword, newPassword: newPassword } });
+      } catch (e) {
+        if (String(e.message).indexOf("Failed to fetch") !== -1) {
+          return localChangePassword("company", id, currentPassword, newPassword);
+        }
+        throw e;
+      }
+    };
 
     window.InternLog.registerUser = withFallback(function (user) {
       return req("/api/auth/register", { method: "POST", body: user });
@@ -232,6 +290,21 @@
       return req("/api/applications?userId=" + encodeURIComponent(userId));
     }, local.getApplicationsByUser);
 
+    function mapApplication(a) {
+      if (!a) return null;
+      return {
+        id: a.id, userId: a.userId, internshipId: a.internshipId, companyId: a.companyId,
+        company: a.company, role: a.role, location: a.location,
+        internshipType: a.internshipType, appliedDate: a.appliedDate, deadline: a.deadline,
+        interviewDate: a.interviewDate, stipend: a.stipend, status: a.status,
+        url: a.url, notes: a.notes, studentName: a.studentName, studentEmail: a.studentEmail
+      };
+    }
+
+    window.InternLog.getApplicationById = withFallback(function (id) {
+      return req("/api/applications/" + encodeURIComponent(id)).then(mapApplication);
+    }, local.getApplicationById);
+
     window.InternLog.addApplication = withFallback(function (application) {
       return req("/api/applications", { method: "POST", body: toApplicationRequest(application) });
     }, local.addApplication);
@@ -292,6 +365,10 @@
     };
   }
 
+  // Install immediately (both scripts are deferred, so window.InternLog already
+  // exists): page inits on DOMContentLoaded then see the wrapped versions on
+  // first paint. Retries below are harmless no-ops thanks to the done-guard.
+  try { install(); } catch (e) {}
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", install);
   } else {

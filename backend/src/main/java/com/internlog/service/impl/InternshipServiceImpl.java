@@ -77,6 +77,7 @@ public class InternshipServiceImpl implements InternshipService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<Internship> list(String status, Long companyId, String query) {
     List<Internship> all = companyId != null ? internships.findByCompanyId(companyId) : internships.findAll();
     if (status != null && !status.equalsIgnoreCase("all")) {
@@ -98,17 +99,25 @@ public class InternshipServiceImpl implements InternshipService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<Internship> publicBoard() {
     LocalDate today = LocalDate.now();
     return internships.findAll().stream()
         .filter(j -> j.getStatus() == InternshipStatus.Published)
         .filter(j -> {
+          // Null-safe approval check: orphaned or unapproved rows never go public.
+          // Runs inside a read Tx so the lazy company proxy resolves instead
+          // of throwing LazyInitializationException (which previously dropped
+          // legitimate rows from the board via the catch-all below).
+          if (j.getCompany() == null) return false;
+          Long companyId;
           try {
-            Company c = companies.findById(j.getCompany().getId()).orElse(null);
-            return c != null && c.isApproved();
+            companyId = j.getCompany().getId();
           } catch (Exception e) {
             return false;
           }
+          if (companyId == null) return false;
+          return companies.findById(companyId).map(Company::isApproved).orElse(false);
         })
         .filter(j -> j.getDeadline() == null || !j.getDeadline().isBefore(today))
         .sorted(Comparator.comparing(Internship::getCreatedAt,

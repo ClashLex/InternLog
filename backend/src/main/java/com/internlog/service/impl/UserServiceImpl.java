@@ -65,6 +65,20 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional
+  public void changePassword(Long id, String currentRaw, String newRaw) {
+    User user = getById(id);
+    if (currentRaw == null || !passwords.matches(currentRaw, user.getPasswordHash())) {
+      throw new BadRequestException("Current password is incorrect.");
+    }
+    if (newRaw == null || newRaw.length() < 8) {
+      throw new BadRequestException("New password must be at least 8 characters.");
+    }
+    user.setPasswordHash(passwords.encode(newRaw));
+    users.save(user);
+  }
+
+  @Override
+  @Transactional
   public void delete(Long id) {
     getById(id);
     applications.deleteByUserId(id);

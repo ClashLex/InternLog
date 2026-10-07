@@ -79,6 +79,20 @@ public class CompanyServiceImpl implements CompanyService {
 
   @Override
   @Transactional
+  public void changePassword(Long id, String currentRaw, String newRaw) {
+    Company company = getById(id);
+    if (currentRaw == null || !passwords.matches(currentRaw, company.getPasswordHash())) {
+      throw new BadRequestException("Current password is incorrect.");
+    }
+    if (newRaw == null || newRaw.length() < 8) {
+      throw new BadRequestException("New password must be at least 8 characters.");
+    }
+    company.setPasswordHash(passwords.encode(newRaw));
+    companies.save(company);
+  }
+
+  @Override
+  @Transactional
   public Company setStatus(Long id, String status) {
     Company company = getById(id);
     String normalized = status.trim();

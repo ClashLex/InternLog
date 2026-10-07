@@ -19,16 +19,17 @@ InternLog/
 ├── js/
 │   ├── script.js               # data layer (localStorage) + all page logic
 │   └── api.js                  # backend adapter, overrides window.InternLog
-├── user/                       # student role (7 pages)
+├── user/                       # student role (8 pages)
 │   ├── login.html / register.html
 │   ├── dashboard.html          # stats + interviews + follow-ups + alerts
+│   ├── internships.html        # public opportunity board (browse + save + apply)
 │   ├── applications.html       # tracker table + FollowUp filter + CSV
 │   ├── add-application.html / edit-application.html
 │   └── profile.html
 ├── company/                    # company role (7 pages)
 │   ├── login.html / register.html
 │   ├── dashboard.html
-│   ├── internships.html        # dual-mode: company manage + public board
+│   ├── internships.html        # company-only: manage own posts
 │   ├── add-internship.html
 │   ├── applicants.html
 │   └── profile.html
@@ -55,7 +56,7 @@ InternLog/
 ## 2. Root files
 
 ### `index.html`
-Landing page. Properties: `.site-header` nav (`Home, #about, #features, company/internships.html, company/login.html, user/login.html, user/register.html`), hero CTA, `#about` 2 cards, `#features` 7 cards, `#how` 4 steps, footer nav. Functions: none inline; uses `script.js` for mobile nav (`#landingMenuBtn/#landingMobileNav`) + theme toggle injection. Connects to: `user/register.html`, `company/internships.html` (public board).
+Landing page. Properties: `.site-header` nav (`Home, #about, #features, user/internships.html, company/login.html, user/login.html, user/register.html`), hero CTA, `#about` 2 cards, `#features` 7 cards, `#how` 4 steps, footer nav. Functions: none inline; uses `script.js` for mobile nav (`#landingMenuBtn/#landingMobileNav`) + theme toggle injection. Connects to: `user/register.html`, `user/internships.html` (public board).
 
 ### `404.html`
 Standalone (own `<style>`, no `style.css`/`script.js` dependency so it works on any broken path). Properties: `.code 404`, links `index.html` + `user/login.html` (relative, fork-safe). Dark variant via `prefers-color-scheme`. Connects to: home, student login.
@@ -84,7 +85,7 @@ Functions by group:
 - users: `getUsers/getUserById/registerUser/updateUser/deleteUser` (delete cascades apps)
 - applications: `getApplications/getApplicationsByUser/getApplicationById/addApplication/updateApplication/deleteApplication` (update stamps `updatedAt`)
 - companies/internships: `getCompanies/getCompanyById/updateCompany/deleteCompany` (cascades), `getInternships/getInternshipsByCompany/getInternshipById/addInternship/updateInternship/deleteInternship` (guards: unapproved company never auto-publishes; past deadline → Expired)
-- moderation: `todayISO/companyIsApproved/companyStatusLabel/normalizeOpportunityStates`, `registerCompany/loginCompany/companySessionContext/guardCompanyPage` (exempts `login/register/internships.html` so the public board works), `readInternshipForm/initCompany*` (register/login/submit/moderation controls incl. delete-company + delete-job with `__internlogRerenderModeration` hook)
+- moderation: `todayISO/companyIsApproved/companyStatusLabel/normalizeOpportunityStates`, `registerCompany/loginCompany/companySessionContext/guardCompanyPage` (exempts only `login/register`; every other company page needs an approved company session), `readInternshipForm/initCompany*` (register/login/submit/moderation controls incl. delete-company + delete-job with `__internlogRerenderModeration` hook)
 - auth: `loginUser` (incl. hardcoded `admin@internlog.com/admin123` fallback), `loginAdmin`, `getSession/setSession/clearSession/requireAuth` (redirects per role incl. company), `initNavigation` (`#sidebar/#menuBtn/#sidebarBackdrop`, `.active` link, `[data-logout]` toast+redirect, `[data-password-toggle]`, `[data-user-*]` chips, ESC closes modal), `initThemeToggle/initSecretConsoleAccess` (5-tap brand → console pass) / `initConsoleGate` (fake 404)
 - thoughtful helpers: `daysSince/lastActivityISO/getSnoozeMap/isSnoozed/snoozeFollowup/getFollowups` (Applied 7d, Shortlisted 5d, interview±3d), `getSavedSearches/saveSearch/deleteSavedSearch/matchesSearch/getSeenIds/markInternshipsSeen/getMatchedAlerts`
 - pages: `initUserDashboard` (stats, status bars, recent, upcoming, follow-ups `#followupList/#followupCount`, alerts `#jobAlertsList`), `initUserApplications` (`#searchInput/#statusFilter` incl. `FollowUp` value, `Follow up` pill, CSV), `initAdd/EditApplication`, `initUserProfile`, `initAdminDashboard/Users/Applications/Profile`
@@ -108,7 +109,9 @@ Conventions: every app page has `#sidebar/#menuBtn/#sidebarBackdrop`, `.topbar` 
 **`company/login.html`** — company sign-in (owns its logic; shared login guard is a no-op). Inline: email/PW validation, Suspended/Rejected/Pending messages, `?pending=1` banner, approved-session fast-path to dashboard.
 **`company/register.html`** — sign-up → Pending. IDs: `#companyRegisterForm/companyName/email/password/confirmPassword/website/location/industry/terms/#formAlert`. Hook: shared `initCompanyRegisterGuard` (single source, no inline duplicate).
 **`company/dashboard.html`** — stats + recent posts. IDs: `#companyNameChip/#companyEmailChip/#welcomeName/#companyAvatar/#stats/#recentPosts/#profileNote`. Inline renders from localStorage; logout via shared `[data-logout]`.
-**`company/internships.html`** — dual-mode. Company mode: manage own posts (`#pageTitle Internships`, `#postButton`, `#statusFilter` all 8 states, `#cards`). Public mode (no company session): title becomes "Internship Opportunities", nav collapses to Opportunities + Student Dashboard, `Back to Home`, status filter hidden, `#saveSearchBtn` + `#alertsPanel/#alertsList` appear, `Save/Apply` in `#jobModal`. Inline `render()` + `openModal()`; save uses `SAVED` (string ids), apply writes `APPS` + mirrors via `_mirrorApply`; seen-ids marked via `markInternshipsSeen`.
+**`user/internships.html`** — public opportunity board (no login needed to browse). Student sidebar, `#search/#typeFilter/#saveSearchBtn`, `#alertsPanel/#alertsList`, `#cards`, `#jobModal` with `Save/Apply` for students and login prompts for guests. Board reads via `window.InternLog.getPublicInternships()` (`GET /api/internships/board` when the backend is up, localStorage otherwise); apply writes `APPS` + mirrors via `_mirrorApply`; seen-ids marked via `markInternshipsSeen`.
+
+**`company/internships.html`** — company-only. Manage own posts (`#pageTitle Internships`, `#postButton`, `#statusFilter` all 8 states, `#cards`, `#jobModal` with `Edit/Archive`). Non-company sessions redirect to `../user/internships.html` (inline boot + shared `guardCompanyPage`).
 **`company/add-internship.html`** — create/edit (`?edit=`). IDs: `#internshipForm/title/location/type/stipend/positions/deadline/skills/description/education/applyUrl/published/#success/#docTitle/#pageTitle/#submitButton`. Hooks: shared submit guard + inline prefill/chip/`deadline.min`.
 **`company/applicants.html`** — review applicants to own jobs. IDs: `#search/#status/#body/#appModal/#modalTitle/#modalBody/#close`. Inline: job map by `companyId` or name fallback, `Review → #newStatus → Save` writes + mirrors via `_mirrorApplicationStatus`.
 **`company/profile.html`** — edit company + password. IDs: chip/avatar ids, `#profileForm(name/email/website/location/industry/description)`, `#passwordForm(current/next/confirm)`, `#status`. Inline: null-safe avatar, duplicate-email guard, shared-logout only.
@@ -156,7 +159,7 @@ Conventions: every app page has `#sidebar/#menuBtn/#sidebarBackdrop`, `.topbar` 
 
 ```
 Landing (index.html) → student auth (user/login|register) → dashboard (stats/followups/alerts)
-  → applications (CRUD + FollowUp filter) ⇄ board (company/internships.html public)
+  → applications (CRUD + FollowUp filter) ⇄ board (user/internships.html public)
   → board Apply → applications row → company applicants status → student dashboard
 Company: register (Pending) → admin verify (users.html or internships queue) → login
   → dashboard → add-internship (Draft/Pending Review) → admin approve (internships.html/users.html)

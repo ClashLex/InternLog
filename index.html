@@ -6,6 +6,9 @@
   <title>InternLog — Every internship application, in one place</title>
   <meta name="description" content="InternLog helps students organize internship applications, monitor progress, and keep their entire internship search in one place.">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <script src="js/script.js" defer></script>
   <script src="js/api.js" defer></script>
@@ -24,10 +27,11 @@
               <li><a class="pill is-active" href="index.html" aria-current="page"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Home</span><span class="pill-label-hover" aria-hidden="true">Home</span></span></a></li>
               <li><a class="pill" href="#about"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">About</span><span class="pill-label-hover" aria-hidden="true">About</span></span></a></li>
               <li><a class="pill" href="#features"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Features</span><span class="pill-label-hover" aria-hidden="true">Features</span></span></a></li>
-              <li><a class="pill" href="company/internships.html"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Internships</span><span class="pill-label-hover" aria-hidden="true">Internships</span></span></a></li>
+              <li><a class="pill" href="user/internships.html"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Internships</span><span class="pill-label-hover" aria-hidden="true">Internships</span></span></a></li>
               <li><a class="pill" href="company/login.html"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Companies</span><span class="pill-label-hover" aria-hidden="true">Companies</span></span></a></li>
               <li><a class="pill" href="user/login.html"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Login</span><span class="pill-label-hover" aria-hidden="true">Login</span></span></a></li>
               <li><a class="pill pill--cta" href="user/register.html"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Register</span><span class="pill-label-hover" aria-hidden="true">Register</span></span></a></li>
+              <li><a class="pill" href="#get-started"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Get started</span><span class="pill-label-hover" aria-hidden="true">Get started</span></span></a></li>
             </ul>
           </div>
           <button class="mobile-menu-button mobile-only" id="pillMenuBtn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="pillMenuPopover">
@@ -40,10 +44,11 @@
             <li><a class="mobile-menu-link" href="index.html" aria-current="page">Home</a></li>
             <li><a class="mobile-menu-link" href="#about">About</a></li>
             <li><a class="mobile-menu-link" href="#features">Features</a></li>
-            <li><a class="mobile-menu-link" href="company/internships.html">Browse Internships</a></li>
+            <li><a class="mobile-menu-link" href="user/internships.html">Browse Internships</a></li>
             <li><a class="mobile-menu-link" href="company/login.html">For Companies</a></li>
             <li><a class="mobile-menu-link" href="user/login.html">Student Login</a></li>
             <li><a class="mobile-menu-link" href="user/register.html">Register</a></li>
+            <li><a class="mobile-menu-link" href="#get-started">Get started</a></li>
           </ul>
         </div>
       </div>
@@ -59,7 +64,11 @@
           <a class="btn" href="user/register.html">Create free account</a>
           <a class="btn btn-secondary" href="user/login.html">Student Login</a>
         </p>
-        <p class="muted" style="font-size:13.5px">Free for students • Company opportunities • Ready for your placement cell</p>
+        <ul class="hero-proof" aria-label="At a glance">
+          <li>Free for students</li>
+          <li>Company opportunities</li>
+          <li>Placement-cell ready</li>
+        </ul>
       </div>
     </div>
 
@@ -77,6 +86,7 @@
     </div>
 
     <div class="wrap section" id="about">
+      <p class="soft-pill-button" data-size="sm" data-variant="light">Why InternLog</p>
       <h2>For students in the middle of applications</h2>
       <p class="sub">Stop juggling spreadsheets, emails, and deadlines. InternLog is an internship-only tracker designed around the student workflow.</p>
       <div class="grid-2">
@@ -92,41 +102,43 @@
     </div>
 
     <div class="wrap section section-roomy" id="features">
+      <p class="soft-pill-button" data-size="sm" data-variant="light">What you get</p>
       <h2>Seven tools that do the remembering for you</h2>
       <p class="sub">Seven focused tools. Nothing decorative.</p>
-      <div class="grid-2">
-        <div class="card">
-          <h3>Internship Application Tracking</h3>
-          <p>Add, edit, and organize every internship application with structured details.</p>
+      <div class="grid-2 bento" id="bentoGrid">
+        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide">
+          <div class="magic-bento-card__header"><span class="magic-bento-card__label">Track</span><span class="magic-bento-card__index">01</span></div>
+          <div class="magic-bento-card__content"><h3 class="magic-bento-card__title">Internship Application Tracking</h3><p class="magic-bento-card__description">Add, edit, and organize every internship application with structured details.</p></div>
         </div>
-        <div class="card">
-          <h3>Application Status Management</h3>
-          <p>Move applications from Applied to Selected with clear, readable status badges and visual progress bars.</p>
+        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide">
+          <div class="magic-bento-card__header"><span class="magic-bento-card__label">Status</span><span class="magic-bento-card__index">02</span></div>
+          <div class="magic-bento-card__content"><h3 class="magic-bento-card__title">Application Status Management</h3><p class="magic-bento-card__description">Move applications from Applied to Selected with clear, readable status badges and visual progress bars.</p></div>
         </div>
-        <div class="card">
-          <h3>Personal Dashboard</h3>
-          <p>Totals, recent applications, status overview, and upcoming interviews in one view.</p>
+        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide">
+          <div class="magic-bento-card__header"><span class="magic-bento-card__label">Dashboard</span><span class="magic-bento-card__index">03</span></div>
+          <div class="magic-bento-card__content"><h3 class="magic-bento-card__title">Personal Dashboard</h3><p class="magic-bento-card__description">Totals, recent applications, status overview, and upcoming interviews in one view.</p></div>
         </div>
-        <div class="card">
-          <h3>Search, Filter &amp; Export</h3>
-          <p>Find any application by company, role, or location, and export records to CSV when you need them.</p>
+        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide">
+          <div class="magic-bento-card__header"><span class="magic-bento-card__label">Search</span><span class="magic-bento-card__index">04</span></div>
+          <div class="magic-bento-card__content"><h3 class="magic-bento-card__title">Search, Filter &amp; Export</h3><p class="magic-bento-card__description">Find any application by company, role, or location, and export records to CSV when you need them.</p></div>
         </div>
-        <div class="card">
-          <h3>Student Account Management</h3>
-          <p>Profile, college details, and password controls built specifically for students.</p>
+        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide">
+          <div class="magic-bento-card__header"><span class="magic-bento-card__label">Profile</span><span class="magic-bento-card__index">05</span></div>
+          <div class="magic-bento-card__content"><h3 class="magic-bento-card__title">Student Account Management</h3><p class="magic-bento-card__description">Profile, college details, and password controls built specifically for students.</p></div>
         </div>
-        <div class="card">
-          <h3>Placement-Ready Exports</h3>
-          <p>Export your application history to CSV for placement cells and mentor reviews.</p>
+        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide">
+          <div class="magic-bento-card__header"><span class="magic-bento-card__label">Export</span><span class="magic-bento-card__index">06</span></div>
+          <div class="magic-bento-card__content"><h3 class="magic-bento-card__title">Placement-Ready Exports</h3><p class="magic-bento-card__description">Export your application history to CSV for placement cells and mentor reviews.</p></div>
         </div>
-        <div class="card">
-          <h3>Company Opportunities</h3>
-          <p>Companies can publish internship opportunities while the admin workspace monitors company accounts, posts, and applications.</p>
+        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide">
+          <div class="magic-bento-card__header"><span class="magic-bento-card__label">Network</span><span class="magic-bento-card__index">07</span></div>
+          <div class="magic-bento-card__content"><h3 class="magic-bento-card__title">Company Opportunities</h3><p class="magic-bento-card__description">Companies can publish internship opportunities while the admin workspace monitors company accounts, posts, and applications.</p></div>
         </div>
       </div>
     </div>
 
-    <div class="wrap section" id="how">
+    <div class="wrap section timeline" id="how">
+      <p class="soft-pill-button" data-size="sm" data-variant="light">How it works</p>
       <h2>From first application to final offer</h2>
       <p class="sub">Four stages, tracked in one list.</p>
       <div class="steps">
@@ -135,7 +147,18 @@
         <div class="step"><div class="num">3</div><h3>Track Applications</h3><p class="muted">Update status as replies come in.</p></div>
         <div class="step"><div class="num">4</div><h3>Get Your Internship</h3><p class="muted">Convert interviews into offers.</p></div>
       </div>
-      <p style="margin-top:24px"><a class="btn" href="user/register.html">Create student account</a> <a class="btn btn-secondary" href="company/register.html">Register as a company</a></p>
+    </div>
+
+    <div class="wrap section" id="get-started">
+      <div class="cta-band">
+        <p class="soft-pill-button" data-size="sm" data-variant="light">Get started</p>
+        <h2>Start tracking in minutes</h2>
+        <p>Free for students. Companies publish opportunities after verification.</p>
+        <p class="cta-row">
+          <a class="btn" href="user/register.html">Create student account</a>
+          <a class="btn btn-secondary" href="company/register.html">Register as a company</a>
+        </p>
+      </div>
     </div>
 
     <!-- Curved Loop — compact light variant above footer -->
@@ -153,16 +176,33 @@
   </main>
 
   <footer class="site-footer">
-    <div class="wrap">
-      <div>
+    <div class="wrap footer-grid">
+      <div class="footer-col">
         <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog</span></a>
         <p>InternLog helps students track internship applications in one organized place.<br>Track. Apply. Grow.</p>
       </div>
-      <nav aria-label="Footer navigation">
-        <p><strong>Navigate</strong></p>
-        <p><a href="index.html">Home</a> • <a href="company/internships.html">Internships</a> • <a href="company/login.html">Company Login</a> • <a href="user/login.html">Student Login</a></p>
-      </nav>
-      <p>© 2026 InternLog. All rights reserved.</p>
+      <div class="footer-col">
+        <p class="footer-heading">Product</p>
+        <nav aria-label="Product">
+          <a href="#about">About</a>
+          <a href="#features">Features</a>
+          <a href="#how">How it works</a>
+          <a href="user/internships.html">Browse internships</a>
+        </nav>
+      </div>
+      <div class="footer-col">
+        <p class="footer-heading">Account</p>
+        <nav aria-label="Account">
+          <a href="user/register.html">Student register</a>
+          <a href="user/login.html">Student login</a>
+          <a href="company/register.html">Company register</a>
+          <a href="company/login.html">Company login</a>
+        </nav>
+      </div>
+      <div class="footer-base">
+        <p>© 2026 InternLog. All rights reserved.</p>
+        <p>Track. Apply. Grow.</p>
+      </div>
     </div>
   </footer>
 </body>
