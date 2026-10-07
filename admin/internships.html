@@ -39,7 +39,7 @@
           <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap">
             <div>
               <h2 style="margin:0 0 6px">Company opportunities</h2>
-              <p class="muted" style="margin:0">Review submissions before they become visible to students.</p>
+              <p class="muted" style="margin:0">Approve, reject, archive, or delete submissions. Deleted opportunities and their applications are permanently removed.</p>
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap">
               <input id="jobSearch" class="search-input" type="search" placeholder="Search title or company…" aria-label="Search internships">
@@ -119,13 +119,25 @@
         if (job.status === "Pending Review" && approvedCompany) {
           html += '<button class="link-btn" data-approve="' + esc(job.id) + '">Approve</button>';
           html += '<button class="link-btn danger" data-reject="' + esc(job.id) + '">Reject</button>';
+        } else if (job.status === "Pending Review") {
+          html += '<button class="link-btn danger" data-reject="' + esc(job.id) + '">Reject</button>';
         } else if (job.status === "Rejected") {
           html += approvedCompany ? '<button class="link-btn" data-approve="' + esc(job.id) + '">Approve</button>' : '';
         } else if (job.status === "Published") {
           html += '<button class="link-btn" data-archive="' + esc(job.id) + '">Archive</button>';
+        } else if (job.status === "Draft") {
+          html += approvedCompany ? '<button class="link-btn" data-approve="' + esc(job.id) + '">Approve</button>' : '';
+          html += '<button class="link-btn danger" data-reject="' + esc(job.id) + '">Reject</button>';
         } else if (job.status === "Suspended" && approvedCompany) {
           html += '<button class="link-btn" data-approve="' + esc(job.id) + '">Review / Publish</button>';
+        } else if (job.status === "Expired") {
+          html += '<button class="link-btn" data-archive="' + esc(job.id) + '">Archive</button>';
+        } else if (job.status === "Archived" && approvedCompany) {
+          html += '<button class="link-btn" data-approve="' + esc(job.id) + '">Approve</button>';
         }
+        // Admin full control: every posted opportunity can be permanently deleted
+        // (also removes applications linked to that internship).
+        html += '<button class="link-btn danger" data-delete="' + esc(job.id) + '">Delete</button>';
         html += '</div>';
         return html;
       }
@@ -208,6 +220,10 @@
             moderatedAt: new Date().toISOString()
           });
           window.InternLog.showNotification("Internship archived.", "success");
+        } else if (type === "delete") {
+          if (!confirm("Delete this internship and all its applications? This cannot be undone.")) return;
+          await window.InternLog.deleteInternship(id);
+          window.InternLog.showNotification("Internship deleted", "success");
         }
         render();
       }
@@ -224,10 +240,10 @@
         document.getElementById("jobStatus").addEventListener("change", render);
 
         document.getElementById("jobsBody").addEventListener("click", function (event) {
-          var target = event.target.closest && event.target.closest("button[data-approve], button[data-reject], button[data-archive]");
+          var target = event.target.closest && event.target.closest("button[data-approve], button[data-reject], button[data-archive], button[data-delete]");
           if (!target) return;
-          var id = target.getAttribute("data-approve") || target.getAttribute("data-reject") || target.getAttribute("data-archive");
-          var type = target.hasAttribute("data-approve") ? "approve" : target.hasAttribute("data-reject") ? "reject" : "archive";
+          var id = target.getAttribute("data-approve") || target.getAttribute("data-reject") || target.getAttribute("data-archive") || target.getAttribute("data-delete");
+          var type = target.hasAttribute("data-approve") ? "approve" : target.hasAttribute("data-reject") ? "reject" : target.hasAttribute("data-archive") ? "archive" : "delete";
           moderate(type, id);
         });
       });

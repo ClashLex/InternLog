@@ -47,6 +47,23 @@
             <p style="margin-top:14px"><a class="btn btn-secondary btn-sm" href="applications.html">View all applications</a></p>
           </section>
         </div>
+        <div class="grid-2" style="margin-top:18px">
+          <section class="card" aria-label="Follow-ups">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+              <h3 style="margin:0">Gentle follow-ups</h3>
+              <span class="badge badge-shortlisted" id="followupCount">Checking…</span>
+            </div>
+            <p class="muted">Small nudges so nothing slips — Applied 7+ days, Shortlisted 5+ days, interviews near.</p>
+            <div id="followupList" style="margin-top:12px"><p class="muted">Loading…</p></div>
+          </section>
+          <section class="card" aria-label="Job alerts">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+              <div><h3 style="margin:0 0 5px">New matching internships</h3><p class="muted" style="margin:0">From your saved searches on the opportunity board.</p></div>
+              <a class="btn btn-secondary btn-sm" href="../company/internships.html">Manage alerts</a>
+            </div>
+            <div id="jobAlertsList" style="margin-top:12px"><p class="muted">Loading…</p></div>
+          </section>
+        </div>
         <section class="card" style="margin-top:18px" aria-label="Internship opportunities">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
             <div><h3 style="margin:0 0 5px">Find company-posted opportunities</h3><p class="muted" style="margin:0">Browse published internships and apply directly from the opportunity board.</p></div>
@@ -56,7 +73,7 @@
         <section class="card" style="margin-top:18px" aria-label="Recent applications">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
             <h3 style="margin:0">Recent Applications</h3>
-            <a class="btn btn-sm" href="add-application.html">+ Add Internship</a>
+            <a class="btn btn-sm" href="add-application.html">+ Add Application</a>
           </div>
           <div class="table-wrap" id="recentTable">
             <table>

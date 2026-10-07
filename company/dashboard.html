@@ -20,7 +20,7 @@
         <a href="applicants.html">Applicants</a>
         <a href="profile.html">Company Profile</a>
       </nav>
-      <div class="side-foot"><nav><a href="../index.html" data-company-logout>Logout</a></nav></div>
+      <div class="side-foot"><nav><a href="../index.html" data-logout>Logout</a></nav></div>
     </aside>
     <div class="main">
       <header class="topbar">
@@ -46,17 +46,23 @@
       var COMPANY_KEY = "internlog_companies", JOB_KEY = "internlog_internships", APP_KEY = "internlog_applications", SESSION_KEY = "internlog_session";
       function read(key, fallback) { try { var v = JSON.parse(localStorage.getItem(key)); return v == null ? fallback : v; } catch (e) { return fallback; } }
       function esc(s) { return String(s == null ? "" : s).replace(/[&<>\"']/g, function (c) { return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }
-      function badge(status) { var cls = status === "Published" ? "badge-selected" : status === "Pending Review" ? "badge-shortlisted" : status === "Archived" ? "badge-disabled" : "badge-applied"; return '<span class="badge ' + cls + '">' + esc(status) + '</span>'; }
+      function badge(status) {
+        var value = status || "Draft";
+        var cls = value === "Published" ? "badge-selected" :
+          (value === "Pending Review" || value === "Pending" ? "badge-shortlisted" :
+          (value === "Draft" ? "badge-applied" : "badge-disabled"));
+        return '<span class="badge ' + cls + '">' + esc(value) + '</span>';
+      }
       function auth() { var s = read(SESSION_KEY, null); if (!s || s.role !== "company") { window.location.href = "login.html"; return null; } return s; }
-      function logout() { localStorage.removeItem(SESSION_KEY); window.location.href = "../index.html"; }
       document.addEventListener("DOMContentLoaded", function () {
         var s = auth(); if (!s) return;
         var companies = read(COMPANY_KEY, []), company = companies.find(function (c) { return String(c.id) === String(s.userId); });
-        if (!company) { logout(); return; }
+        if (!company) { try { localStorage.removeItem(SESSION_KEY); } catch (e) {} window.location.href = "login.html"; return; }
         var jobs = read(JOB_KEY, []).filter(function (j) { return String(j.companyId) === String(company.id); });
         var apps = read(APP_KEY, []), jobIds = {}; jobs.forEach(function (j) { jobIds[j.id] = true; });
-        var companyApps = apps.filter(function (a) { return jobIds[a.internshipId] || String(a.company || "").toLowerCase() === String(company.name).toLowerCase(); });
-        document.getElementById("companyNameChip").textContent = company.name; document.getElementById("companyEmailChip").textContent = company.email; document.getElementById("welcomeName").textContent = company.name; document.getElementById("companyAvatar").textContent = company.name.trim().charAt(0).toUpperCase();
+        var companyApps = apps.filter(function (a) { return jobIds[a.internshipId]; });
+        var initial = ((company.name || "C").trim().charAt(0) || "C").toUpperCase();
+        document.getElementById("companyNameChip").textContent = company.name; document.getElementById("companyEmailChip").textContent = company.email; document.getElementById("welcomeName").textContent = company.name; document.getElementById("companyAvatar").textContent = initial;
         document.getElementById("stats").innerHTML = [
           ["Active Opportunities", jobs.filter(function (j) { return j.status === "Published"; }).length],
           ["Total Opportunities", jobs.length],
@@ -66,8 +72,10 @@
         var recent = document.getElementById("recentPosts");
         if (!jobs.length) recent.innerHTML = '<div class="empty"><h3>No internship posts yet</h3><p>Create your first opportunity to start building the company side of InternLog.</p><a class="btn btn-sm" href="add-internship.html">Post an Internship</a></div>';
         else recent.innerHTML = jobs.slice().sort(function (a,b) { return String(b.createdAt).localeCompare(String(a.createdAt)); }).slice(0,4).map(function (j) { return '<div class="mini-row"><span><strong>' + esc(j.title) + '</strong><br><span class="muted">' + esc(j.location || "Remote") + ' · ' + esc(j.internshipType || "Flexible") + '</span></span><span>' + badge(j.status) + '</span></div>'; }).join("");
-        document.getElementById("profileNote").textContent = company.verified ? "Company profile verified." : "Prototype profile: verification is not enforced yet. Admin moderation can be added by writing to the same company records.";
-        document.querySelectorAll("[data-company-logout]").forEach(function (el) { el.addEventListener("click", function (e) { e.preventDefault(); logout(); }); });
+        document.getElementById("profileNote").textContent = company.verified === true && company.status === "Active"
+          ? "Company profile verified. You can publish opportunities for admin review."
+          : "Your company account status: " + (company.status || "Pending") + ". Opportunities become public only after admin verification and approval.";
+        // Logout is handled by shared js/script.js [data-logout] handler.
       });
     }());
   </script>

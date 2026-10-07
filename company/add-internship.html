@@ -137,14 +137,14 @@
         ? companies.find(function (c) { return String(c.id) === String(session.userId); })
         : null;
 
-      if (!company) return;
+      if (!company) { window.location.href = "login.html"; return; }
 
       var companyName = document.getElementById("companyName");
       var companyEmail = document.getElementById("companyEmail");
       var avatar = document.getElementById("avatar");
       if (companyName) companyName.textContent = company.name || "Company";
       if (companyEmail) companyEmail.textContent = company.email || "";
-      if (avatar) avatar.textContent = (company.name || "C").charAt(0).toUpperCase();
+      if (avatar) avatar.textContent = ((company.name || "C").trim().charAt(0) || "C").toUpperCase();
 
       var deadline = document.getElementById("deadline");
       var today = new Date();

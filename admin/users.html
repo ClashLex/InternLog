@@ -15,7 +15,8 @@
       <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog Admin</span></a>
       <nav>
         <a href="dashboard.html">Dashboard</a>
-        <a href="users.html">Users</a>
+        <a href="users.html">Users & Companies</a>
+        <a href="internships.html">Internships</a>
         <a href="applications.html">Applications</a>
         <a href="profile.html">Profile</a>
       </nav>
@@ -70,7 +71,7 @@
 
         <section class="card" id="internships" style="margin-top:22px">
           <h2 style="margin:0 0 6px">Internship Moderation</h2>
-          <p class="muted">Company opportunities remain private until an approved company submits them and an admin approves them.</p>
+          <p class="muted">Approve, reject, archive, or permanently delete company opportunities. Deleting also removes linked applications. For full search and filters, use <a href="internships.html">Internship Moderation</a>.</p>
           <div class="table-wrap" style="margin-top:14px">
             <table aria-label="Company internship opportunities">
               <thead><tr><th>Opportunity</th><th>Company</th><th>Location</th><th>Deadline</th><th>Status</th><th>Actions</th></tr></thead>
@@ -195,7 +196,15 @@
             actions += '<button class="link-btn" type="button" data-archive-job="' + esc(job.id) + '">Archive</button>';
           } else if (job.status === "Rejected") {
             actions += '<button class="link-btn" type="button" data-approve-job="' + esc(job.id) + '">Approve</button>';
+          } else if (job.status === "Draft") {
+            actions += '<button class="link-btn" type="button" data-approve-job="' + esc(job.id) + '">Approve</button>';
+            actions += '<button class="link-btn danger" type="button" data-reject-job="' + esc(job.id) + '">Reject</button>';
+          } else if (job.status === "Expired") {
+            actions += '<button class="link-btn" type="button" data-archive-job="' + esc(job.id) + '">Archive</button>';
+          } else if (job.status === "Archived" || job.status === "Suspended") {
+            actions += '<button class="link-btn" type="button" data-approve-job="' + esc(job.id) + '">Approve</button>';
           }
+          actions += '<button class="link-btn danger" type="button" data-delete-job="' + esc(job.id) + '">Delete</button>';
           actions += '</div>';
 
           return '<tr>' +
@@ -214,10 +223,11 @@
   document.addEventListener("DOMContentLoaded", function () {
     renderModerationTables();
 
-    // The actual moderation actions are intentionally handled by the
+    // The verify/reject/suspend/delete actions are handled by the
     // shared js/script.js. This page only renders the rows and action data
     // attributes so there is one source of truth for moderation rules.
-    setTimeout(renderModerationTables, 50);
+    // Exposed for shared delete handler to re-render after cascading deletes.
+    window.__internlogRerenderModeration = renderModerationTables;
   });
 }());
 </script>

@@ -16,6 +16,7 @@
       <nav>
         <a href="dashboard.html">Dashboard</a>
         <a href="applications.html">My Applications</a>
+        <a href="../company/internships.html">Browse Internships</a>
         <a href="add-application.html">Add Application</a>
         <a href="profile.html">Profile</a>
       </nav>
@@ -37,6 +38,7 @@
             <input type="text" id="searchInput" class="search-input" placeholder="Search company, role, or location…" aria-label="Search applications">
             <select id="statusFilter" aria-label="Filter by status">
               <option value="All">All statuses</option>
+              <option value="FollowUp">Needs follow-up</option>
               <option>Applied</option>
               <option>Shortlisted</option>
               <option>Interview</option>
@@ -47,13 +49,13 @@
           </div>
           <div style="display:flex;gap:8px">
             <button class="btn btn-secondary btn-sm" id="exportCsvBtn" title="Download applications as CSV for placement cell">Export CSV</button>
-            <a class="btn btn-sm" href="add-application.html">+ Add Internship</a>
+            <a class="btn btn-sm" href="add-application.html">+ Add Application</a>
           </div>
         </div>
         <div class="empty" id="emptyState" style="display:none">
           <h3>No internship applications yet</h3>
           <p>Start tracking your first internship application today.</p>
-          <a class="btn" href="add-application.html">Add Your First Internship</a>
+          <a class="btn" href="add-application.html">Add Your First Application</a>
         </div>
         <div class="empty" id="noResults" style="display:none">
           <h3>No matching applications</h3>
