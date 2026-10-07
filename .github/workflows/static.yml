@@ -33,6 +33,11 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v5
+        with:
+          # Auto-enable Pages on first deploy instead of failing with
+          # "Get Pages site failed. Please verify that the repository
+          # has Pages enabled."
+          enablement: true
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
