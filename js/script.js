@@ -7,6 +7,10 @@
   var SESSION_KEY = "internlog_session";
   var SEEDED_KEY = "internlog_seeded_v3";
 
+  var COMPANY_KEY = "internlog_companies";
+  var INTERNSHIPS_KEY = "internlog_internships";
+
+
   var STATUSES = ["Applied", "Shortlisted", "Interview", "Selected", "Rejected"];
 
   /* ---------------- Theme (light / dark) ----------------
@@ -91,6 +95,10 @@
     var existingApps = readJSON(APPS_KEY, null);
     if (!Array.isArray(existingUsers)) { existingUsers = []; writeJSON(USERS_KEY, existingUsers); }
     if (!Array.isArray(existingApps)) { existingApps = []; writeJSON(APPS_KEY, existingApps); }
+    var existingCompanies = readJSON(COMPANY_KEY, null);
+    var existingInternships = readJSON(INTERNSHIPS_KEY, null);
+    if (!Array.isArray(existingCompanies)) writeJSON(COMPANY_KEY, []);
+    if (!Array.isArray(existingInternships)) writeJSON(INTERNSHIPS_KEY, []);
 
     if (localStorage.getItem(SEEDED_KEY) !== "3") {
       var seedEmails = ["ananya.nair@example.com", "adithya.menon@example.com", "sneha.pillai@example.com"];
@@ -169,6 +177,501 @@
   }
   async function deleteApplication(id) {
     writeJSON(APPS_KEY, (await getApplications()).filter(function (a) { return String(a.id) !== String(id); }));
+  }
+
+  async function getCompanies() { return readJSON(COMPANY_KEY, []); }
+  async function getCompanyById(id) {
+    return (await getCompanies()).find(function (c) { return String(c.id) === String(id); }) || null;
+  }
+  async function updateCompany(id, patch) {
+    var companies = await getCompanies();
+    var i = companies.findIndex(function (c) { return String(c.id) === String(id); });
+    if (i < 0) throw new Error("Company not found.");
+    companies[i] = Object.assign({}, companies[i], patch);
+    writeJSON(COMPANY_KEY, companies);
+    return companies[i];
+  }
+  async function deleteCompany(id) {
+    writeJSON(COMPANY_KEY, (await getCompanies()).filter(function (c) { return String(c.id) !== String(id); }));
+    writeJSON(INTERNSHIPS_KEY, (await getInternships()).filter(function (j) { return String(j.companyId) !== String(id); }));
+    writeJSON(APPS_KEY, (await getApplications()).filter(function (a) { return String(a.companyId) !== String(id); }));
+  }
+  async function getInternships() { return readJSON(INTERNSHIPS_KEY, []); }
+  async function getInternshipsByCompany(companyId) {
+    return (await getInternships()).filter(function (j) { return String(j.companyId) === String(companyId); });
+  }
+  async function getInternshipById(id) {
+    return (await getInternships()).find(function (j) { return String(j.id) === String(id); }) || null;
+  }
+  async function addInternship(internship) {
+    var jobs = await getInternships();
+    var nextId = jobs.reduce(function (m, j) { return Math.max(m, Number(j.id) || 0); }, 0) + 1;
+    var record = Object.assign({ id: nextId, createdAt: new Date().toISOString() }, internship);
+    var company = await getCompanyById(record.companyId);
+    if (record.status === "Published" && !companyIsApproved(company)) record.status = "Pending Review";
+    if (record.deadline && String(record.deadline) < todayISO()) record.status = "Expired";
+    jobs.push(record); writeJSON(INTERNSHIPS_KEY, jobs); return record;
+  }
+  async function updateInternship(id, patch) {
+    var jobs = await getInternships();
+    var i = jobs.findIndex(function (j) { return String(j.id) === String(id); });
+    if (i < 0) throw new Error("Internship not found.");
+    var next = Object.assign({}, jobs[i], patch, { updatedAt: new Date().toISOString() });
+    var company = await getCompanyById(next.companyId);
+    if (next.status === "Published" && !companyIsApproved(company)) next.status = "Pending Review";
+    if (next.status === "Published" && next.deadline && String(next.deadline) < todayISO()) next.status = "Expired";
+    jobs[i] = next;
+    writeJSON(INTERNSHIPS_KEY, jobs); return jobs[i];
+  }
+  async function deleteInternship(id) {
+    writeJSON(INTERNSHIPS_KEY, (await getInternships()).filter(function (j) { return String(j.id) !== String(id); }));
+    writeJSON(APPS_KEY, (await getApplications()).filter(function (a) { return String(a.internshipId) !== String(id); }));
+  }
+
+  /* ---------------- Company / opportunity moderation ----------------
+     Prototype rules: companies need admin verification before using the
+     company workspace, and every newly submitted/editied opportunity goes
+     through admin review before becoming public. Expired opportunities are
+     hidden automatically. */
+  function todayISO() {
+    var d = new Date();
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, "0");
+    var day = String(d.getDate()).padStart(2, "0");
+    return y + "-" + m + "-" + day;
+  }
+
+  function companyIsApproved(company) {
+    return !!company && company.verified === true && company.status === "Active";
+  }
+
+  function companyStatusLabel(company) {
+    if (!company) return "Unknown";
+    if (company.status === "Suspended") return "Suspended";
+    if (company.status === "Rejected") return "Rejected";
+    if (company.verified === true && company.status === "Active") return "Active";
+    return "Pending Verification";
+  }
+
+  function normalizeOpportunityStates() {
+    var companies = readJSON(COMPANY_KEY, []);
+    var jobs = readJSON(INTERNSHIPS_KEY, []);
+    if (!Array.isArray(companies) || !Array.isArray(jobs)) return;
+    var companyMap = {};
+    companies.forEach(function (c) { companyMap[String(c.id)] = c; });
+    var today = todayISO();
+    var changed = false;
+
+    jobs.forEach(function (j) {
+      var company = companyMap[String(j.companyId)];
+      if (j.status === "Published") {
+        if (!companyIsApproved(company)) {
+          j.status = company && company.status === "Suspended" ? "Suspended" : "Pending Review";
+          j.moderatedAt = new Date().toISOString();
+          changed = true;
+        } else if (j.deadline && String(j.deadline) < today) {
+          j.status = "Expired";
+          j.expiredAt = new Date().toISOString();
+          changed = true;
+        }
+      }
+    });
+
+    if (changed) writeJSON(INTERNSHIPS_KEY, jobs);
+  }
+
+  function setCompanySession(company) {
+    setSession({ role: "company", userId: company.id, name: company.name, email: company.email });
+  }
+
+  async function registerCompany(company) {
+    var companies = await getCompanies();
+    var email = String(company.email || "").trim().toLowerCase();
+    if (companies.some(function (c) { return String(c.email || "").toLowerCase() === email; })) {
+      throw new Error("A company account with this email already exists.");
+    }
+    var nextId = companies.reduce(function (m, c) { return Math.max(m, Number(c.id) || 0); }, 0) + 1;
+    var record = {
+      id: nextId,
+      name: String(company.name || "").trim(),
+      email: email,
+      password: company.password || "",
+      website: company.website || "",
+      location: company.location || "",
+      industry: company.industry || "",
+      description: company.description || "",
+      status: "Pending",
+      verified: false,
+      approvalStatus: "Pending",
+      registeredDate: todayISO()
+    };
+    companies.push(record);
+    writeJSON(COMPANY_KEY, companies);
+    return record;
+  }
+
+  async function loginCompany(credentials) {
+    var companies = await getCompanies();
+    var email = String(credentials.email || "").trim().toLowerCase();
+    var company = companies.find(function (c) { return String(c.email || "").toLowerCase() === email; });
+    if (!company || company.password !== credentials.password) throw new Error("Invalid company email or password.");
+    if (company.status === "Suspended") throw new Error("This company account is suspended.");
+    if (company.status === "Rejected" || company.approvalStatus === "Rejected") throw new Error("This company account was rejected by the administrator.");
+    if (!companyIsApproved(company)) throw new Error("Your company account is awaiting admin verification.");
+    return { role: "company", userId: company.id, name: company.name, email: company.email };
+  }
+
+  function companySessionContext() {
+    var s = getSession();
+    if (!s || s.role !== "company") return null;
+    var companies = readJSON(COMPANY_KEY, []);
+    var company = companies.find(function (c) { return String(c.id) === String(s.userId); }) || null;
+    return company ? { session: s, company: company } : null;
+  }
+
+  function guardCompanyPage() {
+    var path = window.location.pathname.replace(/\\/g, "/");
+    if (path.indexOf("/company/") === -1) return;
+    var file = (path.split("/").pop() || "").toLowerCase();
+    if (file === "login.html" || file === "register.html") return;
+    var ctx = companySessionContext();
+    if (!ctx) { window.location.href = "login.html"; return; }
+    if (!companyIsApproved(ctx.company)) {
+      clearSession();
+      window.location.href = "login.html?pending=1";
+    }
+  }
+
+  function initCompanyRegisterGuard() {
+    var form = document.getElementById("companyRegisterForm");
+    if (!form) return;
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+
+      var name = document.getElementById("companyName");
+      var email = document.getElementById("email");
+      var password = document.getElementById("password");
+      var confirm = document.getElementById("confirmPassword");
+      var website = document.getElementById("website");
+      var location = document.getElementById("location");
+      var industry = document.getElementById("industry");
+      var terms = document.getElementById("terms");
+      var alertEl = document.getElementById("formAlert");
+      var ok = true;
+
+      if (!name || name.value.trim().length < 2) { setFieldError(name, "Enter the company name."); ok = false; } else setFieldError(name, "");
+      if (!email || !isEmail(email.value.trim())) { setFieldError(email, "Enter a valid work email."); ok = false; } else setFieldError(email, "");
+      var pwErr = password ? passwordStrength(password.value) : "Enter a password.";
+      if (pwErr) { setFieldError(password, pwErr); ok = false; } else setFieldError(password, "");
+      if (!confirm || confirm.value !== password.value) { setFieldError(confirm, "Passwords do not match."); ok = false; } else setFieldError(confirm, "");
+      if (website && website.value.trim() && !validURL(website.value.trim())) { setFieldError(website, "Use a valid http(s) website URL."); ok = false; } else setFieldError(website, "");
+      if (!location || !location.value.trim()) { setFieldError(location, "Enter the company's main location."); ok = false; } else setFieldError(location, "");
+      if (!terms || !terms.checked) { showNotification("Please confirm the company profile terms.", "warning"); ok = false; }
+      if (!ok) return;
+
+      try {
+        var company = await registerCompany({
+          name: name.value, email: email.value, password: password.value,
+          website: website ? website.value.trim() : "", location: location.value,
+          industry: industry ? industry.value.trim() : ""
+        });
+        if (alertEl) {
+          alertEl.className = "alert alert-success";
+          alertEl.textContent = "Company account submitted. An admin must verify it before you can log in.";
+          alertEl.style.display = "block";
+        }
+        showNotification("Company account submitted for admin verification.", "success");
+        form.reset();
+      } catch (err) {
+        if (alertEl) {
+          alertEl.className = "alert alert-error";
+          alertEl.textContent = err.message || "Unable to create company account.";
+          alertEl.style.display = "block";
+        }
+        showNotification(err.message || "Unable to create company account.", "error");
+      }
+    }, true);
+  }
+
+  function initCompanyLoginGuard() {
+    var form = document.getElementById("companyLoginForm");
+    if (!form) return;
+    form.addEventListener("submit", async function (e) {
+      var email = document.getElementById("email");
+      var password = document.getElementById("password");
+      var companies = readJSON(COMPANY_KEY, []);
+      var company = companies.find(function (c) { return String(c.email || "").toLowerCase() === String(email ? email.value : "").trim().toLowerCase(); });
+      if (!company) return;
+
+      if (company.status === "Suspended" || company.status === "Rejected" || !companyIsApproved(company)) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        var alertEl = document.getElementById("formAlert");
+        var message = company.status === "Suspended"
+          ? "This company account is suspended."
+          : company.status === "Rejected" || company.approvalStatus === "Rejected"
+            ? "This company account was rejected by the administrator."
+            : "This company account is awaiting admin verification.";
+        if (alertEl) { alertEl.textContent = message; alertEl.style.display = "block"; }
+        showNotification(message, "warning");
+      }
+    }, true);
+  }
+
+  function readInternshipForm() {
+    function val(id) { var el = document.getElementById(id); return el ? el.value.trim() : ""; }
+    return {
+      title: val("title"),
+      location: val("location"),
+      internshipType: (document.getElementById("type") || {}).value || "On-site",
+      stipend: Number((document.getElementById("stipend") || {}).value) || 0,
+      positions: Math.max(1, Number((document.getElementById("positions") || {}).value) || 1),
+      deadline: val("deadline"),
+      skills: val("skills").split(",").map(function (v) { return v.trim(); }).filter(Boolean),
+      description: val("description"),
+      education: val("education"),
+      applyUrl: val("applyUrl"),
+      publishRequested: !!(document.getElementById("published") && document.getElementById("published").checked)
+    };
+  }
+
+  function initCompanyInternshipSubmitGuard() {
+    var form = document.getElementById("internshipForm");
+    if (!form) return;
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      var ctx = companySessionContext();
+      if (!ctx) { window.location.href = "login.html"; return; }
+      if (!companyIsApproved(ctx.company)) {
+        clearSession();
+        window.location.href = "login.html?pending=1";
+        return;
+      }
+
+      var d = readInternshipForm();
+      var ok = true;
+      var titleEl = document.getElementById("title");
+      var locEl = document.getElementById("location");
+      var deadlineEl = document.getElementById("deadline");
+      var descEl = document.getElementById("description");
+      var urlEl = document.getElementById("applyUrl");
+      if (d.title.length < 3) { setFieldError(titleEl, "Enter an internship title."); ok = false; } else setFieldError(titleEl, "");
+      if (!d.location) { setFieldError(locEl, "Enter a location or Remote."); ok = false; } else setFieldError(locEl, "");
+      if (!d.deadline || d.deadline < todayISO()) { setFieldError(deadlineEl, d.deadline ? "Deadline cannot be in the past." : "Choose an application deadline."); ok = false; } else setFieldError(deadlineEl, "");
+      if (!d.description) { setFieldError(descEl, "Add a short role description."); ok = false; } else setFieldError(descEl, "");
+      if (d.applyUrl && !validURL(d.applyUrl)) { setFieldError(urlEl, "Use a valid http(s) URL."); ok = false; } else setFieldError(urlEl, "");
+      if (!ok) return;
+
+      var jobs = await getInternships();
+      var now = new Date().toISOString();
+      var editId = new URLSearchParams(window.location.search).get("edit");
+      var editingIndex = editId ? jobs.findIndex(function (j) { return String(j.id) === String(editId) && String(j.companyId) === String(ctx.company.id); }) : -1;
+      if (editId && editingIndex < 0) { showNotification("Internship not found.", "error"); return; }
+
+      var existing = editingIndex >= 0 ? jobs[editingIndex] : null;
+      var requestedStatus = d.publishRequested ? "Pending Review" : "Draft";
+      var record = {
+        companyId: ctx.company.id, company: ctx.company.name, title: d.title, location: d.location,
+        internshipType: d.internshipType, stipend: d.stipend, positions: d.positions, deadline: d.deadline,
+        skills: d.skills, description: d.description, education: d.education, applyUrl: d.applyUrl,
+        status: requestedStatus, updatedAt: now
+      };
+
+      if (existing) {
+        jobs[editingIndex] = Object.assign({}, existing, record);
+        if (requestedStatus === "Pending Review") jobs[editingIndex].moderationNote = "Updated by company; requires admin review before publication.";
+      } else {
+        record.id = jobs.reduce(function (m, j) { return Math.max(m, Number(j.id) || 0); }, 0) + 1;
+        record.createdAt = now;
+        jobs.push(record);
+      }
+      writeJSON(INTERNSHIPS_KEY, jobs);
+
+      var success = document.getElementById("success");
+      if (success) {
+        success.className = "alert alert-success";
+        success.textContent = requestedStatus === "Pending Review"
+          ? "Internship submitted for admin review. It will appear publicly after approval."
+          : (existing ? "Internship draft updated." : "Internship draft saved.");
+        success.style.display = "block";
+      }
+      showNotification(requestedStatus === "Pending Review" ? "Internship sent for admin review." : "Internship draft saved.", "success");
+      if (existing) { setTimeout(function () { window.location.href = "internships.html"; }, 500); }
+      else { form.reset(); var pub = document.getElementById("published"); if (pub) pub.checked = true; }
+    }, true);
+  }
+
+  function initCompanyModerationControls() {
+    var companiesBody = document.getElementById("companiesBody");
+    var jobsBody = document.getElementById("companyJobsBody");
+    if (!companiesBody && !jobsBody) return;
+
+    function refreshCompanyRows() {
+      if (!companiesBody) return;
+      var companies = readJSON(COMPANY_KEY, []);
+      var jobs = readJSON(INTERNSHIPS_KEY, []);
+      Array.prototype.slice.call(companiesBody.querySelectorAll("tr")).forEach(function (row) {
+        var first = row.querySelector("[data-toggle-company], [data-delete-company]");
+        if (!first) {
+          var companyName = row.cells[0] ? row.cells[0].textContent.trim() : "";
+          var company = companies.find(function (c) { return c.name === companyName; });
+          if (!company) return;
+          first = { getAttribute: function () { return String(company.id); } };
+        }
+        var id = first.getAttribute("data-toggle-company") || first.getAttribute("data-delete-company") || first.getAttribute("data-verify-company") || first.getAttribute("data-reject-company");
+        var company = companies.find(function (c) { return String(c.id) === String(id); });
+        if (!company || !row.cells || row.cells.length < 8) return;
+        var count = jobs.filter(function (j) { return String(j.companyId) === String(company.id); }).length;
+        if (row.cells[5]) row.cells[5].textContent = String(count);
+        if (row.cells[6]) row.cells[6].innerHTML = '<span class="badge ' + (companyIsApproved(company) ? 'badge-selected' : (company.status === 'Suspended' ? 'badge-disabled' : 'badge-shortlisted')) + '">' + esc(companyStatusLabel(company)) + '</span>';
+        if (row.cells[7]) {
+          var actions = '<div class="actions">';
+          if (companyIsApproved(company)) {
+            actions += '<button class="link-btn" data-toggle-company="' + esc(company.id) + '">Suspend</button>';
+          } else if (company.status === "Suspended" && company.verified === true) {
+            actions += '<button class="link-btn" data-toggle-company="' + esc(company.id) + '">Restore</button>';
+          } else {
+            actions += '<button class="link-btn" data-verify-company="' + esc(company.id) + '">Verify</button>';
+            if (company.status !== "Rejected") actions += '<button class="link-btn danger" data-reject-company="' + esc(company.id) + '">Reject</button>';
+          }
+          actions += '<button class="link-btn danger" data-delete-company="' + esc(company.id) + '">Delete</button></div>';
+          row.cells[7].innerHTML = actions;
+        }
+      });
+    }
+
+    function refreshJobRows() {
+      if (!jobsBody) return;
+      var companies = readJSON(COMPANY_KEY, []);
+      var jobs = readJSON(INTERNSHIPS_KEY, []);
+      Array.prototype.slice.call(jobsBody.querySelectorAll("tr")).forEach(function (row) {
+        var title = row.cells[0] ? row.cells[0].textContent.trim() : "";
+        var companyName = row.cells[1] ? row.cells[1].textContent.trim() : "";
+        var job = jobs.find(function (j) { return j.title === title && j.company === companyName; });
+        if (!job || !row.cells || row.cells.length < 6) return;
+        var company = companies.find(function (c) { return String(c.id) === String(job.companyId); });
+        if (row.cells[4]) {
+          var cls = job.status === "Published" ? "badge-selected" : (job.status === "Pending Review" ? "badge-shortlisted" : (job.status === "Rejected" || job.status === "Suspended" || job.status === "Expired" || job.status === "Archived" ? "badge-disabled" : "badge-applied"));
+          row.cells[4].innerHTML = '<span class="badge ' + cls + '">' + esc(job.status || "Draft") + '</span>';
+        }
+        if (row.cells[5]) {
+          var actions = '<div class="actions">';
+          if (job.status === "Pending Review" && companyIsApproved(company)) {
+            actions += '<button class="link-btn" data-approve-job="' + esc(job.id) + '">Approve</button><button class="link-btn danger" data-reject-job="' + esc(job.id) + '">Reject</button>';
+          } else if (job.status === "Published") {
+            actions += '<button class="link-btn" data-archive-job="' + esc(job.id) + '">Archive</button>';
+          } else if (job.status === "Rejected") {
+            actions += '<button class="link-btn" data-approve-job="' + esc(job.id) + '">Approve</button>';
+          } else if (job.status === "Draft") {
+            actions += companyIsApproved(company) ? '<button class="link-btn" data-approve-job="' + esc(job.id) + '">Approve</button>' : '';
+          } else if (job.status === "Suspended") {
+            actions += companyIsApproved(company) ? '<button class="link-btn" data-approve-job="' + esc(job.id) + '">Review / Publish</button>' : '';
+          }
+          actions += '</div>';
+          row.cells[5].innerHTML = actions;
+        }
+      });
+    }
+
+    setTimeout(function () { refreshCompanyRows(); refreshJobRows(); }, 0);
+
+    if (companiesBody) {
+      companiesBody.addEventListener("click", function (e) {
+        var verify = e.target.closest && e.target.closest("[data-verify-company]");
+        var reject = e.target.closest && e.target.closest("[data-reject-company]");
+        var toggle = e.target.closest && e.target.closest("[data-toggle-company]");
+        if (!verify && !reject && !toggle) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        var id = (verify || reject || toggle).getAttribute(verify ? "data-verify-company" : reject ? "data-reject-company" : "data-toggle-company");
+        var companies = readJSON(COMPANY_KEY, []);
+        var i = companies.findIndex(function (c) { return String(c.id) === String(id); });
+        if (i < 0) return;
+        var company = companies[i];
+        var jobs = readJSON(INTERNSHIPS_KEY, []);
+
+        if (verify) {
+          company.status = "Active";
+          company.verified = true;
+          company.approvalStatus = "Approved";
+          company.approvedAt = new Date().toISOString();
+          showNotification(company.name + " verified.", "success");
+        } else if (reject) {
+          company.status = "Rejected";
+          company.verified = false;
+          company.approvalStatus = "Rejected";
+          company.rejectedAt = new Date().toISOString();
+          jobs.forEach(function (j) { if (String(j.companyId) === String(company.id) && j.status === "Published") j.status = "Pending Review"; });
+          showNotification(company.name + " rejected.", "warning");
+        } else {
+          if (company.status === "Suspended") {
+            company.status = company.verified === true ? "Active" : "Pending";
+            if (company.status === "Active") {
+              company.approvalStatus = "Approved";
+              jobs.forEach(function (j) { if (String(j.companyId) === String(company.id) && j.status === "Suspended") j.status = "Pending Review"; });
+            }
+          } else {
+            company.status = "Suspended";
+            jobs.forEach(function (j) { if (String(j.companyId) === String(company.id) && j.status === "Published") j.status = "Suspended"; });
+          }
+          showNotification(company.name + " is now " + companyStatusLabel(company).toLowerCase() + ".", "success");
+        }
+        companies[i] = company;
+        writeJSON(COMPANY_KEY, companies);
+        writeJSON(INTERNSHIPS_KEY, jobs);
+        refreshCompanyRows();
+        refreshJobRows();
+      }, true);
+    }
+
+    if (jobsBody) {
+      jobsBody.addEventListener("click", function (e) {
+        var approve = e.target.closest && e.target.closest("[data-approve-job]");
+        var reject = e.target.closest && e.target.closest("[data-reject-job]");
+        var archive = e.target.closest && e.target.closest("[data-archive-job]");
+        var legacy = e.target.closest && e.target.closest("[data-publish-job], [data-unpublish-job]");
+        if (!approve && !reject && !archive && !legacy) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        var el = approve || reject || archive || legacy;
+        var id = el.getAttribute(approve ? "data-approve-job" : reject ? "data-reject-job" : archive ? "data-archive-job" : (el.getAttribute("data-publish-job") ? "data-publish-job" : "data-unpublish-job"));
+        var jobs = readJSON(INTERNSHIPS_KEY, []);
+        var i = jobs.findIndex(function (j) { return String(j.id) === String(id); });
+        if (i < 0) return;
+        var job = jobs[i];
+        var company = readJSON(COMPANY_KEY, []).find(function (c) { return String(c.id) === String(job.companyId); });
+
+        if (approve || (legacy && el.getAttribute("data-publish-job"))) {
+          if (!companyIsApproved(company)) { showNotification("Verify the company before publishing this internship.", "warning"); return; }
+          if (job.deadline && String(job.deadline) < todayISO()) {
+            job.status = "Expired";
+            writeJSON(INTERNSHIPS_KEY, jobs);
+            showNotification("This internship deadline has already passed.", "warning");
+          } else {
+            job.status = "Published";
+            job.moderatedAt = new Date().toISOString();
+            job.moderationNote = "Approved by admin.";
+            writeJSON(INTERNSHIPS_KEY, jobs);
+            showNotification("Internship approved and published.", "success");
+          }
+        } else if (reject) {
+          job.status = "Rejected";
+          job.moderatedAt = new Date().toISOString();
+          job.moderationNote = "Rejected by admin.";
+          writeJSON(INTERNSHIPS_KEY, jobs);
+          showNotification("Internship rejected.", "warning");
+        } else {
+          job.status = "Archived";
+          job.moderatedAt = new Date().toISOString();
+          writeJSON(INTERNSHIPS_KEY, jobs);
+          showNotification("Internship archived.", "success");
+        }
+        refreshCompanyRows();
+        refreshJobRows();
+      }, true);
+    }
   }
 
   async function loginUser(credentials) {
@@ -1211,6 +1714,12 @@
   document.addEventListener("DOMContentLoaded", function () {
     injectFavicon();
     seedIfNeeded();
+    normalizeOpportunityStates();
+    guardCompanyPage();
+    initCompanyRegisterGuard();
+    initCompanyLoginGuard();
+    initCompanyInternshipSubmitGuard();
+    initCompanyModerationControls();
     initNavigation();
     initThemeToggle();
     initSecretConsoleAccess();
@@ -1235,6 +1744,30 @@
     updateApplication: updateApplication,
     deleteApplication: deleteApplication,
     getUsers: getUsers,
+    getCompanies: getCompanies,
+    getCompanyById: getCompanyById,
+    updateCompany: updateCompany,
+    deleteCompany: deleteCompany,
+    getInternships: getInternships,
+    getInternshipsByCompany: getInternshipsByCompany,
+    getInternshipById: getInternshipById,
+    addInternship: addInternship,
+    updateInternship: updateInternship,
+    deleteInternship: deleteInternship,
+    registerCompany: registerCompany,
+    loginCompany: loginCompany,
+    companyIsApproved: companyIsApproved,
+    getPublicInternships: async function () {
+      normalizeOpportunityStates();
+      var jobs = await getInternships();
+      var companies = await getCompanies();
+      var map = {}; companies.forEach(function (c) { map[String(c.id)] = c; });
+      var today = todayISO();
+      return jobs.filter(function (j) {
+        var c = map[String(j.companyId)];
+        return j.status === "Published" && companyIsApproved(c) && (!j.deadline || String(j.deadline) >= today);
+      });
+    },
     loginUser: loginUser,
     registerUser: registerUser,
     exportApplicationsToCSV: exportApplicationsToCSV,

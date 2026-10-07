@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Company Login — InternLog</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/script.js" defer></script>
+</head>
+<body>
+  <main class="auth-wrap">
+    <section class="auth-panel" aria-label="InternLog for companies">
+      <a class="brand" href="../index.html" style="color:#fff"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog<small style="color:rgba(255,255,255,.72)">Track. Apply. Grow.</small></span></a>
+      <h1>Bring internship opportunities to students.</h1>
+      <p>Create a company presence on InternLog and publish opportunities for students to discover and apply.</p>
+      <ul>
+        <li>Publish internship opportunities</li>
+        <li>Manage applicants from one dashboard</li>
+        <li>Keep a company profile students can inspect</li>
+      </ul>
+      <p style="margin-top:22px;font-size:13.5px;background:rgba(255,255,255,.1);padding:10px 14px;border-radius:8px">Prototype mode: company accounts and internship posts are stored in this browser using localStorage.</p>
+    </section>
+    <section class="auth-form-side">
+      <div class="auth-card">
+        <h2>Company Login</h2>
+        <p class="muted">Log in to publish and manage internship opportunities.</p>
+        <div class="alert alert-error" id="formAlert" role="alert" style="display:none"></div>
+        <form id="companyLoginForm" novalidate>
+          <div class="form-group">
+            <label for="email">Work Email</label>
+            <input type="email" id="email" autocomplete="email" placeholder="hr@company.com" required>
+            <div class="field-error" id="email-error" role="alert"></div>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="password-wrap">
+              <input type="password" id="password" autocomplete="current-password" placeholder="Enter your password" required>
+              <button type="button" class="password-toggle" data-password-toggle="password">Show</button>
+            </div>
+            <div class="field-error" id="password-error" role="alert"></div>
+          </div>
+          <p style="margin-top:16px"><button class="btn" type="submit" style="width:100%">Login as Company</button></p>
+        </form>
+        <div class="auth-links">
+          <span>New company? <a href="register.html">Create company account</a></span>
+          <span><a href="../user/login.html">Student login</a></span>
+        </div>
+        <p class="muted" style="font-size:13px;margin-top:16px"><a href="../index.html">← Back to home</a></p>
+      </div>
+    </section>
+  </main>
+  <script>
+    (function () {
+      "use strict";
+      var KEY = "internlog_companies";
+
+      function read(key, fallback) {
+        try {
+          var value = JSON.parse(localStorage.getItem(key));
+          return value == null ? fallback : value;
+        } catch (e) {
+          return fallback;
+        }
+      }
+
+      function write(key, value) {
+        try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+      }
+
+      function emailOK(value) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+      }
+
+      function fieldError(input, message) {
+        if (!input) return;
+        var el = document.getElementById(input.id + "-error");
+        input.setAttribute("aria-invalid", message ? "true" : "false");
+        if (el) {
+          el.textContent = message || "";
+          el.classList.toggle("visible", !!message);
+        }
+      }
+
+      function showAlert(message, type) {
+        var alertEl = document.getElementById("formAlert");
+        if (!alertEl) return;
+        alertEl.className = "alert alert-" + (type || "error");
+        alertEl.textContent = message;
+        alertEl.style.display = "block";
+      }
+
+      function companyIsApproved(company) {
+        return !!company && company.verified === true && company.status === "Active";
+      }
+
+      function loginCompany(company) {
+        write("internlog_session", {
+          role: "company",
+          userId: company.id,
+          name: company.name,
+          email: company.email
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        var session = read("internlog_session", null);
+        if (session && session.role === "company") {
+          var existingCompanies = read(KEY, []);
+          var existing = existingCompanies.find(function (c) {
+            return String(c.id) === String(session.userId);
+          });
+          if (companyIsApproved(existing)) {
+            window.location.href = "dashboard.html";
+            return;
+          }
+          try { localStorage.removeItem("internlog_session"); } catch (e) {}
+        }
+
+        if (new URLSearchParams(window.location.search).get("pending") === "1") {
+          showAlert("Your company account is awaiting admin verification. You can log in after it is approved.", "warning");
+        }
+
+        var form = document.getElementById("companyLoginForm");
+        if (!form) return;
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          var email = document.getElementById("email");
+          var password = document.getElementById("password");
+          var ok = true;
+
+          if (!emailOK(email.value.trim())) {
+            fieldError(email, "Enter a valid work email.");
+            ok = false;
+          } else {
+            fieldError(email, "");
+          }
+
+          if (!password.value) {
+            fieldError(password, "Enter your password.");
+            ok = false;
+          } else {
+            fieldError(password, "");
+          }
+
+          if (!ok) return;
+
+          var companies = read(KEY, []);
+          var company = companies.find(function (c) {
+            return String(c.email || "").toLowerCase() === email.value.trim().toLowerCase();
+          });
+
+          if (!company || company.password !== password.value) {
+            showAlert("Invalid company email or password.", "error");
+            if (window.InternLog) window.InternLog.showNotification("Invalid company email or password.", "error");
+            return;
+          }
+
+          if (company.status === "Suspended") {
+            showAlert("This company account is suspended by the administrator.", "error");
+            return;
+          }
+
+          if (company.status === "Rejected" || company.approvalStatus === "Rejected") {
+            showAlert("This company account was rejected by the administrator.", "error");
+            return;
+          }
+
+          if (!companyIsApproved(company)) {
+            showAlert("Your company account is awaiting admin verification.", "warning");
+            return;
+          }
+
+          loginCompany(company);
+          if (window.InternLog) window.InternLog.showNotification("Welcome, " + company.name + ".", "success");
+          setTimeout(function () {
+            window.location.href = "dashboard.html";
+          }, 350);
+        });
+      });
+    }());
+  </script></body>
+</html>

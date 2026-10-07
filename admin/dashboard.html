@@ -15,7 +15,7 @@
       <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog Admin</span></a>
       <nav>
         <a href="dashboard.html">Dashboard</a>
-        <a href="users.html">Users</a>
+        <a href="users.html">Users & Companies</a>
         <a href="applications.html">Applications</a>
         <a href="profile.html">Profile</a>
       </nav>
@@ -39,6 +39,12 @@
             <p class="muted">Distribution of student internship applications.</p>
             <div class="status-bars" id="adminOverview"></div>
           </section>
+          <section class="card" aria-label="Company moderation">
+            <h3>Company & Internship Moderation</h3>
+            <p class="muted">Monitor newly registered companies and internship opportunities.</p>
+            <div id="companyModeration" style="margin-top:12px"><p class="muted">Loading moderation feed…</p></div>
+            <p style="margin-top:16px"><a class="btn btn-secondary btn-sm" href="users.html#companies">Open company management</a></p>
+          </section>
           <section class="card" aria-label="Recent activity">
             <h3>Recent Student Activity</h3>
             <div id="recentActivity"><p class="muted">Loading activity feed…</p></div>
@@ -51,5 +57,21 @@
   <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-label="Application details">
     <div class="modal"><div id="modalBody"></div></div>
   </div>
+<script>
+(function(){
+  function read(k,f){try{var v=JSON.parse(localStorage.getItem(k));return v==null?f:v;}catch(e){return f;}}
+  function esc(x){return String(x==null?"":x).replace(/[&<>\"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];});}
+  function badge(st){var cls=st==="Active"||st==="Published"?"badge-selected":st==="Pending Review"||st==="Pending"?"badge-shortlisted":"badge-disabled";return '<span class="badge '+cls+'">'+esc(st)+'</span>';}
+  document.addEventListener("DOMContentLoaded",function(){
+    var wrap=document.getElementById("companyModeration"); if(!wrap)return;
+    var companies=read("internlog_companies",[]), jobs=read("internlog_internships",[]);
+    var pendingCompanies=companies.filter(function(c){return c.verified===false || c.status==="Pending";}).slice(-4).reverse();
+    var pendingJobs=jobs.filter(function(j){return j.status==="Pending Review" || j.status==="Pending";}).slice(-4).reverse();
+    var rows=pendingCompanies.map(function(c){return '<div class="mini-row"><span><strong>'+esc(c.name)+'</strong><br><span class="muted">Company account</span></span><span>'+badge(c.verified?c.status||"Active":"Pending")+'</span></div>';});
+    rows=rows.concat(pendingJobs.map(function(j){return '<div class="mini-row"><span><strong>'+esc(j.title)+'</strong><br><span class="muted">'+esc(j.company||"Company")+'</span></span><span>'+badge(j.status)+'</span></div>'; }));
+    wrap.innerHTML=rows.length?rows.join(""):'<p class="muted">No pending company or internship moderation items.</p>';
+  });
+}());
+</script>
 </body>
 </html>

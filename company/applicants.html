@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Applicants — InternLog</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/script.js" defer></script>
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar" aria-label="Company navigation">
+      <a class="brand" href="../index.html"><span class="brand-mark">IL</span><span>InternLog</span></a>
+      <nav><a href="dashboard.html">Dashboard</a><a href="internships.html">Internships</a><a href="add-internship.html">Post Internship</a><a class="active" href="applicants.html">Applicants</a><a href="profile.html">Company Profile</a></nav>
+      <div class="side-foot"><nav><a href="../index.html" data-logout>Logout</a></nav></div>
+    </aside>
+    <div class="main">
+      <header class="topbar"><button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button><h1>Applicants</h1><div class="spacer"></div><div class="user-chip"><span class="avatar" id="avatar">C</span><span><strong id="companyName"></strong><br><span class="muted" id="companyEmail"></span></span></div></header>
+      <main class="content">
+        <p class="muted">Review students who have applied to your internship opportunities. Status updates are stored in the browser for this prototype.</p>
+        <div class="toolbar"><input class="search-input" id="search" type="search" placeholder="Search applicants, roles, colleges, or email"><select id="status"><option value="all">All statuses</option><option>Applied</option><option>Shortlisted</option><option>Interview</option><option>Selected</option><option>Rejected</option></select></div>
+        <div class="table-wrap"><table><thead><tr><th>Student</th><th>Opportunity</th><th>College</th><th>Applied</th><th>Status</th><th>Action</th></tr></thead><tbody id="body"></tbody></table></div>
+      </main>
+    </div>
+  </div>
+  <div class="modal-backdrop" id="appModal" role="dialog" aria-modal="true" aria-label="Applicant details"><div class="modal"><div class="modal-header"><h3 id="modalTitle">Applicant</h3><button class="modal-close-icon" id="close" aria-label="Close dialog">&times;</button></div><div id="modalBody"></div></div></div>
+  <script>
+    (function(){
+      "use strict";
+      var S="internlog_session",C="internlog_companies",J="internlog_internships",A="internlog_applications",U="internlog_users";
+      function read(k,f){try{var v=JSON.parse(localStorage.getItem(k));return v==null?f:v;}catch(e){return f;}}
+      function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+      function esc(s){return String(s==null?"":s).replace(/[&<>\"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];});}
+      function fmtDate(v){if(!v)return"—";var p=v.split("-");return p.length===3?new Date(Number(p[0]),Number(p[1])-1,Number(p[2])).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}):esc(v);}
+      function badge(v){var cls=v==="Shortlisted"?"badge-shortlisted":v==="Interview"?"badge-interview":v==="Selected"?"badge-selected":v==="Rejected"?"badge-rejected":"badge-applied";return'<span class="badge '+cls+'">'+esc(v||"Applied")+'</span>';}
+      function current(){var s=read(S,null);if(!s||s.role!=="company")return null;var c=read(C,[]).find(function(x){return String(x.id)===String(s.userId);});return c?{s:s,c:c}:null;}
+      document.addEventListener("DOMContentLoaded",function(){var ctx=current();if(!ctx){window.location.href="login.html";return;}document.getElementById("companyName").textContent=ctx.c.name;document.getElementById("companyEmail").textContent=ctx.c.email;document.getElementById("avatar").textContent=ctx.c.name.charAt(0).toUpperCase();document.querySelector("[data-logout]").addEventListener("click",function(e){e.preventDefault();localStorage.removeItem(S);window.location.href="../index.html";});
+        var jobs=read(J,[]).filter(function(j){return String(j.companyId)===String(ctx.c.id)||String(j.company).toLowerCase()===String(ctx.c.name).toLowerCase();}), jobMap={};jobs.forEach(function(j){jobMap[j.id]=j;});var apps=read(A,[]),users=read(U,[]), rows=apps.filter(function(a){return jobMap[a.internshipId]||String(a.company||"").toLowerCase()===String(ctx.c.name).toLowerCase();});
+        function render(){var q=document.getElementById("search").value.trim().toLowerCase(), st=document.getElementById("status").value, filtered=rows.filter(function(a){var user=users.find(function(u){return String(u.id)===String(a.userId);})||{};var hay=[a.studentName||user.name||"",a.studentEmail||user.email||"",user.college||"",a.role||""].join(" ").toLowerCase();return (!q||hay.indexOf(q)!==-1)&&(st==="all"||a.status===st);}), body=document.getElementById("body");if(!filtered.length){body.innerHTML='<tr><td colspan="6"><div class="empty"><h3>No applicants yet</h3><p>Students who apply from the prototype opportunity board will appear here.</p></div></td></tr>';return;}body.innerHTML=filtered.map(function(a){var u=users.find(function(x){return String(x.id)===String(a.userId);})||{},job=jobMap[a.internshipId];return'<tr><td><strong>'+esc(a.studentName||u.name||"Unknown Student")+'</strong><br><span class="muted">'+esc(a.studentEmail||u.email||"")+'</span></td><td>'+esc(a.role||(job&&job.title)||"Internship")+'</td><td>'+esc(u.college||"—")+'</td><td>'+fmtDate(a.appliedDate)+'</td><td>'+badge(a.status)+'</td><td><button class="btn btn-secondary btn-sm" data-view="'+a.id+'">Review</button></td></tr>';}).join("");body.querySelectorAll("[data-view]").forEach(function(btn){btn.addEventListener("click",function(){var app=rows.find(function(a){return String(a.id)===String(btn.getAttribute("data-view"));});if(!app)return;var u=users.find(function(x){return String(x.id)===String(app.userId);})||{},job=jobMap[app.internshipId]||{};document.getElementById("modalTitle").textContent=app.studentName||u.name||"Applicant";document.getElementById("modalBody").innerHTML='<dl><dt>Email</dt><dd>'+esc(app.studentEmail||u.email)+'</dd><dt>College</dt><dd>'+esc(u.college||"—")+'</dd><dt>Course</dt><dd>'+esc(u.course||"—")+'</dd><dt>Opportunity</dt><dd>'+esc(app.role||job.title||"—")+'</dd><dt>Applied</dt><dd>'+fmtDate(app.appliedDate)+'</dd><dt>Current status</dt><dd>'+badge(app.status)+'</dd></dl><div class="form-group"><label for="newStatus">Update status</label><select id="newStatus"><option>Applied</option><option>Shortlisted</option><option>Interview</option><option>Selected</option><option>Rejected</option></select></div><div class="modal-footer"><button class="btn btn-sm" id="saveStatus">Save Status</button></div>';document.getElementById("newStatus").value=app.status||"Applied";document.getElementById("appModal").classList.add("open");document.getElementById("saveStatus").onclick=function(){var all=read(A,[]),i=all.findIndex(function(x){return String(x.id)===String(app.id);});if(i>=0){all[i].status=document.getElementById("newStatus").value;all[i].companyUpdatedAt=new Date().toISOString();write(A,all);document.getElementById("appModal").classList.remove("open");rows=read(A,[]).filter(function(a){return jobMap[a.internshipId]||String(a.company||"").toLowerCase()===String(ctx.c.name).toLowerCase();});render();if(window.InternLog)window.InternLog.showNotification("Applicant status updated.","success");}};});});}
+        document.getElementById("search").addEventListener("input",render);document.getElementById("status").addEventListener("change",render);document.getElementById("close").addEventListener("click",function(){document.getElementById("appModal").classList.remove("open");});document.getElementById("appModal").addEventListener("click",function(e){if(e.target===this)this.classList.remove("open");});render();
+      });
+    }());
+  </script>
+</body>
+</html>

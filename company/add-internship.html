@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="docTitle">Post Internship — InternLog</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/script.js" defer></script>
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar" aria-label="Company navigation">
+      <a class="brand" href="../index.html"><span class="brand-mark">IL</span><span>InternLog</span></a>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="internships.html">Internships</a>
+        <a class="active" href="add-internship.html">Post Internship</a>
+        <a href="applicants.html">Applicants</a>
+        <a href="profile.html">Company Profile</a>
+      </nav>
+      <div class="side-foot"><nav><a href="../index.html" data-logout>Logout</a></nav></div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button>
+        <h1 id="pageTitle">Post Internship</h1>
+        <div class="spacer"></div>
+        <div class="user-chip">
+          <span class="avatar" id="avatar">C</span>
+          <span><strong id="companyName"></strong><br><span class="muted" id="companyEmail"></span></span>
+        </div>
+      </header>
+
+      <main class="content">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap">
+          <div>
+            <h2 style="margin:0 0 6px">Create an opportunity</h2>
+            <p class="muted" style="margin:0">Give students enough detail to understand the role, expectations, and deadline.</p>
+          </div>
+        </div>
+
+        <section class="card" style="margin-top:18px">
+          <div class="alert alert-success" id="success" style="display:none"></div>
+          <form id="internshipForm" novalidate>
+            <div class="form-group">
+              <label for="title">Internship Title *</label>
+              <input id="title" type="text" placeholder="Frontend Developer Intern" required>
+              <div class="field-error" id="title-error"></div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="location">Location *</label>
+                <input id="location" type="text" placeholder="Kochi, Kerala / Remote" required>
+                <div class="field-error" id="location-error"></div>
+              </div>
+              <div class="form-group">
+                <label for="type">Internship Type *</label>
+                <select id="type">
+                  <option>On-site</option>
+                  <option>Hybrid</option>
+                  <option>Remote</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="stipend">Monthly Stipend (₹)</label>
+                <input id="stipend" type="number" min="0" step="500" placeholder="15000">
+              </div>
+              <div class="form-group">
+                <label for="positions">Open Positions</label>
+                <input id="positions" type="number" min="1" step="1" value="1">
+              </div>
+              <div class="form-group">
+                <label for="deadline">Application Deadline *</label>
+                <input id="deadline" type="date" required>
+                <div class="field-error" id="deadline-error"></div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="skills">Required Skills</label>
+              <input id="skills" type="text" placeholder="React, JavaScript, Git">
+            </div>
+
+            <div class="form-group">
+              <label for="description">Description *</label>
+              <textarea id="description" placeholder="Describe the work, expected outcomes, mentorship, and team context." required></textarea>
+              <div class="field-error" id="description-error"></div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="education">Preferred Education</label>
+                <input id="education" type="text" placeholder="B.Tech / B.E. / equivalent">
+              </div>
+              <div class="form-group">
+                <label for="applyUrl">External Apply URL</label>
+                <input id="applyUrl" type="url" placeholder="https://careers.example.com/internship">
+                <div class="field-error" id="applyUrl-error"></div>
+              </div>
+            </div>
+
+            <div class="checkbox-row">
+              <input type="checkbox" id="published" checked>
+              <label for="published" style="font-weight:400">
+                Submit this opportunity for admin review. It becomes public only after approval.
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <div class="form-actions-left">
+                <button type="submit" class="btn" id="submitButton">Submit for Review</button>
+                <a class="btn btn-secondary" href="dashboard.html">Cancel</a>
+              </div>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var session = null;
+      try { session = JSON.parse(localStorage.getItem("internlog_session")); } catch (e) {}
+
+      var companies = [];
+      try { companies = JSON.parse(localStorage.getItem("internlog_companies")) || []; } catch (e) {}
+
+      var company = session && session.role === "company"
+        ? companies.find(function (c) { return String(c.id) === String(session.userId); })
+        : null;
+
+      if (!company) return;
+
+      var companyName = document.getElementById("companyName");
+      var companyEmail = document.getElementById("companyEmail");
+      var avatar = document.getElementById("avatar");
+      if (companyName) companyName.textContent = company.name || "Company";
+      if (companyEmail) companyEmail.textContent = company.email || "";
+      if (avatar) avatar.textContent = (company.name || "C").charAt(0).toUpperCase();
+
+      var deadline = document.getElementById("deadline");
+      var today = new Date();
+      var isoToday = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0");
+      if (deadline) deadline.min = isoToday;
+
+      var editId = new URLSearchParams(window.location.search).get("edit");
+      if (!editId) return;
+
+      var jobs = [];
+      try { jobs = JSON.parse(localStorage.getItem("internlog_internships")) || []; } catch (e) {}
+      var existing = jobs.find(function (j) {
+        return String(j.id) === String(editId) && String(j.companyId) === String(company.id);
+      });
+
+      if (!existing) return;
+
+      document.getElementById("docTitle").textContent = "Edit Internship — InternLog";
+      document.getElementById("pageTitle").textContent = "Edit Internship";
+      document.getElementById("submitButton").textContent = "Submit Changes for Review";
+
+      document.getElementById("title").value = existing.title || "";
+      document.getElementById("location").value = existing.location || "";
+      document.getElementById("type").value = existing.internshipType || "On-site";
+      document.getElementById("stipend").value = existing.stipend || "";
+      document.getElementById("positions").value = existing.positions || 1;
+      document.getElementById("deadline").value = existing.deadline || "";
+      document.getElementById("skills").value = (existing.skills || []).join(", ");
+      document.getElementById("description").value = existing.description || "";
+      document.getElementById("education").value = existing.education || "";
+      document.getElementById("applyUrl").value = existing.applyUrl || "";
+      document.getElementById("published").checked = existing.status !== "Draft" && existing.status !== "Rejected";
+    });
+  </script>
+</body>
+</html>

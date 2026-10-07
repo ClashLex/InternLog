@@ -21,16 +21,18 @@
       </nav>
       <div class="side-foot"><nav><a href="../index.html" data-logout>Logout</a></nav></div>
     </aside>
+
     <div class="main">
       <header class="topbar">
         <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button>
-        <h1>Manage Student Accounts</h1>
+        <h1>Users & Companies</h1>
         <div class="spacer"></div>
         <div class="user-chip">
           <span class="avatar" data-avatar>A</span>
           <span><strong data-user-name>Admin</strong><br><span class="muted" data-user-email></span></span>
         </div>
       </header>
+
       <main class="content">
         <div class="toolbar" role="search">
           <input type="text" id="userSearch" class="search-input" placeholder="Search by name, email, or college…" aria-label="Search users">
@@ -40,14 +42,184 @@
             <option>Disabled</option>
           </select>
         </div>
+
         <div class="table-wrap">
           <table aria-label="Registered users">
             <thead><tr><th>User ID</th><th>Name</th><th>Email</th><th>College</th><th>Course</th><th>Registered</th><th>Applications</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody id="usersBody"></tbody>
           </table>
         </div>
+
+        <section class="card" id="companies" style="margin-top:22px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap">
+            <div>
+              <h2 style="margin:0 0 6px">Company Accounts</h2>
+              <p class="muted" style="margin:0">Verify, reject, suspend, or remove company accounts before they can use the company workspace.</p>
+            </div>
+            <a class="btn btn-secondary btn-sm" href="../company/register.html">Open company registration</a>
+          </div>
+          <div class="table-wrap" style="margin-top:14px">
+            <table aria-label="Registered companies">
+              <thead><tr><th>Company</th><th>Email</th><th>Location</th><th>Industry</th><th>Registered</th><th>Internships</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="companiesBody">
+                <tr><td colspan="8" class="muted">Loading company accounts…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card" id="internships" style="margin-top:22px">
+          <h2 style="margin:0 0 6px">Internship Moderation</h2>
+          <p class="muted">Company opportunities remain private until an approved company submits them and an admin approves them.</p>
+          <div class="table-wrap" style="margin-top:14px">
+            <table aria-label="Company internship opportunities">
+              <thead><tr><th>Opportunity</th><th>Company</th><th>Location</th><th>Deadline</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="companyJobsBody">
+                <tr><td colspan="6" class="muted">Loading internship opportunities…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
       </main>
     </div>
   </div>
+
+<script>
+(function () {
+  "use strict";
+
+  function read(key, fallback) {
+    try {
+      var value = JSON.parse(localStorage.getItem(key));
+      return value == null ? fallback : value;
+    } catch (e) {
+      return fallback;
+    }
+  }
+
+  function esc(value) {
+    return String(value == null ? "" : value).replace(/[&<>"']/g, function (c) {
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  function fmtDate(value) {
+    if (!value) return "—";
+    var clean = String(value).split("T")[0];
+    var parts = clean.split("-");
+    if (parts.length !== 3) return esc(clean);
+    var date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    if (isNaN(date.getTime())) return esc(clean);
+    return date.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  }
+
+  function companyBadge(company) {
+    var label = "Pending Verification";
+    var cls = "badge-shortlisted";
+    if (company.status === "Rejected" || company.approvalStatus === "Rejected") {
+      label = "Rejected";
+      cls = "badge-disabled";
+    } else if (company.status === "Suspended") {
+      label = "Suspended";
+      cls = "badge-disabled";
+    } else if (company.verified === true && company.status === "Active") {
+      label = "Active";
+      cls = "badge-selected";
+    }
+    return '<span class="badge ' + cls + '">' + esc(label) + '</span>';
+  }
+
+  function jobBadge(status) {
+    var value = status || "Draft";
+    var cls = value === "Published" ? "badge-selected" :
+      (value === "Pending Review" ? "badge-shortlisted" :
+      (value === "Draft" ? "badge-applied" : "badge-disabled"));
+    return '<span class="badge ' + cls + '">' + esc(value) + '</span>';
+  }
+
+  function renderModerationTables() {
+    var companiesBody = document.getElementById("companiesBody");
+    var jobsBody = document.getElementById("companyJobsBody");
+    var companies = read("internlog_companies", []);
+    var jobs = read("internlog_internships", []);
+
+    if (companiesBody) {
+      if (!companies.length) {
+        companiesBody.innerHTML = '<tr><td colspan="8" class="muted">No company accounts yet.</td></tr>';
+      } else {
+        companiesBody.innerHTML = companies.map(function (company) {
+          var count = jobs.filter(function (job) {
+            return String(job.companyId) === String(company.id);
+          }).length;
+
+          var actions = '<div class="actions">';
+          if (company.verified === true && company.status === "Active") {
+            actions += '<button class="link-btn" type="button" data-toggle-company="' + esc(company.id) + '">Suspend</button>';
+          } else if (company.status === "Suspended" && company.verified === true) {
+            actions += '<button class="link-btn" type="button" data-toggle-company="' + esc(company.id) + '">Restore</button>';
+          } else if (company.status !== "Rejected") {
+            actions += '<button class="link-btn" type="button" data-verify-company="' + esc(company.id) + '">Verify</button>';
+            actions += '<button class="link-btn danger" type="button" data-reject-company="' + esc(company.id) + '">Reject</button>';
+          } else {
+            actions += '<button class="link-btn" type="button" data-verify-company="' + esc(company.id) + '">Verify</button>';
+          }
+          actions += '<button class="link-btn danger" type="button" data-delete-company="' + esc(company.id) + '">Delete</button>';
+          actions += '</div>';
+
+          return '<tr>' +
+            '<td><strong>' + esc(company.name) + '</strong></td>' +
+            '<td>' + esc(company.email) + '</td>' +
+            '<td>' + esc(company.location || "—") + '</td>' +
+            '<td>' + esc(company.industry || "—") + '</td>' +
+            '<td>' + fmtDate(company.registeredDate) + '</td>' +
+            '<td>' + count + '</td>' +
+            '<td>' + companyBadge(company) + '</td>' +
+            '<td>' + actions + '</td>' +
+            '</tr>';
+        }).join("");
+      }
+    }
+
+    if (jobsBody) {
+      if (!jobs.length) {
+        jobsBody.innerHTML = '<tr><td colspan="6" class="muted">No company internship opportunities yet.</td></tr>';
+      } else {
+        jobsBody.innerHTML = jobs.slice().sort(function (a, b) {
+          return String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
+        }).map(function (job) {
+          var actions = '<div class="actions">';
+          if (job.status === "Pending Review") {
+            actions += '<button class="link-btn" type="button" data-approve-job="' + esc(job.id) + '">Approve</button>';
+            actions += '<button class="link-btn danger" type="button" data-reject-job="' + esc(job.id) + '">Reject</button>';
+          } else if (job.status === "Published") {
+            actions += '<button class="link-btn" type="button" data-archive-job="' + esc(job.id) + '">Archive</button>';
+          } else if (job.status === "Rejected") {
+            actions += '<button class="link-btn" type="button" data-approve-job="' + esc(job.id) + '">Approve</button>';
+          }
+          actions += '</div>';
+
+          return '<tr>' +
+            '<td><strong>' + esc(job.title) + '</strong></td>' +
+            '<td>' + esc(job.company) + '</td>' +
+            '<td>' + esc(job.location || "—") + '</td>' +
+            '<td>' + fmtDate(job.deadline) + '</td>' +
+            '<td>' + jobBadge(job.status) + '</td>' +
+            '<td>' + actions + '</td>' +
+            '</tr>';
+        }).join("");
+      }
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    renderModerationTables();
+
+    // The actual moderation actions are intentionally handled by the
+    // shared js/script.js. This page only renders the rows and action data
+    // attributes so there is one source of truth for moderation rules.
+    setTimeout(renderModerationTables, 50);
+  });
+}());
+</script>
 </body>
 </html>

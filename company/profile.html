@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Company Profile — InternLog</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/script.js" defer></script>
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar" aria-label="Company navigation">
+      <a class="brand" href="../index.html"><span class="brand-mark">IL</span><span>InternLog</span></a>
+      <nav><a href="dashboard.html">Dashboard</a><a href="internships.html">Internships</a><a href="add-internship.html">Post Internship</a><a href="applicants.html">Applicants</a><a class="active" href="profile.html">Company Profile</a></nav>
+      <div class="side-foot"><nav><a href="../index.html" data-logout>Logout</a></nav></div>
+    </aside>
+    <div class="main">
+      <header class="topbar"><button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button><h1>Company Profile</h1><div class="spacer"></div><div class="user-chip"><span class="avatar" id="avatar">C</span><span><strong id="companyNameChip"></strong><br><span class="muted" id="companyEmailChip"></span></span></div></header>
+      <main class="content">
+        <section class="card"><div class="profile-head"><span class="profile-avatar" id="avatarBig">C</span><div><h2 id="profileName">Company</h2><p class="muted" id="profileMeta"></p></div></div></section>
+        <div class="grid-2" style="margin-top:18px">
+          <section class="card"><h3>Company Information</h3><form id="profileForm"><div class="form-group"><label for="name">Company Name *</label><input id="name" type="text" required></div><div class="form-group"><label for="email">Work Email *</label><input id="email" type="email" required></div><div class="form-group"><label for="website">Website</label><input id="website" type="url" placeholder="https://example.com"></div><div class="form-group"><label for="location">Location *</label><input id="location" type="text" required></div><div class="form-group"><label for="industry">Industry</label><input id="industry" type="text"></div><div class="form-group"><label for="description">Company Description</label><textarea id="description" placeholder="What does your company build or work on?"></textarea></div><button class="btn btn-sm" type="submit">Save Company Profile</button></form></section>
+          <section class="card"><h3>Account Settings</h3><p class="muted">Change the prototype company password stored in this browser.</p><form id="passwordForm" style="margin-top:16px"><div class="form-group"><label for="current">Current Password</label><input id="current" type="password" required></div><div class="form-group"><label for="next">New Password</label><input id="next" type="password" required></div><div class="form-group"><label for="confirm">Confirm New Password</label><input id="confirm" type="password" required></div><button class="btn btn-secondary btn-sm" type="submit">Change Password</button></form><hr style="border:0;border-top:1px solid var(--border);margin:22px 0"><div class="admin-note">Prototype account status: <strong id="status"></strong>. Before production, passwords should never be stored in localStorage.</div></section>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script>
+    (function(){
+      "use strict";
+      var S="internlog_session",K="internlog_companies";
+      function read(k,f){try{var v=JSON.parse(localStorage.getItem(k));return v==null?f:v;}catch(e){return f;}}
+      function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+      function auth(){var s=read(S,null);if(!s||s.role!=="company"){window.location.href="login.html";return null;}return s;}
+      function validEmail(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);}
+      document.addEventListener("DOMContentLoaded",function(){var session=auth();if(!session)return;var companies=read(K,[]),index=companies.findIndex(function(c){return String(c.id)===String(session.userId);});if(index<0){localStorage.removeItem(S);window.location.href="login.html";return;}var c=companies[index];function paint(){document.getElementById("companyNameChip").textContent=c.name;document.getElementById("companyEmailChip").textContent=c.email;document.getElementById("avatar").textContent=c.name.charAt(0).toUpperCase();document.getElementById("avatarBig").textContent=c.name.charAt(0).toUpperCase();document.getElementById("profileName").textContent=c.name;document.getElementById("profileMeta").textContent=[c.industry,c.location].filter(Boolean).join(" · ")||"Company profile";document.getElementById("name").value=c.name||"";document.getElementById("email").value=c.email||"";document.getElementById("website").value=c.website||"";document.getElementById("location").value=c.location||"";document.getElementById("industry").value=c.industry||"";document.getElementById("description").value=c.description||"";document.getElementById("status").textContent=c.status||"Active";}paint();document.querySelector("[data-logout]").addEventListener("click",function(e){e.preventDefault();localStorage.removeItem(S);window.location.href="../index.html";});document.getElementById("profileForm").addEventListener("submit",function(e){e.preventDefault();var name=document.getElementById("name").value.trim(),email=document.getElementById("email").value.trim(),website=document.getElementById("website").value.trim(),location=document.getElementById("location").value.trim();if(name.length<2||!validEmail(email)||!location){if(window.InternLog)window.InternLog.showNotification("Check the required company fields.","warning");return;}if(website){try{var u=new URL(website);if(!/^https?:$/.test(u.protocol))throw 0;}catch(x){if(window.InternLog)window.InternLog.showNotification("Use a valid http(s) website URL.","warning");return;}}c.name=name;c.email=email;c.website=website;c.location=location;c.industry=document.getElementById("industry").value.trim();c.description=document.getElementById("description").value.trim();companies[index]=c;write(K,companies);write(S,{role:"company",userId:c.id,name:c.name,email:c.email});paint();if(window.InternLog)window.InternLog.showNotification("Company profile saved.","success");});document.getElementById("passwordForm").addEventListener("submit",function(e){e.preventDefault();var cur=document.getElementById("current").value,next=document.getElementById("next").value,confirm=document.getElementById("confirm").value;if(cur!==c.password){if(window.InternLog)window.InternLog.showNotification("Current password is incorrect.","error");return;}if(next.length<8||!/[A-Za-z]/.test(next)||!/[0-9]/.test(next)){if(window.InternLog)window.InternLog.showNotification("New password must be 8+ characters with letters and numbers.","warning");return;}if(next!==confirm){if(window.InternLog)window.InternLog.showNotification("New passwords do not match.","warning");return;}c.password=next;companies[index]=c;write(K,companies);document.getElementById("passwordForm").reset();if(window.InternLog)window.InternLog.showNotification("Password changed.","success");});});
+    }());
+  </script>
+</body>
+</html>

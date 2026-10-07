@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Internship Moderation — InternLog Admin</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/script.js" defer></script>
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar" aria-label="Admin navigation">
+      <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog Admin</span></a>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="users.html">Users & Companies</a>
+        <a href="internships.html" aria-current="page">Internship Moderation</a>
+        <a href="applications.html">Applications</a>
+        <a href="profile.html">Profile</a>
+      </nav>
+      <div class="side-foot"><nav><a href="../index.html" data-logout>Logout</a></nav></div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button>
+        <h1>Internship Moderation</h1>
+        <div class="spacer"></div>
+        <div class="user-chip">
+          <span class="avatar" data-avatar>A</span>
+          <span><strong data-user-name>Admin</strong><br><span class="muted" data-user-email></span></span>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="card" style="margin-bottom:18px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap">
+            <div>
+              <h2 style="margin:0 0 6px">Company opportunities</h2>
+              <p class="muted" style="margin:0">Review submissions before they become visible to students.</p>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <input id="jobSearch" class="search-input" type="search" placeholder="Search title or company…" aria-label="Search internships">
+              <select id="jobStatus" aria-label="Filter internships by status">
+                <option value="All">All statuses</option>
+                <option value="Pending Review">Pending Review</option>
+                <option value="Published">Published</option>
+                <option value="Rejected">Rejected</option>
+                <option value="Draft">Draft</option>
+                <option value="Suspended">Suspended</option>
+                <option value="Expired">Expired</option>
+                <option value="Archived">Archived</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <div class="table-wrap">
+          <table aria-label="Internship moderation queue">
+            <thead>
+              <tr>
+                <th>Opportunity</th>
+                <th>Company</th>
+                <th>Location</th>
+                <th>Deadline</th>
+                <th>Posted</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="jobsBody"></tbody>
+          </table>
+        </div>
+
+        <div id="emptyState" class="card" style="display:none;margin-top:18px;text-align:center">
+          <h2 style="margin:0 0 8px">No internships found</h2>
+          <p class="muted" style="margin:0">There are no company opportunities matching the current filters.</p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      function esc(value) {
+        return String(value == null ? "" : value).replace(/[&<>"']/g, function (c) {
+          return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
+        });
+      }
+
+      function readSession() {
+        try { return JSON.parse(localStorage.getItem("internlog_session") || "null"); }
+        catch (e) { return null; }
+      }
+
+      function formatDate(value) {
+        if (!value) return "—";
+        var clean = String(value).split("T")[0];
+        var parts = clean.split("-");
+        if (parts.length !== 3) return clean;
+        return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])).toLocaleDateString("en-IN", {
+          day: "numeric", month: "short", year: "numeric"
+        });
+      }
+
+      function badge(status) {
+        var cls = "badge-applied";
+        if (status === "Published") cls = "badge-selected";
+        else if (status === "Pending Review" || status === "Pending") cls = "badge-shortlisted";
+        else if (["Rejected", "Suspended", "Expired", "Archived"].indexOf(status) !== -1) cls = "badge-disabled";
+        return '<span class="badge ' + cls + '">' + esc(status || "Draft") + '</span>';
+      }
+
+      function actionButtons(job, company) {
+        var html = '<div class="actions">';
+        var approvedCompany = window.InternLog.companyIsApproved(company);
+        if (job.status === "Pending Review" && approvedCompany) {
+          html += '<button class="link-btn" data-approve="' + esc(job.id) + '">Approve</button>';
+          html += '<button class="link-btn danger" data-reject="' + esc(job.id) + '">Reject</button>';
+        } else if (job.status === "Rejected") {
+          html += approvedCompany ? '<button class="link-btn" data-approve="' + esc(job.id) + '">Approve</button>' : '';
+        } else if (job.status === "Published") {
+          html += '<button class="link-btn" data-archive="' + esc(job.id) + '">Archive</button>';
+        } else if (job.status === "Suspended" && approvedCompany) {
+          html += '<button class="link-btn" data-approve="' + esc(job.id) + '">Review / Publish</button>';
+        }
+        html += '</div>';
+        return html;
+      }
+
+      async function render() {
+        var body = document.getElementById("jobsBody");
+        var empty = document.getElementById("emptyState");
+        if (!body || !window.InternLog) return;
+
+        var query = (document.getElementById("jobSearch").value || "").toLowerCase().trim();
+        var filter = document.getElementById("jobStatus").value || "All";
+        var jobs = await window.InternLog.getInternships();
+        var companies = await window.InternLog.getCompanies();
+        var companyMap = {};
+        companies.forEach(function (company) { companyMap[String(company.id)] = company; });
+
+        var visible = jobs.filter(function (job) {
+          var company = companyMap[String(job.companyId)] || {};
+          var haystack = (String(job.title || "") + " " + String(job.company || company.name || "") + " " + String(job.location || "")).toLowerCase();
+          return (!query || haystack.indexOf(query) !== -1) && (filter === "All" || String(job.status || "Draft") === filter);
+        }).sort(function (a, b) {
+          return String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
+        });
+
+        body.innerHTML = visible.map(function (job) {
+          var company = companyMap[String(job.companyId)] || null;
+          return '<tr>' +
+            '<td><strong>' + esc(job.title) + '</strong><br><span class="muted">' + esc((job.skills || []).slice(0, 3).join(" · ")) + '</span></td>' +
+            '<td>' + esc(job.company || (company && company.name) || "Unknown company") + '</td>' +
+            '<td>' + esc(job.location || "—") + '</td>' +
+            '<td>' + formatDate(job.deadline) + '</td>' +
+            '<td>' + formatDate(job.createdAt) + '</td>' +
+            '<td>' + badge(job.status) + '</td>' +
+            '<td>' + actionButtons(job, company) + '</td>' +
+          '</tr>';
+        }).join("");
+
+        empty.style.display = visible.length ? "none" : "block";
+      }
+
+      async function moderate(type, id) {
+        var job = await window.InternLog.getInternshipById(id);
+        if (!job) return;
+        var companies = await window.InternLog.getCompanies();
+        var company = companies.find(function (c) { return String(c.id) === String(job.companyId); }) || null;
+
+        if (type === "approve") {
+          if (!window.InternLog.companyIsApproved(company)) {
+            window.InternLog.showNotification("Verify the company before publishing this internship.", "warning");
+            return;
+          }
+          var today = new Date();
+          var deadline = String(job.deadline || "");
+          var todayISO = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0");
+          if (deadline && deadline < todayISO) {
+            await window.InternLog.updateInternship(id, {
+              status: "Expired",
+              expiredAt: new Date().toISOString(),
+              moderatedAt: new Date().toISOString()
+            });
+            window.InternLog.showNotification("This internship deadline has already passed.", "warning");
+          } else {
+            await window.InternLog.updateInternship(id, {
+              status: "Published",
+              moderatedAt: new Date().toISOString(),
+              moderationNote: "Approved by admin."
+            });
+            window.InternLog.showNotification("Internship approved and published.", "success");
+          }
+        } else if (type === "reject") {
+          await window.InternLog.updateInternship(id, {
+            status: "Rejected",
+            moderatedAt: new Date().toISOString(),
+            moderationNote: "Rejected by admin."
+          });
+          window.InternLog.showNotification("Internship rejected.", "warning");
+        } else if (type === "archive") {
+          await window.InternLog.updateInternship(id, {
+            status: "Archived",
+            moderatedAt: new Date().toISOString()
+          });
+          window.InternLog.showNotification("Internship archived.", "success");
+        }
+        render();
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        var session = readSession();
+        if (!session || session.role !== "admin") {
+          window.location.href = "login.html";
+          return;
+        }
+
+        render();
+        document.getElementById("jobSearch").addEventListener("input", render);
+        document.getElementById("jobStatus").addEventListener("change", render);
+
+        document.getElementById("jobsBody").addEventListener("click", function (event) {
+          var target = event.target.closest && event.target.closest("button[data-approve], button[data-reject], button[data-archive]");
+          if (!target) return;
+          var id = target.getAttribute("data-approve") || target.getAttribute("data-reject") || target.getAttribute("data-archive");
+          var type = target.hasAttribute("data-approve") ? "approve" : target.hasAttribute("data-reject") ? "reject" : "archive";
+          moderate(type, id);
+        });
+      });
+    }());
+  </script>
+</body>
+</html>

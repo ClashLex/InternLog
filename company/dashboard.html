@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Company Dashboard — InternLog</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/script.js" defer></script>
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar" aria-label="Company navigation">
+      <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog</span></a>
+      <nav>
+        <a class="active" href="dashboard.html">Dashboard</a>
+        <a href="internships.html">Internships</a>
+        <a href="add-internship.html">Post Internship</a>
+        <a href="applicants.html">Applicants</a>
+        <a href="profile.html">Company Profile</a>
+      </nav>
+      <div class="side-foot"><nav><a href="../index.html" data-company-logout>Logout</a></nav></div>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button>
+        <h1>Company Dashboard</h1>
+        <div class="spacer"></div>
+        <div class="user-chip"><span class="avatar" id="companyAvatar">C</span><span><strong id="companyNameChip">Company</strong><br><span class="muted" id="companyEmailChip"></span></span></div>
+      </header>
+      <main class="content">
+        <p class="muted">Welcome back, <strong id="welcomeName">Company</strong>. Manage your internship opportunities and applicants here.</p>
+        <div class="stat-grid" id="stats"></div>
+        <div class="grid-2">
+          <section class="card"><h3>Recent opportunities</h3><p class="muted">Your latest internship posts and their current status.</p><div id="recentPosts" style="margin-top:12px"></div></section>
+          <section class="card"><h3>Quick actions</h3><p class="muted">Move from an idea to a published student opportunity.</p><div class="cta-row" style="margin-top:16px"><a class="btn btn-sm" href="add-internship.html">+ Post Internship</a><a class="btn btn-secondary btn-sm" href="applicants.html">View Applicants</a></div><div id="profileNote" class="admin-note" style="margin-top:16px"></div></section>
+        </div>
+        <section class="card" style="margin-top:18px"><h3>Prototype workflow</h3><p class="muted">Company data, internship posts, and prototype application links live in browser localStorage. This keeps GitHub Pages deployment simple while the product shape is being validated.</p></section>
+      </main>
+    </div>
+  </div>
+  <script>
+    (function () {
+      "use strict";
+      var COMPANY_KEY = "internlog_companies", JOB_KEY = "internlog_internships", APP_KEY = "internlog_applications", SESSION_KEY = "internlog_session";
+      function read(key, fallback) { try { var v = JSON.parse(localStorage.getItem(key)); return v == null ? fallback : v; } catch (e) { return fallback; } }
+      function esc(s) { return String(s == null ? "" : s).replace(/[&<>\"']/g, function (c) { return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }
+      function badge(status) { var cls = status === "Published" ? "badge-selected" : status === "Pending Review" ? "badge-shortlisted" : status === "Archived" ? "badge-disabled" : "badge-applied"; return '<span class="badge ' + cls + '">' + esc(status) + '</span>'; }
+      function auth() { var s = read(SESSION_KEY, null); if (!s || s.role !== "company") { window.location.href = "login.html"; return null; } return s; }
+      function logout() { localStorage.removeItem(SESSION_KEY); window.location.href = "../index.html"; }
+      document.addEventListener("DOMContentLoaded", function () {
+        var s = auth(); if (!s) return;
+        var companies = read(COMPANY_KEY, []), company = companies.find(function (c) { return String(c.id) === String(s.userId); });
+        if (!company) { logout(); return; }
+        var jobs = read(JOB_KEY, []).filter(function (j) { return String(j.companyId) === String(company.id); });
+        var apps = read(APP_KEY, []), jobIds = {}; jobs.forEach(function (j) { jobIds[j.id] = true; });
+        var companyApps = apps.filter(function (a) { return jobIds[a.internshipId] || String(a.company || "").toLowerCase() === String(company.name).toLowerCase(); });
+        document.getElementById("companyNameChip").textContent = company.name; document.getElementById("companyEmailChip").textContent = company.email; document.getElementById("welcomeName").textContent = company.name; document.getElementById("companyAvatar").textContent = company.name.trim().charAt(0).toUpperCase();
+        document.getElementById("stats").innerHTML = [
+          ["Active Opportunities", jobs.filter(function (j) { return j.status === "Published"; }).length],
+          ["Total Opportunities", jobs.length],
+          ["Applicants", companyApps.length],
+          ["Selected", companyApps.filter(function (a) { return a.status === "Selected"; }).length]
+        ].map(function (x) { return '<div class="stat"><div class="label">' + esc(x[0]) + '</div><div class="value">' + x[1] + '</div></div>'; }).join("");
+        var recent = document.getElementById("recentPosts");
+        if (!jobs.length) recent.innerHTML = '<div class="empty"><h3>No internship posts yet</h3><p>Create your first opportunity to start building the company side of InternLog.</p><a class="btn btn-sm" href="add-internship.html">Post an Internship</a></div>';
+        else recent.innerHTML = jobs.slice().sort(function (a,b) { return String(b.createdAt).localeCompare(String(a.createdAt)); }).slice(0,4).map(function (j) { return '<div class="mini-row"><span><strong>' + esc(j.title) + '</strong><br><span class="muted">' + esc(j.location || "Remote") + ' · ' + esc(j.internshipType || "Flexible") + '</span></span><span>' + badge(j.status) + '</span></div>'; }).join("");
+        document.getElementById("profileNote").textContent = company.verified ? "Company profile verified." : "Prototype profile: verification is not enforced yet. Admin moderation can be added by writing to the same company records.";
+        document.querySelectorAll("[data-company-logout]").forEach(function (el) { el.addEventListener("click", function (e) { e.preventDefault(); logout(); }); });
+      });
+    }());
+  </script>
+</body>
+</html>
