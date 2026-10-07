@@ -11,31 +11,42 @@
   <script src="js/api.js" defer></script>
 </head>
 <body>
-  <header class="site-header">
-    <div class="wrap nav-bar">
+  <header class="site-header site-header--pill">
+    <div class="wrap nav-bar nav-bar--pill">
       <a class="brand" href="index.html" aria-label="InternLog home">
         <span class="brand-mark" aria-hidden="true">IL</span>
         <span>InternLog<small>Track. Apply. Grow.</small></span>
       </a>
-      <nav class="nav-links" aria-label="Primary">
-        <a class="nav" href="index.html">Home</a>
-        <a class="nav" href="#about">About</a>
-        <a class="nav" href="#features">Features</a>
-        <a class="nav" href="company/internships.html">Internships</a>
-        <a class="nav" href="company/login.html">For Companies</a>
-        <a class="nav" href="user/login.html">Login</a>
-        <a class="btn btn-sm" href="user/register.html">Register</a>
-      </nav>
-      <button class="landing-menu-btn" id="landingMenuBtn" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
-    </div>
-    <div class="landing-mobile-nav" id="landingMobileNav" aria-label="Mobile navigation">
-      <a href="index.html">Home</a>
-      <a href="#about">About</a>
-      <a href="#features">Features</a>
-      <a href="company/internships.html">Browse Internships</a>
-      <a href="company/login.html">For Companies</a>
-      <a href="user/login.html">Student Login</a>
-      <a href="user/register.html">Register</a>
+      <div class="pill-nav-container" data-pill-nav>
+        <nav class="pill-nav" aria-label="Primary">
+          <div class="pill-nav-items desktop-only">
+            <ul class="pill-list">
+              <li><a class="pill is-active" href="index.html" aria-current="page"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Home</span><span class="pill-label-hover" aria-hidden="true">Home</span></span></a></li>
+              <li><a class="pill" href="#about"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">About</span><span class="pill-label-hover" aria-hidden="true">About</span></span></a></li>
+              <li><a class="pill" href="#features"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Features</span><span class="pill-label-hover" aria-hidden="true">Features</span></span></a></li>
+              <li><a class="pill" href="company/internships.html"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Internships</span><span class="pill-label-hover" aria-hidden="true">Internships</span></span></a></li>
+              <li><a class="pill" href="company/login.html"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Companies</span><span class="pill-label-hover" aria-hidden="true">Companies</span></span></a></li>
+              <li><a class="pill" href="user/login.html"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Login</span><span class="pill-label-hover" aria-hidden="true">Login</span></span></a></li>
+              <li><a class="pill pill--cta" href="user/register.html"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Register</span><span class="pill-label-hover" aria-hidden="true">Register</span></span></a></li>
+            </ul>
+          </div>
+          <button class="mobile-menu-button mobile-only" id="pillMenuBtn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="pillMenuPopover">
+            <span class="hamburger-line" aria-hidden="true"></span>
+            <span class="hamburger-line" aria-hidden="true"></span>
+          </button>
+        </nav>
+        <div class="mobile-menu-popover mobile-only" id="pillMenuPopover" aria-label="Mobile navigation">
+          <ul class="mobile-menu-list">
+            <li><a class="mobile-menu-link" href="index.html" aria-current="page">Home</a></li>
+            <li><a class="mobile-menu-link" href="#about">About</a></li>
+            <li><a class="mobile-menu-link" href="#features">Features</a></li>
+            <li><a class="mobile-menu-link" href="company/internships.html">Browse Internships</a></li>
+            <li><a class="mobile-menu-link" href="company/login.html">For Companies</a></li>
+            <li><a class="mobile-menu-link" href="user/login.html">Student Login</a></li>
+            <li><a class="mobile-menu-link" href="user/register.html">Register</a></li>
+          </ul>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -50,6 +61,19 @@
         </p>
         <p class="muted" style="font-size:13.5px">Free for students • Company opportunities • Ready for your placement cell</p>
       </div>
+    </div>
+
+    <!-- Curved Loop — animated brand divider (responsive, dark band) -->
+    <div class="curved-loop-jacket" data-curved-loop data-text="TRACK ✦ APPLY ✦ GROW ✦ INTERNSHIPS ✦ " data-speed="0.8">
+      <svg class="curved-loop-svg" viewBox="0 0 1000 120" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+        <defs>
+          <path id="curved-loop-path-a" d="M -200 70 Q -100 20 0 70 T 200 70 T 400 70 T 600 70 T 800 70 T 1000 70 T 1200 70 T 1400 70" fill="none" />
+        </defs>
+        <text>
+          <textPath href="#curved-loop-path-a" startOffset="0">TRACK ✦ APPLY ✦ GROW ✦ INTERNSHIPS ✦ TRACK ✦ APPLY ✦ GROW ✦ INTERNSHIPS ✦ TRACK ✦ APPLY ✦ GROW ✦ INTERNSHIPS ✦&#160;</textPath>
+        </text>
+      </svg>
+      <span class="curved-loop-fallback">Track, Apply, Grow — InternLog internships.</span>
     </div>
 
     <div class="wrap section" id="about">
@@ -112,6 +136,19 @@
         <div class="step"><div class="num">4</div><h3>Get Your Internship</h3><p class="muted">Convert interviews into offers.</p></div>
       </div>
       <p style="margin-top:24px"><a class="btn" href="user/register.html">Create student account</a> <a class="btn btn-secondary" href="company/register.html">Register as a company</a></p>
+    </div>
+
+    <!-- Curved Loop — compact light variant above footer -->
+    <div class="curved-loop-jacket curved-loop-jacket--light curved-loop-jacket--tight" data-curved-loop data-text="APPLIED → SHORTLISTED → INTERVIEW → SELECTED → " data-speed="0.5">
+      <svg class="curved-loop-svg" viewBox="0 0 1000 120" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+        <defs>
+          <path id="curved-loop-path-b" d="M -200 70 Q -100 20 0 70 T 200 70 T 400 70 T 600 70 T 800 70 T 1000 70 T 1200 70 T 1400 70" fill="none" />
+        </defs>
+        <text>
+          <textPath href="#curved-loop-path-b" startOffset="0">APPLIED → SHORTLISTED → INTERVIEW → SELECTED → APPLIED → SHORTLISTED → INTERVIEW → SELECTED →&#160;</textPath>
+        </text>
+      </svg>
+      <span class="curved-loop-fallback">Applied, Shortlisted, Interview, Selected.</span>
     </div>
   </main>
 

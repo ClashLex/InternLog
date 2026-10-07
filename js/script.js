@@ -971,7 +971,7 @@
       });
     }
 
-    // Landing mobile navigation
+    // Landing mobile navigation (legacy: landingMenuBtn/landingMobileNav)
     var landingMenuBtn = document.getElementById("landingMenuBtn");
     var landingMobileNav = document.getElementById("landingMobileNav");
     if (landingMenuBtn && landingMobileNav) {
@@ -982,6 +982,36 @@
         a.addEventListener("click", function () {
           landingMobileNav.classList.remove("open");
         });
+      });
+    }
+
+    // Pill nav mobile popover (current landing header)
+    var pillBtn = document.getElementById("pillMenuBtn");
+    var pillPopover = document.getElementById("pillMenuPopover");
+    if (pillBtn && pillPopover) {
+      pillBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var open = pillPopover.classList.toggle("open");
+        pillBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+      pillPopover.querySelectorAll("a").forEach(function (a) {
+        a.addEventListener("click", function () {
+          pillPopover.classList.remove("open");
+          pillBtn.setAttribute("aria-expanded", "false");
+        });
+      });
+      document.addEventListener("click", function (e) {
+        if (!pillPopover.classList.contains("open")) return;
+        if (pillPopover.contains(e.target) || pillBtn.contains(e.target)) return;
+        pillPopover.classList.remove("open");
+        pillBtn.setAttribute("aria-expanded", "false");
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && pillPopover.classList.contains("open")) {
+          pillPopover.classList.remove("open");
+          pillBtn.setAttribute("aria-expanded", "false");
+          try { pillBtn.focus(); } catch (err) {}
+        }
       });
     }
 
@@ -1904,13 +1934,94 @@
       showNotification(next === "dark" ? "Dark mode on" : "Light mode on", "info");
     });
     var navLinks = document.querySelector(".site-header .nav-links");
+    var pillBar = document.querySelector(".site-header .nav-bar--pill");
     var topbar = document.querySelector(".topbar");
     if (navLinks) navLinks.appendChild(btn);
+    else if (pillBar) pillBar.appendChild(btn);
     else if (topbar) topbar.appendChild(btn);
     else {
       btn.classList.add("theme-toggle-floating");
       document.body.appendChild(btn);
     }
+  }
+
+  /* ---------------- Pill Nav hover/active (vanilla React-Bits port) ----------------
+     .pill contains .hover-circle (expanding dot) + .label-stack
+     (.pill-label slides up, .pill-label-hover slides in). Skipped entirely
+     with prefers-reduced-motion — CSS :hover colors still apply. */
+  function initPillNav() {
+    var containers = document.querySelectorAll("[data-pill-nav]");
+    if (!containers.length) return;
+    var reduceMotion = false;
+    try {
+      reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    } catch (e) {}
+    // Active pill follows current page (hash links keep hardcoded Home active).
+    try {
+      var file = (window.location.pathname.replace(/\\/g, "/").split("/").pop() || "index.html").split("?")[0] || "index.html";
+      document.querySelectorAll("[data-pill-nav] .pill").forEach(function (a) {
+        var href = (a.getAttribute("href") || "").split("?")[0];
+        if (!href || href.charAt(0) === "#") return;
+        var hrefFile = href.replace(/\\/g, "/").split("/").pop() || "index.html";
+        if (hrefFile === file && file !== "index.html") {
+          document.querySelectorAll("[data-pill-nav] .pill.is-active").forEach(function (el) {
+            el.classList.remove("is-active");
+            el.removeAttribute("aria-current");
+          });
+          a.classList.add("is-active");
+          a.setAttribute("aria-current", "page");
+        }
+      });
+    } catch (e) {}
+    if (reduceMotion) return;
+    Array.prototype.forEach.call(containers, function (root) {
+      var pills = root.querySelectorAll(".pill");
+      Array.prototype.forEach.call(pills, function (pill) {
+        var circle = pill.querySelector(".hover-circle");
+        var label = pill.querySelector(".pill-label");
+        var labelHover = pill.querySelector(".pill-label-hover");
+        if (!circle || !label || !labelHover) return;
+        circle.style.transform = "translate(-50%, 0) scale(0)";
+        circle.style.transition = "transform .35s cubic-bezier(.22,.61,.36,1)";
+        label.style.transition = "transform .35s cubic-bezier(.22,.61,.36,1)";
+        labelHover.style.transition = "transform .35s cubic-bezier(.22,.61,.36,1), opacity .25s ease";
+        labelHover.style.transform = "translateY(100%)";
+        labelHover.style.opacity = "0";
+        function sizeCircle() {
+          var r = pill.getBoundingClientRect();
+          var d = Math.max(r.width, r.height) * 2.4;
+          circle.style.width = d + "px";
+          circle.style.height = d + "px";
+        }
+        sizeCircle();
+        pill.addEventListener("mouseenter", function () {
+          sizeCircle();
+          circle.style.transform = "translate(-50%, 50%) scale(1)";
+          label.style.transform = "translateY(-100%)";
+          labelHover.style.transform = "translateY(0)";
+          labelHover.style.opacity = "1";
+        });
+        pill.addEventListener("mouseleave", function () {
+          circle.style.transform = "translate(-50%, 0) scale(0)";
+          label.style.transform = "translateY(0)";
+          labelHover.style.transform = "translateY(100%)";
+          labelHover.style.opacity = "0";
+        });
+        pill.addEventListener("focusin", function () {
+          sizeCircle();
+          circle.style.transform = "translate(-50%, 50%) scale(1)";
+          label.style.transform = "translateY(-100%)";
+          labelHover.style.transform = "translateY(0)";
+          labelHover.style.opacity = "1";
+        });
+        pill.addEventListener("focusout", function () {
+          circle.style.transform = "translate(-50%, 0) scale(0)";
+          label.style.transform = "translateY(0)";
+          labelHover.style.transform = "translateY(100%)";
+          labelHover.style.opacity = "0";
+        });
+      });
+    });
   }
 
   function initSecretConsoleAccess() {
@@ -1946,6 +2057,110 @@
     });
   }
 
+  /* ---------------- Curved Loop (responsive SVG text-on-path marquee) ----------------
+     Reusable: drop anywhere with
+       <div class="curved-loop-jacket" data-curved-loop
+            data-text="YOUR WORDS ✦ " data-speed="0.8">…svg…</div>
+     - data-text: phrase repeated to fill the wave (default: existing textPath).
+     - data-speed: px per 60fps frame (default 0.8, ~48px/s). Negative reverses.
+     Responsive + accessible: pauses off-screen, on hover, and with
+     prefers-reduced-motion; static text remains if JS is off. */
+  function initCurvedLoop() {
+    var jackets = document.querySelectorAll("[data-curved-loop]");
+    if (!jackets.length) return;
+    var reduceMotion = false;
+    try {
+      reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    } catch (e) {}
+    Array.prototype.forEach.call(jackets, function (jacket, idx) {
+      var svg = jacket.querySelector("svg.curved-loop-svg");
+      if (!svg) return;
+      var textPath = svg.querySelector("textPath");
+      var path = svg.querySelector("path");
+      if (!textPath || !path) return;
+
+      // Unique path id per instance (markup may be copy-pasted).
+      var pathId = path.getAttribute("id") || ("curved-loop-path-" + idx);
+      path.setAttribute("id", pathId + "-js-" + idx);
+      var newId = path.getAttribute("id");
+      try { textPath.setAttribute("href", "#" + newId); } catch (e) {}
+      try { textPath.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#" + newId); } catch (e) {}
+
+      var baseText = jacket.getAttribute("data-text") || textPath.textContent || "TRACK ✦ APPLY ✦ GROW ✦ ";
+      if (!/\s$/.test(baseText)) baseText += " ";
+      var repeats = 0;
+      var repeated = "";
+      while (repeated.length < 260) { repeated += baseText; repeats++; }
+      if (repeats < 4) { while (repeats < 6) { repeated += baseText; repeats++; } }
+      textPath.textContent = repeated;
+
+      if (reduceMotion) return; // leave static curved text
+
+      var speed = parseFloat(jacket.getAttribute("data-speed"));
+      if (isNaN(speed)) speed = 0.8;
+      var offset = 0;
+      var unit = 0; // length of ONE baseText unit -> seamless wrap point
+      var visible = true;
+      var hoverPaused = false;
+
+      function measure() {
+        try {
+          var total = textPath.getComputedTextLength ? textPath.getComputedTextLength() : 0;
+          if (total > 0 && repeats > 0) unit = total / repeats;
+          else {
+            var pl = path.getTotalLength ? path.getTotalLength() : 1600;
+            unit = pl / 2;
+          }
+        } catch (e) {
+          unit = 800;
+        }
+      }
+      measure();
+      if (document.fonts && document.fonts.ready) {
+        try { document.fonts.ready.then(function () { measure(); }); } catch (e) {}
+      }
+      var resizeT = null;
+      window.addEventListener("resize", function () {
+        if (resizeT) clearTimeout(resizeT);
+        resizeT = setTimeout(measure, 200);
+      });
+
+      jacket.addEventListener("mouseenter", function () { hoverPaused = true; });
+      jacket.addEventListener("mouseleave", function () { hoverPaused = false; });
+      jacket.addEventListener("focusin", function () { hoverPaused = true; });
+      jacket.addEventListener("focusout", function () { hoverPaused = false; });
+
+      if ("IntersectionObserver" in window) {
+        try {
+          var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (en) { visible = en.isIntersecting; });
+          }, { threshold: 0 });
+          io.observe(jacket);
+        } catch (e) {}
+      }
+
+      var last = null;
+      function tick(ts) {
+        if (last == null) last = ts;
+        var dt = ts - last;
+        last = ts;
+        if (dt < 0) dt = 0;
+        if (dt > 50) dt = 50;
+        if (visible && !hoverPaused && !document.hidden && unit > 0) {
+          offset -= (speed * dt) / 16.666;
+          // Wrap in [-unit, 0) so the repeat is seamless.
+          if (unit > 0) {
+            while (offset <= -unit) offset += unit;
+            while (offset > 0) offset -= unit;
+          }
+          try { textPath.setAttribute("startOffset", offset); } catch (e) {}
+        }
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     injectFavicon();
     seedIfNeeded();
@@ -1956,9 +2171,11 @@
     initCompanyInternshipSubmitGuard();
     initCompanyModerationControls();
     initNavigation();
+    initPillNav();
     initThemeToggle();
     initSecretConsoleAccess();
     initConsoleGate();
+    initCurvedLoop();
     initUserLogin();
     initAdminLogin();
     initRegister();
