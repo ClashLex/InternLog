@@ -1,0 +1,23 @@
+# Local run: `docker compose up -d mysql` then `./mvnw spring-boot:run`
+# Uses the same credentials as application.properties defaults.
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: internlog-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: internlog
+      MYSQL_USER: internlog
+      MYSQL_PASSWORD: internlog
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-hinternlog-mysql", "-uinternlog", "-pinternlog"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mysql-data:

@@ -1,0 +1,40 @@
+# --- InternLog: frontend + Java backend ignores ---
+
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/
+.mvn/wrapper/maven-wrapper.properties.lock
+BACKEND.md
+# Spring Boot / H2 file DB (local dev)
+data/
+*.db
+*.mv.db
+*.trace.db
+
+# MySQL data (docker volume lives outside git)
+mysql-data/
+
+# Env files (never commit secrets)
+.env
+.env.*
+!.env.example
+
+# Node (if you add tooling later)
+node_modules/
+dist/
+build/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+*.log
+
+# Frontend prototype local data stays in the browser, not in git.
+# Nothing to ignore there — localStorage never touches the repo.
