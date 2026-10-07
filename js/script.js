@@ -2004,6 +2004,129 @@
     });
   }
 
+  /* ---------------- Galaxy backdrop for auth panels ----------------
+     Injects <div class="galaxy-container"><canvas></canvas></div> as the
+     first child of each .auth-panel (login/register, all roles).
+     Lightweight canvas starfield: twinkle + slow drift + pointer parallax.
+     Pauses off-screen; single static frame with prefers-reduced-motion.
+     Pure decoration — no storage, no network, no backend contact. */
+  function initGalaxy() {
+    var panels = document.querySelectorAll(".auth-panel");
+    if (!panels.length) return;
+    var reduceMotion = false;
+    try {
+      reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    } catch (e) {}
+    Array.prototype.forEach.call(panels, function (panel) {
+      if (panel.querySelector(".galaxy-container")) return;
+      var box = document.createElement("div");
+      box.className = "galaxy-container";
+      box.setAttribute("aria-hidden", "true");
+      var canvas = document.createElement("canvas");
+      box.appendChild(canvas);
+      panel.insertBefore(box, panel.firstChild);
+      var ctx = null;
+      try { ctx = canvas.getContext("2d"); } catch (e) {}
+      if (!ctx) return;
+
+      var W = 0, H = 0, dpr = 1, stars = [], t = 0;
+      var mx = 0, my = 0, tmx = 0, tmy = 0, visible = true;
+
+      function seed() {
+        var n = Math.round(Math.min(220, Math.max(70, (W * H) / 9000)));
+        stars = [];
+        for (var i = 0; i < n; i++) {
+          stars.push({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            r: Math.random() * 1.3 + 0.3,
+            p: Math.random() * Math.PI * 2,
+            s: 0.4 + Math.random() * 1.2,
+            d: 0.15 + Math.random() * 0.5
+          });
+        }
+      }
+
+      function resize() {
+        var r = box.getBoundingClientRect();
+        if (r.width < 2 || r.height < 2) return;
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        W = r.width;
+        H = r.height;
+        canvas.width = Math.round(W * dpr);
+        canvas.height = Math.round(H * dpr);
+        seed();
+      }
+
+      function draw() {
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, W, H);
+        mx += (tmx - mx) * 0.045;
+        my += (tmy - my) * 0.045;
+        for (var i = 0; i < stars.length; i++) {
+          var s = stars[i];
+          var tw = 0.3 + 0.7 * Math.abs(Math.sin(t * s.s + s.p));
+          var x = (s.x + mx * 22 * s.d + t * 2 * s.d) % W;
+          if (x < 0) x += W;
+          var y = s.y + my * 22 * s.d;
+          if (y < -4 || y > H + 4) continue;
+          ctx.globalAlpha = tw;
+          ctx.fillStyle = "#ffffff";
+          ctx.beginPath();
+          ctx.arc(x, y, s.r, 0, Math.PI * 2);
+          ctx.fill();
+          if (s.r > 1.25) {
+            ctx.globalAlpha = tw * 0.35;
+            ctx.fillRect(x - s.r * 4, y - 0.5, s.r * 8, 1);
+            ctx.fillRect(x - 0.5, y - s.r * 4, 1, s.r * 8);
+          }
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      if (reduceMotion) {
+        resize();
+        draw();
+        var rt = null;
+        window.addEventListener("resize", function () {
+          if (rt) clearTimeout(rt);
+          rt = setTimeout(function () { resize(); draw(); }, 200);
+        });
+        return;
+      }
+
+      if ("IntersectionObserver" in window) {
+        try {
+          new IntersectionObserver(function (entries) {
+            visible = entries[0].isIntersecting;
+          }, { threshold: 0 }).observe(panel);
+        } catch (e) {}
+      }
+
+      if (window.matchMedia && window.matchMedia("(pointer: fine)").matches) {
+        panel.addEventListener("mousemove", function (e) {
+          var r = panel.getBoundingClientRect();
+          tmx = (e.clientX - r.left) / Math.max(1, r.width) - 0.5;
+          tmy = (e.clientY - r.top) / Math.max(1, r.height) - 0.5;
+        });
+        panel.addEventListener("mouseleave", function () { tmx = 0; tmy = 0; });
+      }
+
+      var rT = null;
+      window.addEventListener("resize", function () {
+        if (rT) clearTimeout(rT);
+        rT = setTimeout(resize, 200);
+      });
+
+      resize();
+      (function tick() {
+        t += 1 / 60;
+        if (visible && !document.hidden && W > 0) draw();
+        requestAnimationFrame(tick);
+      })();
+    });
+  }
+
   /* ---------------- Curved Loop (responsive SVG text-on-path marquee) ----------------
      Reusable: drop anywhere with
        <div class="curved-loop-jacket" data-curved-loop
@@ -2122,6 +2245,7 @@
     initThemeToggle();
     initSecretConsoleAccess();
     initConsoleGate();
+    initGalaxy();
     initCurvedLoop();
     initUserLogin();
     initAdminLogin();
