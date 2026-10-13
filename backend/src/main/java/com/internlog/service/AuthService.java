@@ -7,6 +7,7 @@ import com.internlog.repository.*;
 import com.internlog.security.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class AuthService {
@@ -15,6 +16,10 @@ public class AuthService {
   private final CompanyRepository companies;
   private final PasswordEncoder passwords;
   private final JwtUtil jwt;
+  @Value("${app.admin.email:}")
+  private String adminEmail;
+  @Value("${app.admin.password-hash:}")
+  private String adminPasswordHash;
 
   public AuthService(UserRepository users, CompanyRepository companies,
       PasswordEncoder passwords, JwtUtil jwt) {
@@ -25,8 +30,9 @@ public class AuthService {
   }
 
   public AuthResponse loginUser(LoginRequest req) {
-    // Prototype admin fallback stays for the static frontend gate.
-    if (req.email().equalsIgnoreCase("admin@internlog.com") && req.password().equals("admin123")) {
+    if (!adminEmail.isBlank() && !adminPasswordHash.isBlank()
+        && req.email().trim().equalsIgnoreCase(adminEmail)
+        && passwords.matches(req.password(), adminPasswordHash)) {
       return new AuthResponse(jwt.issue("admin", 0L, req.email()), "admin", 0L, "InternLog Admin", req.email());
     }
     User user = users.findByEmailIgnoreCase(req.email().trim())
@@ -40,6 +46,8 @@ public class AuthService {
     return new AuthResponse(jwt.issue("user", user.getId(), user.getEmail()),
         "user", user.getId(), user.getName(), user.getEmail());
   }
+
+  public String adminEmail() { return adminEmail; }
 
   public AuthResponse loginCompany(LoginRequest req) {
     Company company = companies.findByEmailIgnoreCase(req.email().trim())

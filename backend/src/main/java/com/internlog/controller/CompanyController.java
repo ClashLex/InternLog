@@ -5,6 +5,7 @@ import com.internlog.model.Company;
 import com.internlog.repository.InternshipRepository;
 import com.internlog.service.AuthService;
 import com.internlog.service.CompanyService;
+import com.internlog.security.AccessPolicy;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
@@ -22,17 +23,18 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/companies")
-@CrossOrigin
 public class CompanyController {
 
   private final CompanyService companies;
   private final AuthService auth;
   private final InternshipRepository internships;
+  private final AccessPolicy access;
 
-  public CompanyController(CompanyService companies, AuthService auth, InternshipRepository internships) {
+  public CompanyController(CompanyService companies, AuthService auth, InternshipRepository internships, AccessPolicy access) {
     this.companies = companies;
     this.auth = auth;
     this.internships = internships;
+    this.access = access;
   }
 
   @PostMapping("/register")
@@ -42,12 +44,15 @@ public class CompanyController {
   }
 
   @PostMapping("/login")
-  public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest req) {
-    return ResponseEntity.ok(auth.loginCompany(req));
+  public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest req, jakarta.servlet.http.HttpServletRequest request) {
+    AuthResponse result = auth.loginCompany(req);
+    AuthController.establishSession(request, result);
+    return ResponseEntity.ok(result);
   }
 
   @GetMapping
   public List<CompanyResponse> list() {
+    access.admin();
     return companies.list().stream()
         .map(c -> companies.toResponse(c, internships.findByCompanyId(c.getId()).size()))
         .toList();
@@ -55,12 +60,14 @@ public class CompanyController {
 
   @GetMapping("/{id}")
   public CompanyResponse get(@PathVariable Long id) {
+    access.company(id);
     Company company = companies.getById(id);
     return companies.toResponse(company, internships.findByCompanyId(id).size());
   }
 
   @PutMapping("/{id}")
   public ResponseEntity<CompanyResponse> update(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+    access.company(id);
     Company patch = new Company();
     if (body.get("name") != null) patch.setName(String.valueOf(body.get("name")));
     if (body.get("email") != null) patch.setEmail(String.valueOf(body.get("email")));
@@ -73,7 +80,8 @@ public class CompanyController {
   }
 
   @PatchMapping("/{id}/status")
-  public ResponseEntity<CompanyResponse> setStatus(@PathVariable Long id, @RequestBody StatusPatch body) {
+  public ResponseEntity<CompanyResponse> setStatus(@PathVariable Long id, @Valid @RequestBody StatusPatch body) {
+    access.admin();
     Company updated = companies.setStatus(id, body.status());
     return ResponseEntity.ok(companies.toResponse(updated, internships.findByCompanyId(id).size()));
   }
@@ -81,6 +89,7 @@ public class CompanyController {
   @PostMapping("/{id}/password")
   public ResponseEntity<Map<String, String>> changePassword(
       @PathVariable Long id, @RequestBody Map<String, Object> body) {
+    access.company(id);
     Object cur = body.get("currentPassword");
     Object next = body.get("newPassword");
     companies.changePassword(id, cur == null ? null : String.valueOf(cur), next == null ? null : String.valueOf(next));
@@ -89,6 +98,7 @@ public class CompanyController {
 
   @DeleteMapping("/{id}")
   public ResponseEntity<Map<String, String>> delete(@PathVariable Long id) {
+    access.admin();
     companies.delete(id);
     return ResponseEntity.ok(Map.of("message", "Company deleted"));
   }

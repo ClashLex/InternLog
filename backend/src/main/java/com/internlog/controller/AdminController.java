@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin
 public class AdminController {
 
   private final UserRepository users;
@@ -42,8 +41,9 @@ public class AdminController {
     stats.put("publishedInternships", internships.findByStatus(InternshipStatus.Published).size());
     stats.put("totalApplications", applications.count());
     Map<String, Long> byStatus = new LinkedHashMap<>();
+    var allApplications = applications.findAll();
     for (ApplicationStatus status : ApplicationStatus.values()) {
-      byStatus.put(status.name(), applications.findAll().stream()
+      byStatus.put(status.name(), allApplications.stream()
           .filter(a -> a.getStatus() == status).count());
     }
     stats.put("applicationsByStatus", byStatus);

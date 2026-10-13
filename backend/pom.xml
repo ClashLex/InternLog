@@ -47,15 +47,13 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- Security is used for BCrypt password hashing + CORS.
-         Prototype policy: all /api/** permitted (frontend keeps its own
-         hardcoded admin gate); harden with JWT/roles before production. -->
+    <!-- BCrypt, server-session/bearer authentication, CSRF, CORS, and access rules. -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
 
-    <!-- JWT (auth tokens for students/companies) -->
+    <!-- JWT bearer tokens for API clients; the web UI uses Java-held sessions. -->
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-api</artifactId>
@@ -86,9 +84,25 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-test</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
+    <resources>
+      <resource><directory>src/main/resources</directory></resource>
+      <resource>
+        <directory>..</directory>
+        <targetPath>static</targetPath>
+        <includes>
+          <include>*.html</include><include>css/**</include><include>js/**</include>
+          <include>user/**</include><include>company/**</include><include>admin/**</include>
+        </includes>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>org.springframework.boot</groupId>

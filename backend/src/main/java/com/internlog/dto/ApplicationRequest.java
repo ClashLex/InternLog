@@ -13,7 +13,7 @@ public class ApplicationRequest {
   public String appliedDate;
   public String deadline;
   public String interviewDate;
-  public Integer stipend;
+  @Min(0) public Integer stipend;
   public String status;
   public String url;
   public String notes;

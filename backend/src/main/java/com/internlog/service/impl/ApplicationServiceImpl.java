@@ -6,6 +6,7 @@ import com.internlog.exception.*;
 import com.internlog.model.*;
 import com.internlog.repository.*;
 import com.internlog.service.ApplicationService;
+import com.internlog.service.RequestValidation;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
@@ -31,7 +32,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
   private LocalDate parseDate(String value) {
     if (value == null || value.isBlank()) return null;
-    return LocalDate.parse(value.substring(0, 10));
+    return LocalDate.parse(value);
   }
 
   private ApplicationStatus parseStatus(String value) {
@@ -45,7 +46,9 @@ public class ApplicationServiceImpl implements ApplicationService {
   @Override
   @Transactional
   public Application create(ApplicationRequest req) {
+    RequestValidation.httpUrl(req.url);
     if (req.userId == null) throw new BadRequestException("userId is required.");
+    if (req.internshipId != null) return applyToInternship(req.userId, req.internshipId);
     User user = users.findById(req.userId).orElseThrow(() -> new NotFoundException("User not found."));
     Application app = new Application();
     app.setUser(user);
@@ -76,9 +79,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     app.setUrl(req.url);
     app.setNotes(req.notes);
     app.setUpdatedAt(Instant.now());
-    if (app.getCompanyName() == null || app.getRole() == null) {
-      throw new BadRequestException("company and role are required.");
-    }
+    RequestValidation.nonBlank(app.getCompanyName(), "Company");
+    RequestValidation.nonBlank(app.getRole(), "Role");
     return applications.save(app);
   }
 
@@ -89,9 +91,12 @@ public class ApplicationServiceImpl implements ApplicationService {
       throw new BadRequestException("You already applied to this internship.");
     }
     User user = users.findById(userId).orElseThrow(() -> new NotFoundException("User not found."));
+    if (!"Active".equals(user.getStatus())) throw new BadRequestException("This account is disabled.");
     Internship job = internships.findById(internshipId)
         .orElseThrow(() -> new NotFoundException("Internship not found."));
-    if (job.getStatus() != InternshipStatus.Published) {
+    if (job.getStatus() != InternshipStatus.Published || job.getCompany() == null
+        || !job.getCompany().isApproved()
+        || (job.getDeadline() != null && job.getDeadline().isBefore(LocalDate.now()))) {
       throw new BadRequestException("This internship is not accepting applications.");
     }
     Application app = new Application();
@@ -174,6 +179,9 @@ public class ApplicationServiceImpl implements ApplicationService {
   @Transactional
   public Application update(Long id, ApplicationRequest req) {
     Application app = getById(id);
+    RequestValidation.httpUrl(req.url);
+    if (req.company != null) RequestValidation.nonBlank(req.company, "Company");
+    if (req.role != null) RequestValidation.nonBlank(req.role, "Role");
     if (req.company != null) app.setCompanyName(req.company);
     if (req.role != null) app.setRole(req.role);
     if (req.location != null) app.setLocation(req.location);
@@ -225,6 +233,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         app.getDeadline() != null ? app.getDeadline().toString() : null,
         app.getInterviewDate() != null ? app.getInterviewDate().toString() : null,
         app.getStipend(), app.getStatus().name(), app.getUrl(), app.getNotes(),
-        studentName, studentEmail);
+        studentName, studentEmail, app.getUpdatedAt() != null ? app.getUpdatedAt().toString() : null);
   }
 }

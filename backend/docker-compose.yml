@@ -1,5 +1,6 @@
-# Local run: `docker compose up -d mysql` then `./mvnw spring-boot:run`
-# Uses the same credentials as application.properties defaults.
+# From the repository root: docker compose -f backend/docker-compose.yml up -d mysql
+# Then run the Maven wrapper from backend/, or use `up -d --build` for the full stack.
+# Database credentials below are development-only; mysql-data survives container stops.
 services:
   mysql:
     image: mysql:8.4
@@ -14,10 +15,29 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-hinternlog-mysql", "-uinternlog", "-pinternlog"]
+      test: ["CMD", "mysqladmin", "ping", "-hlocalhost", "-uinternlog", "-pinternlog"]
       interval: 10s
       timeout: 5s
       retries: 10
+
+  app:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/internlog?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      DB_USER: internlog
+      DB_PASS: internlog
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH:-}
+      JWT_SECRET: ${JWT_SECRET:-}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
+      SESSION_SAME_SITE: ${SESSION_SAME_SITE:-lax}
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
 
 volumes:
   mysql-data:

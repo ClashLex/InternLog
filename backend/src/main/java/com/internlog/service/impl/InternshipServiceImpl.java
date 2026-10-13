@@ -6,6 +6,7 @@ import com.internlog.exception.*;
 import com.internlog.model.*;
 import com.internlog.repository.*;
 import com.internlog.service.InternshipService;
+import com.internlog.service.RequestValidation;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
@@ -37,21 +38,19 @@ public class InternshipServiceImpl implements InternshipService {
     if (status == InternshipStatus.Pending_Review && !company.isApproved()) {
       status = InternshipStatus.Pending_Review; // stays in review queue, never auto-published
     }
-    if (deadline != null && deadline.isBefore(LocalDate.now())
-        && (status == InternshipStatus.Published)) {
-      status = InternshipStatus.Expired;
-    }
+    if (deadline != null && deadline.isBefore(LocalDate.now())) throw new BadRequestException("Deadline cannot be in the past.");
     return status;
   }
 
   private LocalDate parseDate(String value) {
     if (value == null || value.isBlank()) return null;
-    return LocalDate.parse(value.substring(0, 10));
+    return LocalDate.parse(value);
   }
 
   @Override
   @Transactional
   public Internship create(InternshipRequest req) {
+    RequestValidation.httpUrl(req.applyUrl);
     Company company = requireCompany(req.companyId);
     Internship job = new Internship();
     job.setCompany(company);
@@ -129,6 +128,13 @@ public class InternshipServiceImpl implements InternshipService {
   @Transactional
   public Internship update(Long id, InternshipRequest req) {
     Internship job = getById(id);
+    RequestValidation.httpUrl(req.applyUrl);
+    if (req.title != null) RequestValidation.nonBlank(req.title, "Title");
+    if (req.stipend != null && req.stipend < 0) throw new BadRequestException("Stipend cannot be negative.");
+    if (req.positions != null && req.positions < 1) throw new BadRequestException("At least one position is required.");
+    if (req.deadline != null && parseDate(req.deadline) != null && parseDate(req.deadline).isBefore(LocalDate.now())) {
+      throw new BadRequestException("Deadline cannot be in the past.");
+    }
     if (req.title != null) job.setTitle(req.title);
     if (req.location != null) job.setLocation(req.location);
     if (req.internshipType != null) job.setType(req.internshipType);
@@ -142,6 +148,9 @@ public class InternshipServiceImpl implements InternshipService {
     if (req.publishRequested != null) {
       job.setStatus(req.publishRequested ? InternshipStatus.Pending_Review : InternshipStatus.Draft);
       if (req.publishRequested) job.setModerationNote("Updated by company; requires admin review before publication.");
+    } else if (job.getStatus() == InternshipStatus.Published) {
+      job.setStatus(InternshipStatus.Pending_Review);
+      job.setModerationNote("Updated; requires admin review before publication.");
     }
     job.setUpdatedAt(Instant.now());
     return internships.save(job);

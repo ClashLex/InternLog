@@ -1,6 +1,7 @@
 package com.internlog.service.impl;
 
 import com.internlog.exception.NotFoundException;
+import com.internlog.exception.BadRequestException;
 import com.internlog.model.*;
 import com.internlog.repository.*;
 import com.internlog.service.AlertService;
@@ -23,6 +24,7 @@ public class AlertServiceImpl implements AlertService {
   @Override
   @Transactional
   public SavedSearch save(Long userId, String query, String location, String type, Integer minStipend) {
+    if (minStipend != null && minStipend < 0) throw new BadRequestException("Minimum stipend cannot be negative.");
     User user = users.findById(userId).orElseThrow(() -> new NotFoundException("User not found."));
     SavedSearch search = new SavedSearch();
     search.setUser(user);

@@ -6,4 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SavedSearchRepository extends JpaRepository<SavedSearch, Long> {
   List<SavedSearch> findByUserId(Long userId);
+  void deleteByUserId(Long userId);
 }

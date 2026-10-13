@@ -5,7 +5,10 @@ import com.internlog.exception.*;
 import com.internlog.model.User;
 import com.internlog.repository.ApplicationRepository;
 import com.internlog.repository.UserRepository;
+import com.internlog.repository.SavedSearchRepository;
+import com.internlog.repository.AccountPreferenceRepository;
 import com.internlog.service.UserService;
+import com.internlog.service.RequestValidation;
 import java.util.List;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,17 +20,22 @@ public class UserServiceImpl implements UserService {
   private final UserRepository users;
   private final ApplicationRepository applications;
   private final PasswordEncoder passwords;
+  private final SavedSearchRepository searches;
+  private final AccountPreferenceRepository preferences;
 
-  public UserServiceImpl(UserRepository users, ApplicationRepository applications, PasswordEncoder passwords) {
+  public UserServiceImpl(UserRepository users, ApplicationRepository applications, PasswordEncoder passwords,
+      SavedSearchRepository searches, AccountPreferenceRepository preferences) {
     this.users = users;
     this.applications = applications;
     this.passwords = passwords;
+    this.searches = searches;
+    this.preferences = preferences;
   }
 
   @Override
   @Transactional
   public User register(RegisterUserRequest req) {
-    if (users.existsByEmailIgnoreCase(req.email())) {
+    if (users.existsByEmailIgnoreCase(req.email().trim())) {
       throw new BadRequestException("An account with this email already exists.");
     }
     User user = new User();
@@ -55,11 +63,19 @@ public class UserServiceImpl implements UserService {
   @Transactional
   public User update(Long id, User patch) {
     User user = getById(id);
-    if (patch.getName() != null) user.setName(patch.getName());
+    if (patch.getName() != null) {
+      RequestValidation.nonBlank(patch.getName(), "Name");
+      user.setName(patch.getName().trim());
+    }
     if (patch.getCollege() != null) user.setCollege(patch.getCollege());
     if (patch.getCourse() != null) user.setCourse(patch.getCourse());
     if (patch.getGradYear() != null) user.setGradYear(patch.getGradYear());
-    if (patch.getStatus() != null) user.setStatus(patch.getStatus());
+    if (patch.getStatus() != null) {
+      if (!java.util.Set.of("Active", "Disabled").contains(patch.getStatus())) {
+        throw new BadRequestException("Unknown user status.");
+      }
+      user.setStatus(patch.getStatus());
+    }
     return users.save(user);
   }
 
@@ -82,6 +98,8 @@ public class UserServiceImpl implements UserService {
   public void delete(Long id) {
     getById(id);
     applications.deleteByUserId(id);
+    searches.deleteByUserId(id);
+    preferences.deleteByAccountRoleAndAccountId("user", id);
     users.deleteById(id);
   }
 

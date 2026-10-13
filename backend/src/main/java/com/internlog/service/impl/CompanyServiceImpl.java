@@ -4,10 +4,13 @@ import com.internlog.dto.AuthDtos.*;
 import com.internlog.exception.*;
 import com.internlog.model.Company;
 import com.internlog.model.CompanyStatus;
+import com.internlog.model.InternshipStatus;
 import com.internlog.repository.ApplicationRepository;
 import com.internlog.repository.CompanyRepository;
 import com.internlog.repository.InternshipRepository;
+import com.internlog.repository.AccountPreferenceRepository;
 import com.internlog.service.CompanyService;
+import com.internlog.service.RequestValidation;
 import java.util.List;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,19 +23,22 @@ public class CompanyServiceImpl implements CompanyService {
   private final InternshipRepository internships;
   private final ApplicationRepository applications;
   private final PasswordEncoder passwords;
+  private final AccountPreferenceRepository preferences;
 
   public CompanyServiceImpl(CompanyRepository companies, InternshipRepository internships,
-      ApplicationRepository applications, PasswordEncoder passwords) {
+      ApplicationRepository applications, PasswordEncoder passwords, AccountPreferenceRepository preferences) {
     this.companies = companies;
     this.internships = internships;
     this.applications = applications;
     this.passwords = passwords;
+    this.preferences = preferences;
   }
 
   @Override
   @Transactional
   public Company register(RegisterCompanyRequest req) {
-    if (companies.existsByEmailIgnoreCase(req.email())) {
+    RequestValidation.httpUrl(req.website());
+    if (companies.existsByEmailIgnoreCase(req.email().trim())) {
       throw new BadRequestException("A company account with this email already exists.");
     }
     Company company = new Company();
@@ -63,13 +69,19 @@ public class CompanyServiceImpl implements CompanyService {
   @Transactional
   public Company update(Long id, Company patch) {
     Company company = getById(id);
-    if (patch.getName() != null) company.setName(patch.getName());
+    RequestValidation.httpUrl(patch.getWebsite());
+    if (patch.getEmail() != null) RequestValidation.email(patch.getEmail());
+    if (patch.getName() != null) {
+      RequestValidation.nonBlank(patch.getName(), "Company name");
+      company.setName(patch.getName().trim());
+      internships.findByCompanyId(id).forEach(job -> job.setCompanyName(company.getName()));
+    }
     if (patch.getWebsite() != null) company.setWebsite(patch.getWebsite());
     if (patch.getLocation() != null) company.setLocation(patch.getLocation());
     if (patch.getIndustry() != null) company.setIndustry(patch.getIndustry());
     if (patch.getDescription() != null) company.setDescription(patch.getDescription());
     if (patch.getEmail() != null && !patch.getEmail().equalsIgnoreCase(company.getEmail())) {
-      if (companies.existsByEmailIgnoreCase(patch.getEmail())) {
+      if (companies.existsByEmailIgnoreCase(patch.getEmail().trim())) {
         throw new BadRequestException("Another company already uses this email.");
       }
       company.setEmail(patch.getEmail().trim().toLowerCase());
@@ -115,6 +127,14 @@ public class CompanyServiceImpl implements CompanyService {
       }
       default -> throw new BadRequestException("Unknown company status: " + status);
     }
+    internships.findByCompanyId(id).forEach(job -> {
+      if (!company.isApproved() && job.getStatus() == InternshipStatus.Published) {
+        job.setStatus(company.getStatus() == CompanyStatus.Suspended
+            ? InternshipStatus.Suspended : InternshipStatus.Pending_Review);
+      } else if (company.isApproved() && job.getStatus() == InternshipStatus.Suspended) {
+        job.setStatus(InternshipStatus.Pending_Review);
+      }
+    });
     return companies.save(company);
   }
 
@@ -128,6 +148,7 @@ public class CompanyServiceImpl implements CompanyService {
     });
     internships.findByCompanyId(id).forEach(job -> internships.deleteById(job.getId()));
     companies.deleteById(id);
+    preferences.deleteByAccountRoleAndAccountId("company", id);
   }
 
   @Override

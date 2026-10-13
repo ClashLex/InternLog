@@ -10,7 +10,8 @@ import java.time.LocalDate;
  * Maps to `internlog_applications` in the prototype.
  */
 @Entity
-@Table(name = "applications")
+@Table(name = "applications", uniqueConstraints =
+    @UniqueConstraint(name = "uk_application_user_internship", columnNames = {"user_id", "internship_id"}))
 public class Application {
 
   @Id

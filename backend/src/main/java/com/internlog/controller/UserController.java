@@ -3,6 +3,7 @@ package com.internlog.controller;
 import com.internlog.dto.AuthDtos.UserResponse;
 import com.internlog.model.User;
 import com.internlog.service.UserService;
+import com.internlog.security.AccessPolicy;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
@@ -16,28 +17,34 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin
 public class UserController {
 
   private final UserService users;
+  private final AccessPolicy access;
 
-  public UserController(UserService users) {
+  public UserController(UserService users, AccessPolicy access) {
     this.users = users;
+    this.access = access;
   }
 
   @GetMapping
   public List<UserResponse> list() {
+    access.admin();
     return users.list().stream().map(users::toResponse).toList();
   }
 
   @GetMapping("/{id}")
   public UserResponse get(@PathVariable Long id) {
+    access.user(id);
     return users.toResponse(users.getById(id));
   }
 
   @PutMapping("/{id}")
   public UserResponse update(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+    access.user(id);
+    if (body.containsKey("status")) access.admin();
     User patch = new User();
+    patch.setStatus(null);
     if (body.get("name") != null) patch.setName(String.valueOf(body.get("name")));
     if (body.get("college") != null) patch.setCollege(String.valueOf(body.get("college")));
     if (body.get("course") != null) patch.setCourse(String.valueOf(body.get("course")));
@@ -50,6 +57,7 @@ public class UserController {
   @PostMapping("/{id}/password")
   public ResponseEntity<Map<String, String>> changePassword(
       @PathVariable Long id, @RequestBody Map<String, Object> body) {
+    access.user(id);
     Object cur = body.get("currentPassword");
     Object next = body.get("newPassword");
     users.changePassword(id, cur == null ? null : String.valueOf(cur), next == null ? null : String.valueOf(next));
@@ -58,6 +66,7 @@ public class UserController {
 
   @DeleteMapping("/{id}")
   public ResponseEntity<Map<String, String>> delete(@PathVariable Long id) {
+    access.admin();
     users.delete(id);
     return ResponseEntity.ok(Map.of("message", "User deleted"));
   }

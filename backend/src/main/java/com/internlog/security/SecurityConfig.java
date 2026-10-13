@@ -7,13 +7,13 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.http.HttpMethod;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.web.cors.*;
 
-/**
- * Prototype policy: all /api/** permitted so the static frontend works with
- * zero token plumbing on day one. Passwords are still BCrypt-hashed.
- * Harden with JwtFilter + role checks before any production use.
- */
+/** Server-held browser sessions, CSRF protection, and optional bearer API access. */
 @Configuration
 public class SecurityConfig {
 
@@ -28,23 +28,58 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
-    config.setAllowedOrigins(List.of(allowedOrigins.split(",")));
+    config.setAllowedOrigins(java.util.Arrays.stream(allowedOrigins.split(","))
+        .map(String::trim).filter(s -> !s.isEmpty()).toList());
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
     config.setAllowedHeaders(List.of("*"));
-    config.setAllowCredentials(false);
+    config.setAllowCredentials(true);
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", config);
     return source;
   }
 
   @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain filterChain(HttpSecurity http, JwtFilter jwtFilter) throws Exception {
     http
-        .csrf(csrf -> csrf.disable())
+        .csrf(csrf -> csrf.ignoringRequestMatchers(request -> {
+          String header = request.getHeader("Authorization");
+          return header != null && header.startsWith("Bearer ");
+        }))
         .cors(cors -> {})
-        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+        .requestCache(cache -> cache.disable())
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register",
+                "/api/companies/login", "/api/companies/register").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/internships/board").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/health", "/api/auth/csrf", "/api/auth/session").permitAll()
+            .requestMatchers("/", "/*.html", "/user/**", "/company/**", "/admin/**", "/css/**", "/js/**").permitAll()
+            .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs/**").permitAll()
+            .requestMatchers("/api/admin/**").hasRole("ADMIN")
+            .anyRequest().authenticated())
+        .exceptionHandling(errors -> errors
+            .authenticationEntryPoint((request, response, error) -> {
+              response.setStatus(401);
+              response.setContentType("application/json");
+              response.getWriter().write("{\"message\":\"Please sign in to continue.\"}");
+            })
+            .accessDeniedHandler((request, response, error) -> {
+              response.setStatus(403);
+              response.setContentType("application/json");
+              response.getWriter().write("{\"message\":\"You do not have permission for this action.\"}");
+            }))
+        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
         .httpBasic(basic -> basic.disable())
-        .formLogin(form -> form.disable());
+        .formLogin(form -> form.disable())
+        .logout(logout -> logout.disable());
     return http.build();
+  }
+
+  @Bean
+  public FilterRegistrationBean<JwtFilter> jwtFilterRegistration(JwtFilter filter) {
+    var registration = new FilterRegistrationBean<>(filter);
+    registration.setEnabled(false);
+    return registration;
   }
 }

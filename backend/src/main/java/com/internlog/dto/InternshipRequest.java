@@ -8,14 +8,14 @@ public class InternshipRequest {
   @NotNull public Long companyId;
   @NotBlank public String title;
   public String location;
-  public String internshipType = "On-site";
-  public Integer stipend = 0;
-  public Integer positions = 1;
+  public String internshipType;
+  @Min(0) public Integer stipend;
+  @Min(1) public Integer positions;
   public String deadline; // yyyy-MM-dd
   public List<String> skills;
   public String description;
   public String education;
   public String applyUrl;
   /** true = submit for review (Pending Review), false = Draft */
-  public Boolean publishRequested = true;
+  public Boolean publishRequested;
 }
