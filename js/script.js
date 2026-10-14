@@ -570,6 +570,7 @@
      Toggle injected into .topbar (workspaces) or .nav-bar--pill (landing). */
   function initStaggeredMenu() {
     if (typeof document.querySelectorAll !== "function" || typeof document.createElement !== "function" || !document.body) return;
+    if (document.body.getAttribute("data-navigation") === "pills") return;
     if (document.querySelector(".staggered-menu-wrapper")) return;
     var sidebar = document.querySelector(".sidebar");
     var isLanding = !sidebar;

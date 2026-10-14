@@ -24,6 +24,10 @@ mysql-data/
 /STARTUP.md
 /RUN_COMMANDS.md
 
+# Local component reference notes
+/components.md
+/compomemts.md
+
 # Node (if you add tooling later)
 node_modules/
 dist/

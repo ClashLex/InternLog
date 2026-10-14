@@ -328,13 +328,14 @@ test("pages share base styling and accessibility without loading archived redesi
     }
   }
   const homepage = fs.readFileSync(path.join(root, "index.html"), "utf8");
-  assert.match(homepage, /class="wrap hero hero-single"/);
-  assert.match(homepage, /Seven tools for the whole search/);
-  assert.match(homepage, /class="wrap section timeline"/);
-  assert.match(homepage, /Four stages, tracked in one list/);
-  assert.equal((homepage.match(/class="card magic-bento-card /g) || []).length, 7);
-  assert.equal((homepage.match(/data-curved-loop /g) || []).length, 2);
-  assert.doesNotMatch(homepage, /Their first opportunity|Before you<br>get started|landing-journey/);
+  assert.match(homepage, /class="editorial-page" data-navigation="pills"/);
+  assert.match(homepage, /href="css\/editorial.css"/);
+  assert.match(homepage, /src="js\/editorial.js" defer/);
+  assert.match(homepage, /data-pixel-swap/);
+  assert.match(homepage, /Illustrated preview · sample records/);
+  assert.equal((homepage.match(/data-story-panel=/g) || []).length, 3);
+  assert.equal((homepage.match(/data-editorial-spotlight/g) || []).length, 3);
+  assert.doesNotMatch(homepage, /data-curved-loop|magic-bento-card|landing-journey|gsap|react-router/);
 });
 
 function uiHarness(reduced = false, classic = false) {
@@ -541,4 +542,174 @@ test("company internship submit recovers when the initial listing read fails", a
   await submit({ preventDefault() {}, stopImmediatePropagation() {} });
   assert.deepEqual(busy, [true, false]);
   assert.deepEqual(messages, ["Read failed"]);
+});
+
+function editorialHarness(reduced = false) {
+  const timers = new Map(), windowEvents = {}, motionEvents = {}, animations = [];
+  let timerId = 0;
+  const document = { activeElement: null, addEventListener() {} };
+  class Element {
+    constructor() {
+      this.attributes = {}; this.children = []; this.events = {}; this.style = {}; this.hidden = false;
+      this.clientWidth = 600; this.clientHeight = 445;
+    }
+    setAttribute(name, value) { this.attributes[name] = String(value); }
+    getAttribute(name) { return this.attributes[name] ?? null; }
+    removeAttribute(name) { delete this.attributes[name]; }
+    get id() { return this.attributes.id || ""; }
+    set id(value) { this.attributes.id = value; }
+    appendChild(child) { child.parentElement = this; this.children.push(child); }
+    remove() { this.parentElement.children = this.parentElement.children.filter(child => child !== this); }
+    addEventListener(name, callback) { (this.events[name] ||= []).push(callback); }
+    emit(name, extra = {}) { (this.events[name] || []).forEach(callback => callback({ preventDefault() {}, ...extra })); }
+    querySelectorAll(selector) {
+      const descendants = this.children.flatMap(child => [child, ...child.querySelectorAll(selector)]);
+      const attr = selector.slice(1, -1);
+      return descendants.filter(child => child.getAttribute(attr) !== null);
+    }
+    cloneNode(deep) {
+      const clone = new Element(); clone.attributes = { ...this.attributes }; clone.hidden = this.hidden;
+      if (deep) this.children.forEach(child => clone.appendChild(child.cloneNode(true)));
+      return clone;
+    }
+    focus() { document.activeElement = this; }
+    animate(frames, timing) { const animation = { frames, timing, cancelled: false, cancel() { this.cancelled = true; } }; animations.push(animation); return animation; }
+  }
+  document.createElement = () => new Element();
+  const motion = { matches: reduced, addEventListener: (name, callback) => { motionEvents[name] = callback; } };
+  const window = { matchMedia: () => motion, addEventListener: (name, callback) => { windowEvents[name] = callback; },
+    setTimeout: callback => { timers.set(++timerId, callback); return timerId; }, clearTimeout: id => timers.delete(id) };
+  const source = fs.readFileSync(path.join(__dirname, "..", "js/editorial.js"), "utf8");
+  const context = vm.createContext({ document, window });
+  vm.runInContext(source.slice(source.indexOf("  function initTabs("), source.indexOf("  function initMenu(")), context);
+  return { context, Element, document, timers, windowEvents, motionEvents, motion, animations };
+}
+
+test("editorial product tabs support arrows, Home/End and one visible panel", () => {
+  const page = editorialHarness();
+  const buttons = [0, 1, 2].map(i => { const e = new page.Element(); e.id = "tab-" + i; return e; });
+  const panels = [0, 1, 2].map(i => { const e = new page.Element(); e.id = "panel-" + i; return e; });
+  const track = new page.Element();
+  page.context.initTabs({ querySelectorAll: selector => selector === "[data-story-tab]" ? buttons : panels, querySelector: () => track });
+  assert.equal(track.getAttribute("role"), "tablist");
+  assert.deepEqual(panels.map(panel => panel.hidden), [false, true, true]);
+  buttons[0].emit("keydown", { key: "ArrowLeft" });
+  assert.deepEqual(panels.map(panel => panel.hidden), [true, true, false]);
+  assert.equal(page.document.activeElement, buttons[2]);
+  buttons[2].emit("keydown", { key: "Home" });
+  assert.equal(buttons[0].tabIndex, 0);
+  buttons[0].emit("keydown", { key: "End" });
+  assert.equal(buttons[2].getAttribute("aria-selected"), "true");
+  assert.equal(panels[2].getAttribute("aria-labelledby"), "tab-2");
+});
+
+test("homepage colors inherit the shared workspace palette instead of defining a separate theme", () => {
+  const css = fs.readFileSync(path.join(__dirname, "..", "css/editorial.css"), "utf8");
+  for (const [alias, token] of Object.entries({ paper: "bg", card: "surface", ink: "text", muted: "muted", rule: "border", accent: "primary", "accent-hover": "primary-dark", tint: "primary-light" })) {
+    assert.ok(css.includes(`--ed-${alias}: var(--${token})`));
+  }
+  assert.doesNotMatch(css, /--(?:bg|surface|text|muted|border|primary|primary-light)\s*:/);
+  assert.doesNotMatch(css, /#(?:f6f3ec|fffdf8|a5422b|b9472e|efae8f|fff4e5|f0ded2|dfe5d7)\b/i);
+});
+
+test("PixelSwap respects reduced motion and cleans bounded decorative clones on interruption", () => {
+  for (const reduced of [true, false]) {
+    const page = editorialHarness(reduced), root = new page.Element(), toggle = new page.Element();
+    const layers = [0, 1].map(i => {
+      const layer = new page.Element(); layer.setAttribute("data-pixel-layer", i); layer.id = "layer-" + i;
+      const child = new page.Element(); child.id = "example-" + i; layer.appendChild(child); root.appendChild(layer); return layer;
+    });
+    page.context.initPixelSwap(root, toggle);
+    toggle.emit("click");
+    if (reduced) {
+      assert.equal(page.animations.length, 0);
+      assert.equal(toggle.getAttribute("aria-pressed"), "false");
+      assert.equal(layers[0].hidden, false);
+    } else {
+      const grid = root.children.at(-1);
+      assert.equal(grid.getAttribute("aria-hidden"), "true");
+      assert.equal(grid.inert, true);
+      assert.ok(grid.children.length <= 120);
+      assert.equal(grid.querySelectorAll("[id]").length, 0);
+      toggle.emit("click"); // Rapid reversal must resolve to the latest state.
+      page.windowEvents.resize();
+      assert.equal(toggle.getAttribute("aria-pressed"), "true");
+      assert.deepEqual(layers.map(layer => layer.hidden), [true, false]);
+      assert.ok(page.animations.every(animation => animation.cancelled));
+      assert.equal(root.children.length, 2);
+      assert.equal(page.timers.size, 0);
+    }
+  }
+});
+
+function ditherHarness({ reduced = false, unavailable = false, compileFails = false } = {}) {
+  function target(extra = {}) {
+    return Object.assign({ events: {}, hidden: true, attributes: {}, dataset: {},
+      setAttribute(name, value) { this.attributes[name] = String(value); },
+      addEventListener(name, listener) { (this.events[name] ||= []).push(listener); },
+      removeEventListener(name, listener) { this.events[name] = (this.events[name] || []).filter(item => item !== listener); },
+      emit(name, event = {}) { (this.events[name] || []).slice().forEach(listener => listener(event)); }
+    }, extra);
+  }
+  let draws = 0, deleted = 0, observer, color = "rgb(17, 19, 18)", lastInk;
+  const gl = { getShaderParameter: () => !compileFails, getProgramParameter: () => true, isContextLost: () => false,
+    getUniformLocation: (program, name) => name, drawArrays: () => { draws++; }, uniform3fv: (name, value) => { lastInk = [...value]; } };
+  for (const name of ["createShader", "createProgram", "createBuffer", "createVertexArray"]) gl[name] = () => ({});
+  for (const name of ["deleteShader", "deleteProgram", "deleteBuffer", "deleteVertexArray"]) gl[name] = () => { deleted++; };
+  for (const name of ["shaderSource", "compileShader", "attachShader", "bindAttribLocation", "linkProgram", "bindVertexArray", "bindBuffer", "bufferData", "enableVertexAttribArray", "vertexAttribPointer", "useProgram", "viewport", "uniform2f", "uniform1f"]) gl[name] = () => {};
+  const frames = new Map(); let frameId = 0;
+  const canvas = target({ getContext: () => unavailable ? null : gl }), button = target(), motion = target({ matches: reduced });
+  const document = target({ hidden: false, body: {}, documentElement: target(), getElementById: id => ({ homepageDither: canvas, backgroundMotion: button })[id] });
+  const window = target({ innerWidth: 2000, innerHeight: 1200, matchMedia: () => motion,
+    requestAnimationFrame: listener => { frames.set(++frameId, listener); return frameId; }, cancelAnimationFrame: id => frames.delete(id) });
+  const Observer = class { constructor(callback) { this.callback = callback; this.disconnected = false; observer = this; } observe() {} disconnect() { this.disconnected = true; } };
+  const context = vm.createContext({ window, document, MutationObserver: Observer, getComputedStyle: () => ({ color }) });
+  vm.runInContext(fs.readFileSync(path.join(__dirname, "..", "js/dither.js"), "utf8"), context);
+  document.emit("DOMContentLoaded");
+  return { canvas, button, motion, window, document, frames, get draws() { return draws; }, get deleted() { return deleted; },
+    get observer() { return observer; }, get ink() { return lastInk; },
+    advance: now => { const callbacks = [...frames.values()]; frames.clear(); callbacks.forEach(callback => callback(now)); },
+    setColor: value => { color = value; observer.callback(); } };
+}
+
+test("minimal Dither gracefully falls back and leaves reduced-motion backgrounds static", () => {
+  for (const options of [{ unavailable: true }, { compileFails: true }]) {
+    const page = ditherHarness(options);
+    assert.equal(page.canvas.hidden, true);
+    assert.equal(page.button.hidden, true);
+    assert.equal(page.frames.size, 0);
+    if (options.compileFails) assert.ok(page.deleted > 0);
+  }
+  const page = ditherHarness({ reduced: true });
+  assert.equal(page.canvas.hidden, false);
+  assert.equal(page.button.hidden, true);
+  assert.equal(page.frames.size, 0);
+  page.motion.matches = false; page.motion.emit("change");
+  assert.equal(page.frames.size, 1);
+  page.motion.matches = true; page.motion.emit("change");
+  assert.equal(page.frames.size, 0);
+});
+
+test("Dither caps rendering, follows theme colors, pauses and releases resources", () => {
+  const page = ditherHarness();
+  assert.ok(page.canvas.width <= 720 && page.canvas.height <= 480);
+  page.advance(0); const first = page.draws;
+  page.advance(16); assert.equal(page.draws, first);
+  page.advance(50); assert.equal(page.draws, first + 1);
+  page.button.emit("click");
+  assert.equal(page.frames.size, 0);
+  assert.equal(page.button.attributes["aria-pressed"], "false");
+  page.setColor("rgb(244, 244, 244)");
+  assert.deepEqual(page.ink, [244 / 255, 244 / 255, 244 / 255]);
+  page.button.emit("click"); assert.equal(page.frames.size, 1);
+  page.document.hidden = true; page.document.emit("visibilitychange"); assert.equal(page.frames.size, 0);
+  page.document.hidden = false; page.document.emit("visibilitychange"); assert.equal(page.frames.size, 1);
+  let prevented = false;
+  page.canvas.emit("webglcontextlost", { preventDefault() { prevented = true; } });
+  assert.equal(prevented, true);
+  assert.equal(page.frames.size, 0);
+  assert.equal(page.canvas.hidden, true);
+  assert.equal(page.button.hidden, true);
+  assert.equal(page.observer.disconnected, true);
+  assert.equal(page.deleted, 5); // Two shaders, one program, buffer and VAO.
 });

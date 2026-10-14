@@ -34,6 +34,43 @@ and `css/style.css`, with keyboard/focus support and reduced-motion handling:
 
 The React Bits license below is also retained in the active JavaScript source.
 
+### Editorial homepage
+
+The local, git-ignored `components.md` supplied React versions of PixelSwap,
+SpotlightCard and PillNav.
+The homepage uses scoped, application-specific vanilla adaptations in
+`js/editorial.js`, `css/editorial.css`, and the existing PillNav helpers.
+PixelSwap is limited to explicitly labeled illustrations, not live listings or
+interactive controls. SpotlightCard uses local pointer events without ambient
+animation. PillNav uses regular links and CSS hover transitions, not GSAP or
+React Router. Missing CSS was cross-checked against the upstream component styles.
+
+The supplied React Bits Dither effect is adapted in `js/dither.js` as a single-pass
+monochrome WebGL2 background: low opacity, edge-weighted masking, slow waves,
+a capped render resolution and 20 fps drawing limit. Mouse trails, click ripples
+and intro animation are disabled. A footer control pauses motion; reduced-motion
+preferences produce a static texture. Hidden tabs stop animation, and unsupported
+WebGL or context loss leaves the normal page background unchanged. The React Bits
+license is retained with the adaptation.
+
+The three provided OpenSourceUI references are
+[Soft UI Button](https://opensourceui.in/components/soft-ui-button),
+[3D Button](https://opensourceui.in/components/3d-button), and
+[3D Icon Button](https://opensourceui.in/components/3d-icon-button).
+The new homepage uses original scoped CSS inspired by their soft/depth styling;
+the source pages were not readable through the text fetcher. Search, selects,
+cards, tabs, steps, loading/empty/error states, and FAQ are native HTML/CSS/JS
+implementations; internship dialogs and notifications retain the existing API
+contracts. No additional React packages are introduced.
+
+The supplied `fonts/Times New Roman MT Condensed Regular.otf` is used for headings.
+No license accompanied that file: confirm web-embedding and distribution rights
+before publishing. Akzidenz-Grotesk is requested from local installations; the
+supplied CC0 Aileron Regular/SemiBold/Bold files provide a clearly named web
+fallback where it is unavailable. Aileron's CC0 notice is retained alongside the
+fonts. Unused Basic Commerce, FreeSans and Protestant files are not included in
+Pages or Java frontend packaging. Aileron is not represented as Akzidenz-Grotesk.
+
 ## SpotlightBar (OpenSourceUI)
 
 The homepage internship search adapts [SpotlightBar](https://opensourceui.in/components/spotlight-bar)

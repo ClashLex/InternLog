@@ -3,212 +3,127 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>InternLog — Every internship application, in one place</title>
-  <meta name="description" content="InternLog helps students organize internship applications, monitor progress, and keep their entire internship search in one place.">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <meta name="color-scheme" content="light dark">
+  <title>InternLog — A little more organized. A step closer.</title>
+  <meta name="description" content="Find reviewed internships and keep every application, interview, and follow-up in one student-friendly workspace. Free for students.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23000000'/%3E%3Ctext x='16' y='22' font-family='serif' font-size='21' fill='white' text-anchor='middle'%3Ei%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/editorial.css">
   <script src="js/accessibility.js" defer></script>
   <script src="js/script.js" defer></script>
   <script src="js/api.js" defer></script>
   <script src="js/landing.js" defer></script>
+  <script src="js/editorial.js" defer></script>
+  <script src="js/dither.js" defer></script>
 </head>
-<body>
-  <header class="site-header site-header--pill">
-    <div class="wrap nav-bar nav-bar--pill">
-      <a class="brand" href="index.html" aria-label="InternLog home">
-        <span class="brand-mark" aria-hidden="true">IL</span>
-        <span>InternLog<small>Track. Apply. Grow.</small></span>
-      </a>
+<body class="editorial-page" data-navigation="pills">
+  <canvas class="ed-dither" id="homepageDither" aria-hidden="true" hidden></canvas>
+  <a class="skip-link" href="#mainContent">Skip to content</a>
+  <header class="site-header ed-header">
+    <div class="ed-wrap nav-bar nav-bar--pill">
+      <a class="ed-brand" href="index.html" aria-label="InternLog home"><span class="ed-brand-mark" aria-hidden="true">i.</span><span>InternLog<span class="ed-brand-note">A place to begin.</span></span></a>
       <div class="pill-nav-container" data-pill-nav>
         <nav class="pill-nav" aria-label="Primary">
-          <div class="pill-nav-items desktop-only">
-            <ul class="pill-list">
-              <li><a class="pill is-active" href="index.html" aria-current="page"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Home</span><span class="pill-label-hover" aria-hidden="true">Home</span></span></a></li>
-              <li><a class="pill" href="#about"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">About</span><span class="pill-label-hover" aria-hidden="true">About</span></span></a></li>
-              <li><a class="pill" href="#features"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Features</span><span class="pill-label-hover" aria-hidden="true">Features</span></span></a></li>
-              <li><a class="pill" href="#internships"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Internships</span><span class="pill-label-hover" aria-hidden="true">Internships</span></span></a></li>
-              <li><a class="pill" href="company/login.html"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Companies</span><span class="pill-label-hover" aria-hidden="true">Companies</span></span></a></li>
-              <li><a class="pill" href="user/login.html" data-landing-account><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Login</span><span class="pill-label-hover" aria-hidden="true">Login</span></span></a></li>
-              <li><a class="pill pill--cta" href="user/register.html"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Register</span><span class="pill-label-hover" aria-hidden="true">Register</span></span></a></li>
-              <li><a class="pill" href="#faq"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">FAQ</span><span class="pill-label-hover" aria-hidden="true">FAQ</span></span></a></li>
-              <li><a class="pill" href="#get-started"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Get started</span><span class="pill-label-hover" aria-hidden="true">Get started</span></span></a></li>
-            </ul>
-          </div>
-          <button class="mobile-menu-button mobile-only" id="pillMenuBtn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="pillMenuPopover">
-            <span class="hamburger-line" aria-hidden="true"></span><span class="hamburger-line" aria-hidden="true"></span>
-          </button>
+          <div class="pill-nav-items desktop-only"><ul class="pill-list">
+            <li><a class="pill" href="#internships"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Internships</span><span class="pill-label-hover" aria-hidden="true">Internships</span></span></a></li>
+            <li><a class="pill" href="#features"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Your tracker</span><span class="pill-label-hover" aria-hidden="true">Your tracker</span></span></a></li>
+            <li><a class="pill" href="#companies"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">For companies</span><span class="pill-label-hover" aria-hidden="true">For companies</span></span></a></li>
+          </ul></div>
+          <button class="mobile-menu-button mobile-only" id="pillMenuBtn" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="pillMenuPopover"><span class="hamburger-line" aria-hidden="true"></span><span class="hamburger-line" aria-hidden="true"></span></button>
         </nav>
-        <div class="mobile-menu-popover mobile-only" id="pillMenuPopover" aria-label="Mobile navigation">
-          <ul class="mobile-menu-list">
-            <li><a class="mobile-menu-link" href="index.html" aria-current="page">Home</a></li>
-            <li><a class="mobile-menu-link" href="#about">About</a></li>
-            <li><a class="mobile-menu-link" href="#features">Features</a></li>
-            <li><a class="mobile-menu-link" href="#internships">Browse Internships</a></li>
-            <li><a class="mobile-menu-link" href="company/login.html">For Companies</a></li>
-            <li><a class="mobile-menu-link" href="user/login.html" data-landing-account>Student Login</a></li>
-            <li><a class="mobile-menu-link" href="user/register.html">Register</a></li>
-            <li><a class="mobile-menu-link" href="#faq">FAQ</a></li>
-            <li><a class="mobile-menu-link" href="#get-started">Get started</a></li>
-          </ul>
-        </div>
+        <div class="mobile-menu-popover mobile-only" id="pillMenuPopover"><nav aria-label="Mobile"><ul class="mobile-menu-list">
+          <li><a class="mobile-menu-link" href="#internships">Browse internships</a></li><li><a class="mobile-menu-link" href="#features">Your tracker</a></li><li><a class="mobile-menu-link" href="#companies">For companies</a></li><li><a class="mobile-menu-link" href="user/login.html" data-landing-account>Login</a></li><li><a class="mobile-menu-link" href="user/register.html">Create free account</a></li>
+        </ul></nav></div>
       </div>
+      <div class="ed-header-actions"><a class="ed-login" href="user/login.html" data-landing-account>Login</a><a class="btn btn-sm ed-button" href="user/register.html">Get started <span aria-hidden="true">↗</span></a></div>
     </div>
   </header>
 
-  <main>
-    <div class="wrap hero hero-single">
-      <div>
-        <p class="hero-announce"><a href="#internships"><span class="hero-announce-dot" aria-hidden="true"></span>Verified company board — browse roles with no account needed</a></p>
-        <h1>Every internship application, in one place.</h1>
-        <p class="lead">InternLog helps students organize applications, track statuses, and never miss a deadline — from first application to final offer.</p>
-        <p class="cta-row"><a class="btn" href="user/register.html">Create free account</a><a class="btn btn-secondary" href="#internships">Explore internships</a></p>
-        <ul class="hero-proof" aria-label="At a glance"><li>Free for students</li><li>Company opportunities</li><li>Placement-cell ready</li></ul>
+  <main id="mainContent">
+    <section class="ed-wrap ed-hero" aria-labelledby="heroTitle">
+      <div class="ed-hero-copy">
+        <p class="ed-eyebrow"><span class="ed-dot" aria-hidden="true"></span> For the in-between. And what's next.</p>
+        <h1 id="heroTitle">A little more<br><em>organized.</em><br>A step closer.</h1>
+        <p class="ed-lead">Find internships. Keep every application, reply, and next step in one place. Make room for the part that matters: your future.</p>
+        <div class="ed-actions"><a class="btn ed-button" href="user/register.html">Start my free tracker <span aria-hidden="true">↗</span></a><a class="btn btn-secondary ed-button" href="#internships">Browse internships</a></div>
+        <p class="ed-fineprint">Free for students. No account needed to browse.</p>
       </div>
-      <figure class="hero-visual">
-        <div class="mock" aria-hidden="true">
-          <div class="mock-bar"><span class="mock-dot"></span><span class="mock-dot"></span><span class="mock-dot"></span><span class="mock-url">internlog · dashboard</span></div>
-          <div class="mock-body">
-            <div class="mock-row"><strong>Your week</strong><span class="badge badge-shortlisted">3 follow-ups</span></div>
-            <div class="mock-stats">
-              <div><strong>12</strong><span>Applied</span></div>
-              <div><strong>4</strong><span>Shortlisted</span></div>
-              <div><strong>2</strong><span>Interview</span></div>
-              <div><strong>1</strong><span>Selected</span></div>
-            </div>
-            <div class="mock-list">
-              <div><span><strong>Acme Corp</strong><span>Frontend Intern · Remote</span></span><span class="badge badge-interview">Interview</span></div>
-              <div><span><strong>Bright Labs</strong><span>Design Intern · Hybrid</span></span><span class="badge badge-shortlisted">Shortlisted</span></div>
-              <div><span><strong>Northwind</strong><span>Data Intern · On-site</span></span><span class="badge badge-applied">Applied</span></div>
-            </div>
-            <div class="mock-bars">
-              <div><span>Applied</span><div class="status-track"><div class="status-fill status-fill-applied" style="width:64%"></div></div><strong>12</strong></div>
-              <div><span>Shortlisted</span><div class="status-track"><div class="status-fill status-fill-shortlisted" style="width:34%"></div></div><strong>4</strong></div>
-              <div><span>Interview</span><div class="status-track"><div class="status-fill status-fill-interview" style="width:22%"></div></div><strong>2</strong></div>
-            </div>
+      <figure class="ed-hero-figure">
+        <div class="ed-figure-note" aria-hidden="true">less spreadsheet,<br><em>more headspace.</em><svg viewBox="0 0 120 52" fill="none"><path d="M4 5c61-12 91 2 80 28-5 12-15 10-8 0 7-10 23-5 35 13m-3-15 3 15-15-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+        <div class="pixel-swap ed-preview" data-pixel-swap>
+          <div class="pixel-swap__layer ed-paper" data-pixel-layer="0" hidden aria-hidden="true">
+            <div class="ed-paper-header"><span>THE BEFORE</span><span aria-hidden="true">↗</span></div>
+            <h2>Wait, where did<br>I apply again?</h2>
+            <div class="ed-scattered"><p class="ed-scrap ed-scrap-one">“Follow up on Friday?”<small>somewhere in your notes</small></p><p class="ed-scrap ed-scrap-two">application_tracker_final_v3.xlsx<small>last opened: a while ago</small></p><p class="ed-scrap ed-scrap-three">Interview link in an email.<br>Which email, though?</p></div>
+            <p class="ed-paper-footer">A familiar kind of chaos.</p>
+          </div>
+          <div class="pixel-swap__layer ed-paper" data-pixel-layer="1">
+            <div class="ed-paper-header"><span>MY NEXT CHAPTER</span><span class="ed-small-stamp">ONE PLACE</span></div>
+            <h2>A clearer view<br>of what's next.</h2>
+            <div class="ed-record"><span class="ed-record-icon" aria-hidden="true">F</span><div><strong>Frontend internship</strong><small>Example Studio · Remote</small></div><span class="ed-status">Interview</span></div>
+            <div class="ed-record"><span class="ed-record-icon ed-record-icon-sage" aria-hidden="true">D</span><div><strong>Design internship</strong><small>Example Collective · Hybrid</small></div><span class="ed-status ed-status-soft">Applied</span></div>
+            <div class="ed-next-step"><span class="ed-next-icon" aria-hidden="true">↳</span><div><span class="ed-small-label">A LITTLE NUDGE</span><strong>Make time for your next follow-up.</strong><p>Your notes and application details, together.</p></div></div>
+            <div class="ed-paper-footer"><span>Discover. Apply. Keep moving.</span><span aria-hidden="true">✳</span></div>
           </div>
         </div>
-        <figcaption class="muted">Illustrated preview with sample data — your dashboard fills in as you track.</figcaption>
+        <figcaption class="ed-preview-caption"><span>Illustrated preview · sample records</span><button type="button" class="ed-preview-toggle" data-pixel-toggle aria-pressed="true" aria-label="Show organized preview"><span class="ed-toggle-dot" aria-hidden="true"></span> Organized view</button></figcaption>
       </figure>
-    </div>
-
-    <div class="curved-loop-jacket" data-curved-loop data-text="TRACK ✦ APPLY ✦ GROW ✦ INTERNSHIPS ✦ " data-speed="0.8">
-      <svg class="curved-loop-svg" viewBox="0 0 1000 120" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
-        <defs><path id="curved-loop-path-a" d="M -200 70 Q -100 20 0 70 T 200 70 T 400 70 T 600 70 T 800 70 T 1000 70 T 1200 70 T 1400 70" fill="none" /></defs>
-        <text><textPath href="#curved-loop-path-a" startOffset="0">TRACK ✦ APPLY ✦ GROW ✦ INTERNSHIPS ✦ TRACK ✦ APPLY ✦ GROW ✦ INTERNSHIPS ✦ TRACK ✦ APPLY ✦ GROW ✦ INTERNSHIPS ✦&#160;</textPath></text>
-      </svg>
-      <span class="curved-loop-fallback">Track, Apply, Grow — InternLog internships.</span>
-    </div>
-
-    <div class="wrap section" id="audience" aria-labelledby="audienceTitle">
-      <p class="soft-pill-button" data-size="sm" data-variant="light">Who it's for</p>
-      <h2 id="audienceTitle">One tracker, three perspectives</h2>
-      <p class="sub">Students track, companies publish, placement cells review — each with a workspace of their own.</p>
-      <div class="grid-3">
-        <div class="card"><h3>Students</h3><p>Log every application, follow statuses from Applied to Selected, and get nudged on follow-ups and interviews.</p><p style="margin-top:14px"><a class="btn btn-secondary btn-sm" href="user/register.html">Create student account</a></p></div>
-        <div class="card"><h3>Companies</h3><p>Publish verified opportunities and review applicants in one place, after a quick admin verification.</p><p style="margin-top:14px"><a class="btn btn-secondary btn-sm" href="company/register.html">Register as a company</a></p></div>
-        <div class="card"><h3>Placement cells</h3><p>Students export clean CSV histories — consistent records, valid deadlines, clear status history.</p><p style="margin-top:14px"><a class="btn btn-secondary btn-sm" href="#features">See what's included</a></p></div>
-      </div>
-    </div>
-
-    <div class="wrap section" id="about">
-      <p class="soft-pill-button" data-size="sm" data-variant="light">Why InternLog</p>
-      <h2>For students in the middle of applications</h2>
-      <p class="sub">Stop losing track in spreadsheets and inboxes. One tracker built for the student workflow.</p>
-      <div class="grid-2">
-        <div class="card"><h3>One place for everything</h3><p>Company, role, location, dates, stipend, notes, and status — stored together and searchable in seconds.</p></div>
-        <div class="card"><h3>Placement-ready discipline</h3><p>Consistent records, valid deadlines, and clear status history you can export to CSV and show mentors and placement officers.</p></div>
-      </div>
-    </div>
-
-    <section class="wrap section" id="internships" aria-labelledby="internshipsTitle">
-      <p class="soft-pill-button" data-size="sm" data-variant="light">Internships</p>
-      <h2 id="internshipsTitle">Browse internship opportunities</h2>
-      <p class="sub">Explore reviewed opportunities from verified companies. Sign in as a student to save or apply.</p>
-      <form class="toolbar toolbar-spotlight" id="landingSearchForm" role="search">
-        <div class="spotlight" data-spotlight>
-          <label class="spot-sr" for="landingSearch">Spotlight search</label>
-          <svg class="spot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-          <input class="search-input spot-input" type="search" id="landingSearch" placeholder="Search role, company, location or skill" aria-label="Search internships" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="landingSuggest" aria-autocomplete="list">
-          <kbd class="spot-kbd" aria-hidden="true" title="Focus search (Ctrl/⌘ + K)">⌘K</kbd>
-          <ul class="spot-list" id="landingSuggest" role="listbox" aria-label="Suggested internships" hidden></ul>
-        </div>
-        <select id="landingType" aria-label="Work arrangement"><option value="all">All arrangements</option><option>Remote</option><option>Hybrid</option><option>On-site</option></select>
-        <button class="btn btn-secondary btn-sm" type="button" id="landingReset">Clear filters</button>
-      </form>
-      <p class="muted" id="landingResults" role="status" aria-live="polite">Loading published internships…</p>
-      <div class="grid-2" id="landingJobs" aria-busy="true"><div class="empty"><p class="spin-row"><span class="spin-loader spin-loader-lg" role="status" aria-label="Loading opportunities"></span>Loading opportunities…</p></div></div>
     </section>
 
-    <div class="wrap section section-roomy" id="features">
-      <p class="soft-pill-button" data-size="sm" data-variant="light">What you get</p>
-      <h2>Seven tools for the whole search</h2>
-      <p class="sub">Seven focused tools, from first lead to final decision.</p>
-      <div class="grid-2 bento" id="bentoGrid">
-        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Track</span><span class="magic-bento-card__index">01</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title" title="Track: add, edit, and organize every internship application with structured details.">Internship Application Tracking</h3><p class="magic-bento-card__description">Add, edit, and organize every internship application with structured details.</p></div></div>
-        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Status</span><span class="magic-bento-card__index">02</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title" title="Status: move applications from Applied to Selected with readable badges and progress bars.">Application Status Management</h3><p class="magic-bento-card__description">Move applications from Applied to Selected with clear, readable status badges and visual progress bars.</p></div></div>
-        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Dashboard</span><span class="magic-bento-card__index">03</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title" title="Dashboard: totals, recent applications, status overview, and upcoming interviews in one view.">Personal Dashboard</h3><p class="magic-bento-card__description">Totals, recent applications, status overview, and upcoming interviews in one view.</p></div></div>
-        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Search</span><span class="magic-bento-card__index">04</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title" title="Search: find any application by company, role, or location, and export records to CSV.">Search, Filter &amp; Export</h3><p class="magic-bento-card__description">Find any application by company, role, or location, and export records to CSV when you need them.</p></div></div>
-        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Profile</span><span class="magic-bento-card__index">05</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title" title="Profile: college details and password controls built for students.">Student Account Management</h3><p class="magic-bento-card__description">Profile, college details, and password controls built specifically for students.</p></div></div>
-        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Export</span><span class="magic-bento-card__index">06</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title" title="Export: application history as CSV for placement cells and mentor reviews.">Placement-Ready Exports</h3><p class="magic-bento-card__description">Export your application history to CSV for placement cells and mentor reviews.</p></div></div>
-        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Network</span><span class="magic-bento-card__index">07</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title" title="Network: companies publish verified internships; admins review accounts, posts, and applications.">Company Opportunities</h3><p class="magic-bento-card__description">Companies publish verified internships. Admins review accounts, posts, and applications.</p></div></div>
+    <div class="ed-wrap ed-principles" aria-label="At a glance"><span><span aria-hidden="true">01 /</span> Made for students</span><span><span aria-hidden="true">02 /</span> Applications from anywhere</span><span><span aria-hidden="true">03 /</span> Your search, at your pace</span></div>
+
+    <section class="ed-wrap ed-section" id="internships" aria-labelledby="internshipsTitle">
+      <div class="ed-section-head"><div><p class="ed-eyebrow">01 / A good place to start</p><h2 id="internshipsTitle">Find something<br><em>worth applying for.</em></h2></div><p>Published internships from verified companies. Take a look around. Your next step doesn't need a login.</p></div>
+      <form class="ed-board-toolbar" id="landingSearchForm" role="search">
+        <div class="spotlight ed-search" data-spotlight>
+          <label class="spot-sr" for="landingSearch">Search internships</label>
+          <svg class="spot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg>
+          <input type="search" class="search-input spot-input" id="landingSearch" placeholder="A role, a skill, a place…" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="landingSuggest" aria-autocomplete="list">
+          <kbd class="spot-kbd" aria-hidden="true">⌘K</kbd><ul class="spot-list" id="landingSuggest" role="listbox" aria-label="Suggested internships" hidden></ul>
+        </div>
+        <label class="spot-sr" for="landingType">Work arrangement</label><select id="landingType"><option value="all">Any work arrangement</option><option>Remote</option><option>Hybrid</option><option>On-site</option></select>
+        <button class="ed-reset" type="button" id="landingReset">Clear filters <span aria-hidden="true">↺</span></button>
+      </form>
+      <div class="ed-board-meta"><p id="landingResults" role="status" aria-live="polite">Checking published opportunities…</p><span>Reviewed before they're shared <span aria-hidden="true">↗</span></span></div>
+      <div class="ed-job-grid" id="landingJobs" aria-busy="true"><div class="empty"><p>Loading published internships…</p><div class="ed-skeleton" aria-hidden="true"><span></span><span></span><span></span></div></div></div>
+      <p class="ed-board-foot">Already found a role elsewhere? <a href="user/register.html">Give it a place in your tracker <span aria-hidden="true">↗</span></a></p>
+    </section>
+
+    <section class="ed-tracker-section" id="features" aria-labelledby="trackerTitle"><div class="ed-wrap">
+      <div class="ed-section-head"><div><p class="ed-eyebrow">02 / Less scattered. More you.</p><h2 id="trackerTitle">A home for<br><em>your whole search.</em></h2></div><p>Not another thing to manage. A little structure for the applications, interviews, and follow-ups you already have.</p></div>
+      <div class="ed-story" data-story-tabs>
+        <div class="ed-story-buttons" aria-label="Explore your tracker"><button type="button" data-story-tab="organize" id="tab-organize">01 <span>Keep it together</span></button><button type="button" data-story-tab="progress" id="tab-progress">02 <span>See where you stand</span></button><button type="button" data-story-tab="followup" id="tab-followup">03 <span>Know your next step</span></button></div>
+        <div class="ed-story-panel" data-story-panel="organize" id="panel-organize"><div class="ed-story-copy"><p class="ed-eyebrow">One application. All the details.</p><h3>Goodbye, twenty<br><em>open tabs.</em></h3><p>A role from our board or a link from somewhere else: keep the company, dates, status, and your own notes together.</p><a class="ed-text-link" href="user/register.html">Start organizing <span aria-hidden="true">↗</span></a></div><div class="ed-story-visual" aria-label="Illustration of an application record"><div class="ed-example-label">ILLUSTRATED EXAMPLE</div><div class="ed-detail-sheet"><span class="ed-small-label">APPLICATION NOTES</span><h4>Design internship</h4><dl><dt>Company</dt><dd>Example Collective</dd><dt>Arrangement</dt><dd>Hybrid</dd><dt>Status</dt><dd><span class="ed-status ed-status-soft">Applied</span></dd></dl><p class="ed-note">Ask about the team's design process.<br>Keep the portfolio link handy.</p></div></div></div>
+        <div class="ed-story-panel" data-story-panel="progress" id="panel-progress"><div class="ed-story-copy"><p class="ed-eyebrow">A little perspective helps.</p><h3>Every reply.<br><em>A clearer picture.</em></h3><p>See your applications move from Applied to Shortlisted, Interview, and a final decision. No more guessing which record needs attention.</p><a class="ed-text-link" href="user/register.html">Build your application history <span aria-hidden="true">↗</span></a></div><div class="ed-story-visual" aria-label="Illustration of application statuses"><div class="ed-example-label">ILLUSTRATED EXAMPLE</div><div class="ed-progress-sheet"><h4>Your search, in focus.</h4><div><span>Applied</span><span class="ed-progress-line"><i style="width:85%"></i></span></div><div><span>Shortlisted</span><span class="ed-progress-line"><i style="width:56%"></i></span></div><div><span>Interview</span><span class="ed-progress-line"><i style="width:34%"></i></span></div><p class="ed-note">Every application has its own pace.</p></div></div></div>
+        <div class="ed-story-panel" data-story-panel="followup" id="panel-followup"><div class="ed-story-copy"><p class="ed-eyebrow">Remember less. Do what matters.</p><h3>Leave room for<br><em>what comes next.</em></h3><p>Spot upcoming interviews and applications that could use a follow-up. Add context, take your next step, or snooze a reminder when you need space.</p><a class="ed-text-link" href="user/register.html">Make a little room <span aria-hidden="true">↗</span></a></div><div class="ed-story-visual" aria-label="Illustration of a follow-up reminder"><div class="ed-example-label">ILLUSTRATED EXAMPLE</div><div class="ed-reminder-sheet"><span class="ed-small-label">YOUR NEXT STEP</span><span class="ed-reminder-glyph" aria-hidden="true">↳</span><h4>A thoughtful<br>follow-up.</h4><p>Revisit your application notes.<br>Reach out when you're ready.</p><span class="ed-status ed-status-soft">Context, not clutter</span></div></div></div>
       </div>
-    </div>
+    </div></section>
 
-    <div class="wrap section timeline" id="how">
-      <p class="soft-pill-button" data-size="sm" data-variant="light">How it works</p>
-      <h2>From first application to final offer</h2><p class="sub">Four stages, tracked in one list.</p>
-      <div class="steps">
-        <div class="step"><div class="num">1</div><h3>Create Account</h3><p class="muted">Register with your college details.</p></div>
-        <div class="step"><div class="num">2</div><h3>Add Internships</h3><p class="muted">Log every internship you apply to.</p></div>
-        <div class="step"><div class="num">3</div><h3>Track Applications</h3><p class="muted">Update status as replies come in.</p></div>
-        <div class="step"><div class="num">4</div><h3>Get Your Internship</h3><p class="muted">Convert interviews into offers.</p></div>
+    <section class="ed-wrap ed-section" aria-labelledby="trustTitle"><div class="ed-section-head ed-section-head-wide"><div><p class="ed-eyebrow">A little clarity goes a long way</p><h2 id="trustTitle">Built around<br><em>the things that matter.</em></h2></div></div>
+      <div class="ed-trust-grid">
+        <article class="ed-trust-card" data-editorial-spotlight><span class="ed-trust-number" aria-hidden="true">01</span><h3>Reviewed,<br>not random.</h3><p>Companies are verified and posts reviewed before opportunities appear on the public board.</p><span class="ed-card-foot">A clearer starting point <span aria-hidden="true">↗</span></span></article>
+        <article class="ed-trust-card" data-editorial-spotlight><span class="ed-trust-number" aria-hidden="true">02</span><h3>Your records.<br>Real context.</h3><p>Your notes, dates, and statuses stay with your account. Save a role here or add one you found elsewhere.</p><span class="ed-card-foot">One place to come back to <span aria-hidden="true">↗</span></span></article>
+        <article class="ed-trust-card" data-editorial-spotlight><span class="ed-trust-number" aria-hidden="true">03</span><h3>Progress you<br>can take along.</h3><p>Export your application history to CSV for your own review, a mentor, or your placement cell.</p><span class="ed-card-foot">Made to be useful <span aria-hidden="true">↗</span></span></article>
       </div>
-    </div>
+    </section>
 
-    <div class="wrap section" id="faq" aria-labelledby="faqTitle">
-      <p class="soft-pill-button" data-size="sm" data-variant="light">FAQ</p>
-      <h2 id="faqTitle">Questions, answered</h2>
-      <p class="sub">The short version of how InternLog works.</p>
-      <div class="faq">
-        <details><summary>Do I need an account to browse internships?</summary><p>No. The board shows published roles from verified companies to everyone. A free student account is only needed to save roles or record applications.</p></details>
-        <details><summary>Is InternLog free for students?</summary><p>Yes. Tracking, follow-up reminders, saved searches, and CSV exports cost nothing.</p></details>
-        <details><summary>How do company posts get published?</summary><p>Companies register, an administrator verifies the account, and each post is approved before it appears publicly. Expired or rejected posts never show.</p></details>
-        <details><summary>Can I track applications from other websites?</summary><p>Yes. Add a manual entry with the company, role, dates, and status — it lives alongside board applications in the same pipeline.</p></details>
-        <details><summary>Who sees my application data?</summary><p>You can view your own records. Companies see only applications sent to their posts. Administrators can review application records, accounts, and posts as part of platform administration.</p></details>
-      </div>
-    </div>
+    <section class="ed-wrap ed-section ed-how" id="how" aria-labelledby="howTitle"><div><p class="ed-eyebrow">03 / Small steps. A fresh start.</p><h2 id="howTitle">From “looks interesting”<br>to <em>“what's next?”</em></h2></div><ol class="ed-steps"><li><span aria-hidden="true">01</span><h3>Find a possibility.</h3><p>Browse the board, or bring an internship you found somewhere else.</p></li><li><span aria-hidden="true">02</span><h3>Give it a home.</h3><p>Create your free account. Save a role, apply, or add a manual record.</p></li><li><span aria-hidden="true">03</span><h3>Keep moving.</h3><p>Update statuses, prepare for interviews, and follow up with context.</p></li></ol></section>
 
-    <div class="wrap section" id="get-started"><div class="cta-band">
-      <p class="soft-pill-button" data-size="sm" data-variant="light">Get started</p><h2>Start tracking in minutes</h2>
-      <p>Free for students. Companies publish opportunities after verification.</p>
-      <p class="cta-row"><a class="btn" href="user/register.html">Create student account</a><a class="btn btn-secondary" href="company/register.html">Register as a company</a></p>
-    </div></div>
+    <section class="ed-wrap ed-company-section" id="companies" aria-labelledby="companyTitle"><div class="ed-company-band"><div><p class="ed-eyebrow">For the people opening doors</p><h2 id="companyTitle">Their first chapter.<br><em>Your next fresh perspective.</em></h2><p>Share an internship with students ready to begin. Register your company, submit a role for review, and manage applicants in one workspace.</p><div class="ed-actions"><a class="btn ed-button ed-company-button" href="company/register.html">Register your company <span aria-hidden="true">↗</span></a><a class="ed-company-link" href="company/login.html">Company login</a></div></div><div class="ed-company-note"><span aria-hidden="true">↗</span><p>Good opportunities<br>start with<br><em>good people.</em></p><small>Company verification → Post review → Student discovery</small></div></div></section>
 
-    <div class="curved-loop-jacket curved-loop-jacket--light curved-loop-jacket--tight" data-curved-loop data-text="APPLIED → SHORTLISTED → INTERVIEW → SELECTED → " data-speed="0.5">
-      <svg class="curved-loop-svg" viewBox="0 0 1000 120" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
-        <defs><path id="curved-loop-path-b" d="M -200 70 Q -100 20 0 70 T 200 70 T 400 70 T 600 70 T 800 70 T 1000 70 T 1200 70 T 1400 70" fill="none" /></defs>
-        <text><textPath href="#curved-loop-path-b" startOffset="0">APPLIED → SHORTLISTED → INTERVIEW → SELECTED → APPLIED → SHORTLISTED → INTERVIEW → SELECTED →&#160;</textPath></text>
-      </svg>
-      <span class="curved-loop-fallback">Applied, Shortlisted, Interview, Selected.</span>
-    </div>
+    <section class="ed-wrap ed-section ed-faq-section" id="faq" aria-labelledby="faqTitle"><div><p class="ed-eyebrow">Before you begin</p><h2 id="faqTitle">A few<br><em>good questions.</em></h2></div><div class="ed-faq">
+      <details><summary>Can I browse without an account?</summary><p>Yes. Published internships and role details are public. A student account is needed to save a role or record an application.</p></details>
+      <details><summary>Is it free for students?</summary><p>Yes. Application tracking, saved roles, follow-up reminders, and CSV exports are free for students.</p></details>
+      <details><summary>What if I applied through another website?</summary><p>Add a manual application with the company, role, dates, status, and your notes. It stays alongside your board applications.</p></details>
+      <details><summary>How do opportunities get reviewed?</summary><p>An administrator verifies each company account. Internship posts are reviewed before publication. Unpublished and expired roles aren't included on the public board.</p></details>
+      <details><summary>Who can see my application records?</summary><p>You can see your own records. Companies see applications sent to their posts. Administrators can review application records, accounts, and posts as part of platform administration.</p></details>
+    </div></section>
+
+    <section class="ed-wrap ed-final" id="get-started" aria-labelledby="startTitle"><span class="ed-final-spark" aria-hidden="true">✳</span><p class="ed-eyebrow">Your next chapter starts somewhere.</p><h2 id="startTitle">Make it<br><em>a little more organized.</em></h2><a class="btn ed-button" href="user/register.html">Create my free account <span aria-hidden="true">↗</span></a><p class="ed-fineprint">One place for your search. A little room for you.</p></section>
   </main>
 
-  <footer class="site-footer"><div class="wrap footer-grid">
-    <div class="footer-col"><a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog</span></a><p>InternLog helps students track internship applications in one organized place.<br>Track. Apply. Grow.</p></div>
-    <div class="footer-col"><p class="footer-heading">Product</p><nav aria-label="Product"><a href="#about">About</a><a href="#features">Features</a><a href="#how">How it works</a><a href="#internships">Browse internships</a></nav></div>
-    <div class="footer-col"><p class="footer-heading">Account</p><nav aria-label="Account"><a href="user/register.html">Student register</a><a href="user/login.html">Student login</a><a href="company/register.html">Company register</a><a href="company/login.html">Company login</a></nav></div>
-    <div class="footer-base"><p>© 2026 InternLog. All rights reserved.</p><p>Track. Apply. Grow.</p></div>
-  </div></footer>
+  <footer class="site-footer ed-footer"><div class="ed-wrap"><div class="ed-footer-top"><div><a class="ed-brand" href="index.html"><span class="ed-brand-mark" aria-hidden="true">i.</span><span>InternLog</span></a><p>For the first application.<br>And everything that follows.</p></div><nav aria-label="Explore"><h2>Explore</h2><a href="#internships">Internships</a><a href="#features">Your tracker</a><a href="#how">How it works</a><a href="#faq">FAQ</a></nav><nav aria-label="Accounts"><h2>Make a start</h2><a href="user/register.html">Student register</a><a href="user/login.html">Student login</a><a href="company/register.html">Company register</a><a href="company/login.html">Company login</a></nav></div><div class="ed-footer-base"><span>© 2026 InternLog</span><button class="ed-motion-toggle" id="backgroundMotion" type="button" aria-label="Animate background" aria-pressed="true" hidden>Background motion: on</button><span>Track. Apply. Grow. <span aria-hidden="true">↗</span></span></div></div></footer>
 
-  <dialog class="og-job-dialog" id="landingJobDialog" aria-labelledby="landingJobTitle">
-    <div class="modal-header"><div><p class="muted" id="landingJobCompany"></p><h2 id="landingJobTitle">Internship details</h2></div><button class="modal-close-icon" type="button" id="landingJobClose" aria-label="Close internship details"><span aria-hidden="true">&times;</span></button></div>
-    <dl id="landingJobMeta"></dl><h3>About the role</h3><p id="landingJobDescription"></p>
-    <div id="landingJobSkills" class="og-job-skills"></div><p id="landingJobEducation" class="muted"></p>
-    <a id="landingExternalLink" target="_blank" rel="noopener noreferrer" hidden>View company application page ↗</a>
-    <p id="landingJobMessage" class="muted" role="status" aria-live="polite"></p><div class="modal-footer" id="landingJobActions"></div>
-  </dialog>
+  <dialog class="og-job-dialog" id="landingJobDialog" aria-labelledby="landingJobTitle"><div class="modal-header"><div><p class="ed-eyebrow" id="landingJobCompany"></p><h2 id="landingJobTitle">Internship details</h2></div><button class="modal-close-icon" type="button" id="landingJobClose" aria-label="Close internship details"><span aria-hidden="true">×</span></button></div><dl id="landingJobMeta"></dl><h3>About the role</h3><p id="landingJobDescription"></p><div id="landingJobSkills" class="og-job-skills"></div><p id="landingJobEducation" class="muted"></p><a id="landingExternalLink" target="_blank" rel="noopener noreferrer" hidden>View company application page <span aria-hidden="true">↗</span></a><p id="landingJobMessage" class="muted" role="status" aria-live="polite"></p><div class="modal-footer" id="landingJobActions"></div></dialog>
 </body>
 </html>

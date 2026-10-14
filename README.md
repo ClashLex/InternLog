@@ -19,8 +19,8 @@ no browser-stored substitute for application data.
 - **Administrators:** verify companies, moderate internships, manage student
   accounts and monitor application activity.
 - Responsive layouts, light/dark themes, validation and notifications.
-- Original homepage sections, layouts and workspace styling are retained,
-  alongside functional accessibility, account and data fixes.
+- Student-first editorial homepage with public internship discovery and an
+  illustrative product walkthrough; existing workspace layouts are retained.
 
 ## Architecture
 

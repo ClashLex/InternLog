@@ -16,15 +16,17 @@ class PagesBuildTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             destination = Path(temporary) / "site"
             pages.build(destination, "test-revision")
-            expected = set(pages.PUBLIC_FILES) | set(pages.PUBLIC_DIRECTORIES) | {".nojekyll", "deployment.json"}
+            expected = set(pages.PUBLIC_FILES) | set(pages.PUBLIC_DIRECTORIES) | {".nojekyll", "deployment.json", "fonts"}
             self.assertEqual({item.name for item in destination.iterdir()}, expected)
-            for name in pages.PUBLIC_FILES + pages.PUBLIC_DIRECTORIES:
+            for name in pages.PUBLIC_FILES + pages.PUBLIC_DIRECTORIES + pages.PUBLIC_FONTS:
                 source = ROOT / name
                 files = [source] if source.is_file() else source.rglob("*")
                 for file in files:
                     if file.is_file():
                         self.assertEqual(file.read_bytes(), (destination / file.relative_to(ROOT)).read_bytes())
             self.assertTrue((destination / "js/accessibility.js").is_file())
+            published_fonts = {file.relative_to(destination).as_posix() for file in (destination / "fonts").rglob("*") if file.is_file()}
+            self.assertEqual(published_fonts, set(pages.PUBLIC_FONTS))
             self.assertEqual(json.loads((destination / "deployment.json").read_text())["revision"], "test-revision")
 
     def test_refuses_to_overwrite_existing_output(self):

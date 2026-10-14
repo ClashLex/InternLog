@@ -100,6 +100,11 @@
         <includes>
           <include>*.html</include><include>css/**</include><include>js/**</include>
           <include>user/**</include><include>company/**</include><include>admin/**</include>
+          <include>fonts/Times New Roman MT Condensed Regular.otf</include>
+          <include>fonts/akzidenz-grotesk-similar/aileron/Aileron-Regular.otf</include>
+          <include>fonts/akzidenz-grotesk-similar/aileron/Aileron-SemiBold.otf</include>
+          <include>fonts/akzidenz-grotesk-similar/aileron/Aileron-Bold.otf</include>
+          <include>fonts/akzidenz-grotesk-similar/aileron/CC0 1.0 Universal (CC0 1.0)  Public Domain Dedication.txt</include>
         </includes>
       </resource>
     </resources>
