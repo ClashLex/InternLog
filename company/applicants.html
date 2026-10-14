@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Applicants — InternLog</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2342613c'/><text x='16' y='22' font-family='Helvetica, Arial, sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/accessibility.js" defer></script>
   <script src="../js/script.js" defer></script>
@@ -22,7 +22,7 @@
     <div class="main">
       <header class="topbar"><button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button><h1>Applicants</h1><div class="spacer"></div><div class="user-chip"><span class="avatar" id="avatar">C</span><span><strong id="companyName"></strong><br><span class="muted" id="companyEmail"></span></span></div></header>
       <main class="content">
-        <p class="muted">Review students who applied to your internships. Changes are saved to the selected data source.</p>
+        <p class="muted">Review students who applied to your internships. Status changes are saved to the Java backend immediately.</p>
         <div class="toolbar"><input class="search-input" id="search" type="search" placeholder="Search applicants, roles, or email" aria-label="Search applicants"><select id="status" aria-label="Filter status"><option value="all">All statuses</option><option>Applied</option><option>Shortlisted</option><option>Interview</option><option>Selected</option><option>Rejected</option></select></div>
         <div class="table-wrap"><table><thead><tr><th>Student</th><th>Opportunity</th><th>College</th><th>Applied</th><th>Status</th><th>Action</th></tr></thead><tbody id="body"></tbody></table></div>
       </main>

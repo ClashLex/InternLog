@@ -38,7 +38,7 @@
   /* ---------------- Dynamic Favicon Injection ---------------- */
   function injectFavicon() {
     var existingIcon = document.querySelector("link[rel~='icon']");
-    if (existingIcon && (existingIcon.getAttribute("href") || "").startsWith("data:image/svg+xml,")) existingIcon.setAttribute("href", existingIcon.getAttribute("href").replace("%2342613c", "%232563eb"));
+    if (existingIcon && (existingIcon.getAttribute("href") || "").startsWith("data:image/svg+xml,")) existingIcon.setAttribute("href", existingIcon.getAttribute("href").replace("%2342613c", "%232563eb").replace("%231a56d5", "%232563eb"));
     if (!document.querySelector("link[rel~='icon']")) {
       var link = document.createElement("link");
       link.rel = "icon";
@@ -1802,6 +1802,7 @@
 
   window.InternLog = {
     companyIsApproved: companyIsApproved,
+    companyStatusLabel: companyStatusLabel,
     exportApplicationsToCSV: exportApplicationsToCSV,
     getFollowups: getFollowups,
     snoozeFollowup: snoozeFollowup,

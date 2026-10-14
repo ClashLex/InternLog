@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Internship Moderation — InternLog Admin</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2342613c'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/accessibility.js" defer></script>
   <script src="../js/script.js" defer></script>
@@ -137,7 +137,11 @@
           html += '<button class="link-btn" data-approve="' + esc(job.id) + '">Approve</button>';
         }
         // Admin full control: every posted opportunity can be permanently deleted
-        // (also removes applications linked to that internship).
+        // (also removes applications linked to that internship). When the company
+        // is not verified, only Delete is available — explain why.
+        if (html === '<div class="actions">') {
+          html += '<span class="muted" title="Verify the company to enable moderation actions">Verify company first</span>';
+        }
         html += '<button class="link-btn danger" data-delete="' + esc(job.id) + '">Delete</button>';
         html += '</div>';
         return html;
@@ -185,41 +189,24 @@
         var companies = await window.InternLog.getCompanies();
         var company = companies.find(function (c) { return String(c.id) === String(job.companyId); }) || null;
 
+        // The server owns moderation metadata (moderatedAt/moderationNote) and
+        // expiry handling — the client only sends the target status.
         if (type === "approve") {
           if (!window.InternLog.companyIsApproved(company)) {
             window.InternLog.showNotification("Verify the company before publishing this internship.", "warning");
             return;
           }
-          var today = new Date();
-          var deadline = String(job.deadline || "");
-          var todayISO = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0");
-          if (deadline && deadline < todayISO) {
-            await window.InternLog.updateInternship(id, {
-              status: "Expired",
-              expiredAt: new Date().toISOString(),
-              moderatedAt: new Date().toISOString()
-            });
+          var updated = await window.InternLog.setInternshipStatus(id, "Published");
+          if (updated && updated.status === "Expired") {
             window.InternLog.showNotification("This internship deadline has already passed.", "warning");
           } else {
-            await window.InternLog.updateInternship(id, {
-              status: "Published",
-              moderatedAt: new Date().toISOString(),
-              moderationNote: "Approved by admin."
-            });
             window.InternLog.showNotification("Internship approved and published.", "success");
           }
         } else if (type === "reject") {
-          await window.InternLog.updateInternship(id, {
-            status: "Rejected",
-            moderatedAt: new Date().toISOString(),
-            moderationNote: "Rejected by admin."
-          });
+          await window.InternLog.setInternshipStatus(id, "Rejected");
           window.InternLog.showNotification("Internship rejected.", "warning");
         } else if (type === "archive") {
-          await window.InternLog.updateInternship(id, {
-            status: "Archived",
-            moderatedAt: new Date().toISOString()
-          });
+          await window.InternLog.setInternshipStatus(id, "Archived");
           window.InternLog.showNotification("Internship archived.", "success");
         } else if (type === "delete") {
           if (!confirm("Delete this internship and all its applications? This cannot be undone.")) return;

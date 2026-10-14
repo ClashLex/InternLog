@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Internships — InternLog</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2342613c'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/accessibility.js" defer></script>
   <script src="../js/script.js" defer></script>
@@ -41,7 +41,7 @@
         document.getElementById("modalTitle").textContent=job.title||"Internship";
         var skills=(job.skills||[]).map(esc).join(", ")||"Not specified";
         var stipend=job.stipend?"₹"+Number(job.stipend).toLocaleString("en-IN")+" / month":"Unpaid / not specified";
-        body.innerHTML='<dl><dt>Company</dt><dd>'+esc(job.company)+'</dd><dt>Location</dt><dd>'+esc(job.location)+'</dd><dt>Type</dt><dd>'+esc(job.internshipType)+'</dd><dt>Stipend</dt><dd>'+esc(stipend)+'</dd><dt>Positions</dt><dd>'+esc(job.positions||1)+'</dd><dt>Deadline</dt><dd>'+fmtDate(job.deadline)+'</dd><dt>Skills</dt><dd>'+skills+'</dd></dl><p>'+esc(job.description)+'</p>'+(job.education?'<p style="margin-top:10px"><strong>Preferred education:</strong> '+esc(job.education)+'</p>':'')+'<div class="modal-footer" style="margin-top:20px"><button class="btn btn-secondary btn-sm" id="editJob">Edit</button><button class="btn btn-danger btn-sm" id="archiveJob">'+(job.status==="Archived"?"Publish":"Archive")+'</button></div>';
+        body.innerHTML='<dl><dt>Company</dt><dd>'+esc(job.company)+'</dd><dt>Location</dt><dd>'+esc(job.location)+'</dd><dt>Type</dt><dd>'+esc(job.internshipType)+'</dd><dt>Stipend</dt><dd>'+esc(stipend)+'</dd><dt>Positions</dt><dd>'+esc(job.positions||1)+'</dd><dt>Deadline</dt><dd>'+fmtDate(job.deadline)+'</dd><dt>Skills</dt><dd>'+skills+'</dd></dl><p>'+esc(job.description)+'</p>'+(job.education?'<p style="margin-top:10px"><strong>Preferred education:</strong> '+esc(job.education)+'</p>':'')+'<div class="modal-footer" style="margin-top:20px"><button class="btn btn-secondary btn-sm" id="editJob">Edit</button><button class="btn btn-danger btn-sm" id="archiveJob">'+(job.status==="Archived"?"Resubmit":"Archive")+'</button></div>';
         modal.classList.add("open");
         document.getElementById("editJob").onclick=function(){window.location.href="add-internship.html?edit="+encodeURIComponent(job.id);};
         document.getElementById("archiveJob").onclick=async function(){
@@ -74,7 +74,7 @@
         var session=window.InternLog.getSession();
         if(!session||session.role!=="company"){window.location.href="login.html";return;}
         company=await window.InternLog.getCompanyById(session.userId);
-        if(!company){window.location.href="../user/internships.html";return;}
+        if(!company){window.location.href="login.html";return;}
         jobs=await window.InternLog.getInternshipsByCompany(company.id);
         document.getElementById("companyName").textContent=company.name;
         document.getElementById("companyEmail").textContent=company.email;

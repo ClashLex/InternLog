@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Company Profile — InternLog</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2342613c'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/accessibility.js" defer></script>
   <script src="../js/script.js" defer></script>
@@ -41,7 +41,7 @@
         var c=null;
         try{c=await window.InternLog.getCompanyById(session.userId);}catch(e){notify(e.message,"error");return;}
         if(!c){await window.InternLog.clearSession();window.location.href="login.html";return;}
-        function paint(){document.getElementById("companyNameChip").textContent=c.name;document.getElementById("companyEmailChip").textContent=c.email;var _initial=((c.name||"C").trim().charAt(0)||"C").toUpperCase();document.getElementById("avatar").textContent=_initial;document.getElementById("avatarBig").textContent=_initial;document.getElementById("profileName").textContent=c.name;document.getElementById("profileMeta").textContent=[c.industry,c.location].filter(Boolean).join(" · ")||"Company profile";document.getElementById("name").value=c.name||"";document.getElementById("email").value=c.email||"";document.getElementById("website").value=c.website||"";document.getElementById("location").value=c.location||"";document.getElementById("industry").value=c.industry||"";document.getElementById("description").value=c.description||"";document.getElementById("status").textContent=(c.status==="Active"&&c.verified===false)?"Pending":(c.status||"Active");}
+        function paint(){document.getElementById("companyNameChip").textContent=c.name;document.getElementById("companyEmailChip").textContent=c.email;var _initial=((c.name||"C").trim().charAt(0)||"C").toUpperCase();document.getElementById("avatar").textContent=_initial;document.getElementById("avatarBig").textContent=_initial;document.getElementById("profileName").textContent=c.name;document.getElementById("profileMeta").textContent=[c.industry,c.location].filter(Boolean).join(" · ")||"Company profile";document.getElementById("name").value=c.name||"";document.getElementById("email").value=c.email||"";document.getElementById("website").value=c.website||"";document.getElementById("location").value=c.location||"";document.getElementById("industry").value=c.industry||"";document.getElementById("description").value=c.description||"";document.getElementById("status").textContent=(window.InternLog&&window.InternLog.companyStatusLabel)?window.InternLog.companyStatusLabel(c):(c.status||"Active");}
         paint();// Logout handled by shared js/script.js [data-logout] handler.
         document.getElementById("profileForm").addEventListener("submit",async function(e){
           e.preventDefault();

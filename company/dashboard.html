@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Company Dashboard — InternLog</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2342613c'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/accessibility.js" defer></script>
   <script src="../js/script.js" defer></script>
@@ -61,7 +61,7 @@
         if (!company) { await window.InternLog.clearSession(); window.location.href = "login.html"; return; }
         var jobs = await window.InternLog.getInternshipsByCompany(company.id);
         var apps = await window.InternLog.getApplications(), jobIds = {}; jobs.forEach(function (j) { jobIds[j.id] = true; });
-        var companyApps = apps.filter(function (a) { return jobIds[a.internshipId]; });
+        var companyApps = apps.filter(function (a) { return String(a.companyId) === String(company.id) || jobIds[a.internshipId]; });
         var initial = ((company.name || "C").trim().charAt(0) || "C").toUpperCase();
         document.getElementById("companyNameChip").textContent = company.name; document.getElementById("companyEmailChip").textContent = company.email; document.getElementById("welcomeName").textContent = company.name; document.getElementById("companyAvatar").textContent = initial;
         document.getElementById("stats").innerHTML = [

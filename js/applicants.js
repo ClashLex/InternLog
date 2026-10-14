@@ -12,7 +12,9 @@
     var rows = [], statuses = ["Applied", "Shortlisted", "Interview", "Selected", "Rejected"];
     var modal = document.getElementById("appModal");
     async function load() {
-      rows = (await api.getApplications()).filter(function (app) { return String(app.companyId) === String(company.id); });
+      var jobs = await api.getInternshipsByCompany(company.id), jobIds = {};
+      jobs.forEach(function (j) { jobIds[j.id] = true; });
+      rows = (await api.getApplications()).filter(function (app) { return String(app.companyId) === String(company.id) || (app.internshipId != null && jobIds[app.internshipId]); });
       render();
     }
     function render() {
