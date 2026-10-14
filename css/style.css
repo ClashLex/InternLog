@@ -385,6 +385,46 @@ input[aria-invalid="true"], select[aria-invalid="true"] {
 .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 16px 0; }
 .toolbar input[type="text"], .toolbar input[type="search"], .toolbar select { width: auto; }
 .search-input { flex: 1 1 220px; min-width: 0; max-width: 100%; }
+
+/* ---------- Spotlight search (OpenSourceUI SpotlightBar adaptation, MIT) ----------
+   Frosted command-search bar with live suggestions + keyboard nav.
+   Behavior lives in js/landing.js; see THIRD_PARTY_NOTICES.md. */
+.toolbar-spotlight { align-items: center; }
+.spotlight {
+  position: relative; flex: 1 1 280px; min-width: 0;
+  display: flex; align-items: center; gap: 10px;
+  border: 1px solid var(--border); border-radius: 18px;
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-lg);
+  padding: 12px 14px;
+}
+.spotlight:focus-within { border-color: var(--text); }
+.spot-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.spot-icon { flex: none; width: 16px; height: 16px; color: var(--muted); }
+.toolbar-spotlight input.spot-input { flex: 1; width: 100%; border: 0; background: transparent; padding: 0; box-shadow: none; font-size: 14px; }
+.toolbar-spotlight input.spot-input:focus { outline: none; border: 0; box-shadow: none; }
+.spot-kbd { flex: none; font-family: var(--ff-mono); font-size: 10px; font-weight: 500; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 3px 7px; }
+.spot-list {
+  position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: 60;
+  margin: 0; padding: 8px; list-style: none;
+  border: 1px solid var(--border); border-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-lg);
+  max-height: 320px; overflow-y: auto;
+}
+.spot-option { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; border: 0; background: none; border-radius: 10px; padding: 10px; cursor: pointer; text-align: left; color: var(--text); font-size: 14px; font-family: inherit; }
+.spot-option .spot-label { display: block; font-weight: 600; }
+.spot-option .spot-sub { display: block; font-size: 12px; font-weight: 400; color: var(--muted); margin-top: 2px; }
+.spot-option.is-active { background: var(--primary-light); }
+.spot-hint { flex: none; font-family: var(--ff-mono); font-size: 10px; font-weight: 500; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 3px 7px; }
+@media (max-width: 760px) {
+  .toolbar-spotlight .spotlight { flex-basis: 100%; }
+  .spot-kbd { display: none; }
+}
+:root[data-theme="dark"] .spotlight { background: color-mix(in srgb, var(--surface) 82%, transparent); }
+:root[data-theme="dark"] .spot-list { background: color-mix(in srgb, var(--surface) 94%, transparent); }
 .table-wrap {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
   overflow-x: auto; overflow-y: hidden; box-shadow: none;

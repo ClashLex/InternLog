@@ -88,8 +88,14 @@
       <p class="soft-pill-button" data-size="sm" data-variant="light">Internships</p>
       <h2 id="internshipsTitle">Browse internship opportunities</h2>
       <p class="sub">Explore reviewed opportunities from verified companies. Sign in as a student to save or apply.</p>
-      <form class="toolbar" id="landingSearchForm" role="search">
-        <input class="search-input" type="search" id="landingSearch" placeholder="Search role, company, location or skill" aria-label="Search internships" autocomplete="off">
+      <form class="toolbar toolbar-spotlight" id="landingSearchForm" role="search">
+        <div class="spotlight" data-spotlight>
+          <label class="spot-sr" for="landingSearch">Spotlight search</label>
+          <svg class="spot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input class="search-input spot-input" type="search" id="landingSearch" placeholder="Search role, company, location or skill" aria-label="Search internships" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="landingSuggest" aria-autocomplete="list">
+          <kbd class="spot-kbd" aria-hidden="true" title="Focus search (Ctrl/⌘ + K)">⌘K</kbd>
+          <ul class="spot-list" id="landingSuggest" role="listbox" aria-label="Suggested internships" hidden></ul>
+        </div>
         <select id="landingType" aria-label="Work arrangement"><option value="all">All arrangements</option><option>Remote</option><option>Hybrid</option><option>On-site</option></select>
         <button class="btn btn-secondary btn-sm" type="button" id="landingReset">Clear filters</button>
       </form>

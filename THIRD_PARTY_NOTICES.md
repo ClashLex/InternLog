@@ -24,6 +24,17 @@ instead of introducing React/GSAP into the Java-served static frontend.
 Upstream: [reactbits.dev](https://reactbits.dev/) / [React Bits](https://github.com/DavidHDev/react-bits).
 The upstream license notice remains with the archived JavaScript source.
 
+## SpotlightBar (OpenSourceUI)
+
+The homepage internship search adapts [SpotlightBar](https://opensourceui.in/components/spotlight-bar)
+(frosted command-search bar with live suggestions, keyboard navigation and
+shortcut hint) as vanilla HTML/CSS/JS in `index.html`, `css/style.css` and
+`js/landing.js` — no React or Tailwind dependency.
+
+Upstream: [opensourceui.in](https://opensourceui.in/) — MIT licensed. Free for
+personal and commercial use with no UI attribution required; the MIT copyright
+notice travels with the adapted source in `js/landing.js` and `css/style.css`.
+
 ## React Bits license
 
 MIT + Commons Clause License Condition v1.0

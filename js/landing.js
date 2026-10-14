@@ -60,7 +60,7 @@
       grid.appendChild(state);
     }
 
-    function clearFilters() { search.value = ""; type.value = "all"; render(); }
+    function clearFilters() { search.value = ""; type.value = "all"; closeSuggest(); render(); }
 
     function detail(text, icon) {
       var row = element("p", "muted");
@@ -204,11 +204,123 @@
       dialog.showModal();
     }
 
-    document.getElementById("landingSearchForm").addEventListener("submit", function (event) { event.preventDefault(); render(); });
+    document.getElementById("landingSearchForm").addEventListener("submit", function (event) { event.preventDefault(); closeSuggest(); render(); });
     search.addEventListener("input", render);
+    search.addEventListener("input", function () { activeSuggest = -1; openSuggest(); });
+    search.addEventListener("focus", function () { openSuggest(); });
+    search.addEventListener("keydown", function (event) {
+      var key = event.key || "";
+      if (key === "ArrowDown" || key === "ArrowUp") {
+        if (!suggestOpen) openSuggest();
+        if (suggestOpen && suggestItems.length) {
+          event.preventDefault();
+          var step = key === "ArrowDown" ? 1 : -1;
+          activeSuggest = (activeSuggest + step + suggestItems.length) % suggestItems.length;
+          paintSuggest();
+        }
+      } else if (key === "Enter") {
+        if (suggestOpen && activeSuggest >= 0 && suggestItems[activeSuggest]) {
+          event.preventDefault();
+          chooseSuggest(activeSuggest);
+        }
+      } else if (key === "Escape") {
+        closeSuggest();
+      }
+    });
     type.addEventListener("change", render);
     document.getElementById("landingReset").addEventListener("click", clearFilters);
+    document.getElementById("landingReset").addEventListener("click", closeSuggest);
     document.getElementById("landingJobClose").addEventListener("click", function () { dialog.close(); });
+    document.addEventListener("keydown", function (event) {
+      if ((event.metaKey || event.ctrlKey) && String(event.key || "").toLowerCase() === "k") {
+        event.preventDefault();
+        try { if (search.focus) search.focus(); } catch (e) {}
+      }
+    });
+    document.addEventListener("click", function (event) {
+      if (!suggestOpen) return;
+      var inside = false;
+      try { inside = !!(event.target && event.target.closest && event.target.closest("[data-spotlight]")); } catch (e) {}
+      if (!inside) closeSuggest();
+    });
+
+    /* Spotlight suggestions (OpenSourceUI SpotlightBar adaptation, MIT).
+       Live role/company matches for the current board query, with ArrowUp /
+       ArrowDown + Enter + Escape keyboard support and ⌘K/Ctrl+K focus.
+       Only stub-safe DOM APIs are used (createElement/appendChild/
+       setAttribute/textContent/value/hidden/addEventListener). */
+    var suggest = document.getElementById("landingSuggest");
+    var suggestItems = [], suggestBtns = [], suggestOpen = false, activeSuggest = -1;
+
+    function closeSuggest() {
+      suggestOpen = false; activeSuggest = -1;
+      if (suggest) suggest.hidden = true;
+      try { search.setAttribute("aria-expanded", "false"); } catch (e) {}
+    }
+
+    function suggestRow(job, index) {
+      var li = element("li", "");
+      var btn = element("button", "spot-option");
+      btn.type = "button";
+      btn.setAttribute("role", "option");
+      btn.setAttribute("id", "landing-suggest-" + index);
+      btn.setAttribute("aria-selected", "false");
+      var wrap = element("span", "");
+      wrap.appendChild(element("span", "spot-label", job.title || "Internship"));
+      wrap.appendChild(element("span", "spot-sub", (job.company || "Company") + " · " + (job.location || "Location not specified")));
+      btn.appendChild(wrap);
+      var arrangement = job.internshipType || job.type || "";
+      if (arrangement) btn.appendChild(element("span", "spot-hint", arrangement));
+      btn.addEventListener("mouseenter", function () { activeSuggest = index; paintSuggest(); });
+      btn.addEventListener("click", function () { chooseSuggest(index); });
+      return { li: li, btn: btn };
+    }
+
+    function paintSuggest() {
+      suggestBtns.forEach(function (btn, i) {
+        var on = i === activeSuggest;
+        btn.setAttribute("aria-selected", on ? "true" : "false");
+        btn.setAttribute("class", on ? "spot-option is-active" : "spot-option");
+      });
+      try { search.setAttribute("aria-activedescendant", activeSuggest >= 0 ? "landing-suggest-" + activeSuggest : ""); } catch (e) {}
+    }
+
+    function openSuggest() {
+      var q = search.value.trim().toLowerCase();
+      var seen = {}, pool = [];
+      jobs.forEach(function (job) {
+        var key = String(job.title || "") + "@" + String(job.company || "");
+        if (!seen[key]) { seen[key] = true; pool.push(job); }
+      });
+      var matches = pool.filter(function (job) {
+        if (!q) return true;
+        var skills = Array.isArray(job.skills) ? job.skills.join(" ") : "";
+        var hay = [job.title, job.company, job.location, job.description, skills].join(" ").toLowerCase();
+        return hay.indexOf(q) !== -1;
+      }).slice(0, 6);
+      suggestItems = matches; suggestBtns = [];
+      if (!suggest) return;
+      suggest.textContent = "";
+      if (!matches.length) { closeSuggest(); return; }
+      matches.forEach(function (job, i) {
+        var row = suggestRow(job, i);
+        suggestBtns.push(row.btn);
+        row.li.appendChild(row.btn);
+        suggest.appendChild(row.li);
+      });
+      activeSuggest = -1;
+      suggest.hidden = false; suggestOpen = true;
+      try { search.setAttribute("aria-expanded", "true"); } catch (e) {}
+    }
+
+    function chooseSuggest(index) {
+      var job = suggestItems[index];
+      if (!job) return;
+      search.value = job.title || "";
+      closeSuggest();
+      render();
+      try { if (search.focus) search.focus(); } catch (e) {}
+    }
 
     async function loadJobs() {
       loading = true;
