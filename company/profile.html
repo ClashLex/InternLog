@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Company Profile — InternLog</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2342613c'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/design-system.css">
+  <script src="../js/ui-components.js" defer></script>
   <script src="../js/script.js" defer></script>
   <script src="../js/api.js" defer></script>
 </head>
@@ -23,7 +25,7 @@
         <section class="card"><div class="profile-head"><span class="profile-avatar" id="avatarBig">C</span><div><h2 id="profileName">Company</h2><p class="muted" id="profileMeta"></p></div></div></section>
         <div class="grid-2" style="margin-top:18px">
           <section class="card"><h3>Company Information</h3><form id="profileForm"><div class="form-group"><label for="name">Company Name *</label><input id="name" type="text" required></div><div class="form-group"><label for="email">Work Email *</label><input id="email" type="email" required></div><div class="form-group"><label for="website">Website</label><input id="website" type="url" placeholder="https://example.com"></div><div class="form-group"><label for="location">Location *</label><input id="location" type="text" required></div><div class="form-group"><label for="industry">Industry</label><input id="industry" type="text"></div><div class="form-group"><label for="description">Company Description</label><textarea id="description" placeholder="What does your company build or work on?"></textarea></div><button class="btn btn-sm" type="submit">Save Company Profile</button></form></section>
-          <section class="card"><h3>Account Settings</h3><p class="muted">Change the password for this company account.</p><form id="passwordForm" style="margin-top:16px"><div class="form-group"><label for="current">Current Password</label><input id="current" type="password" required></div><div class="form-group"><label for="next">New Password</label><input id="next" type="password" required></div><div class="form-group"><label for="confirm">Confirm New Password</label><input id="confirm" type="password" required></div><button class="btn btn-secondary btn-sm" type="submit">Change Password</button></form><hr style="border:0;border-top:1px solid var(--border);margin:22px 0"><div class="admin-note">Prototype account status: <strong id="status"></strong>. Before production, passwords should never be stored in localStorage.</div></section>
+          <section class="card"><h3>Account Settings</h3><p class="muted">Change the password for this company account.</p><form id="passwordForm" style="margin-top:16px"><div class="form-group"><label for="current">Current Password</label><input id="current" type="password" required></div><div class="form-group"><label for="next">New Password</label><input id="next" type="password" required></div><div class="form-group"><label for="confirm">Confirm New Password</label><input id="confirm" type="password" required></div><button class="btn btn-secondary btn-sm" type="submit">Change Password</button></form><hr style="border:0;border-top:1px solid var(--border);margin:22px 0"><div class="admin-note">Account status: <strong id="status"></strong>. Passwords are BCrypt-hashed by the Java backend.</div></section>
         </div>
       </main>
     </div>
@@ -31,17 +33,15 @@
   <script>
     (function(){
       "use strict";
-      var S="internlog_session";
-      function read(k,f){try{var v=JSON.parse(localStorage.getItem(k));return v==null?f:v;}catch(e){return f;}}
-      function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
-      function auth(){var s=read(S,null);if(!s||s.role!=="company"){window.location.href="login.html";return null;}return s;}
+      function auth(){var s=window.InternLog.getSession();if(!s||s.role!=="company"){window.location.href="login.html";return null;}return s;}
       function validEmail(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);}
       function notify(msg,type){if(window.InternLog)window.InternLog.showNotification(msg,type||"info");}
       document.addEventListener("DOMContentLoaded",async function(){
+        if(!await window.InternLog.ready)return;
         var session=auth();if(!session)return;
         var c=null;
-        try{c=await window.InternLog.getCompanyById(session.userId);}catch(e){c=null;}
-        if(!c){try{localStorage.removeItem(S);}catch(x){}window.location.href="login.html";return;}
+        try{c=await window.InternLog.getCompanyById(session.userId);}catch(e){notify(e.message,"error");return;}
+        if(!c){await window.InternLog.clearSession();window.location.href="login.html";return;}
         function paint(){document.getElementById("companyNameChip").textContent=c.name;document.getElementById("companyEmailChip").textContent=c.email;var _initial=((c.name||"C").trim().charAt(0)||"C").toUpperCase();document.getElementById("avatar").textContent=_initial;document.getElementById("avatarBig").textContent=_initial;document.getElementById("profileName").textContent=c.name;document.getElementById("profileMeta").textContent=[c.industry,c.location].filter(Boolean).join(" · ")||"Company profile";document.getElementById("name").value=c.name||"";document.getElementById("email").value=c.email||"";document.getElementById("website").value=c.website||"";document.getElementById("location").value=c.location||"";document.getElementById("industry").value=c.industry||"";document.getElementById("description").value=c.description||"";document.getElementById("status").textContent=(c.status==="Active"&&c.verified===false)?"Pending":(c.status||"Active");}
         paint();// Logout handled by shared js/script.js [data-logout] handler.
         document.getElementById("profileForm").addEventListener("submit",async function(e){
@@ -52,7 +52,7 @@
           try{
             c=await window.InternLog.updateCompany(c.id,{name:name,email:email,website:website,location:location,industry:document.getElementById("industry").value.trim(),description:document.getElementById("description").value.trim()});
           }catch(err){notify((err&&err.message)||"Could not save company profile.","error");return;}
-          write(S,{role:"company",userId:c.id,name:c.name,email:c.email});
+           window.InternLog.setSession({role:"company",userId:c.id,name:c.name,email:c.email});
           paint();notify("Company profile saved.","success");
         });
         document.getElementById("passwordForm").addEventListener("submit",async function(e){
@@ -61,13 +61,8 @@
           if(next.length<8||!/[A-Za-z]/.test(next)||!/[0-9]/.test(next)){notify("New password must be 8+ characters with letters and numbers.","warning");return;}
           if(next!==confirm){notify("New passwords do not match.","warning");return;}
           try{
-            if(c.password){
-              if(cur!==c.password){notify("Current password is incorrect.","error");return;}
-              c=await window.InternLog.updateCompany(c.id,{password:next});
-            }else{
-              await window.InternLog.changeCompanyPassword(c.id,cur,next);
-              c=await window.InternLog.getCompanyById(c.id);
-            }
+            await window.InternLog.changeCompanyPassword(c.id,cur,next);
+            c=await window.InternLog.getCompanyById(c.id);
           }catch(err){notify((err&&err.message)||"Could not change password.","error");return;}
           document.getElementById("passwordForm").reset();notify("Password changed.","success");
         });

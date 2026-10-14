@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="docTitle">Post Internship — InternLog</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2342613c'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/design-system.css">
+  <script src="../js/ui-components.js" defer></script>
   <script src="../js/script.js" defer></script>
   <script src="../js/api.js" defer></script>
 </head>
@@ -127,16 +129,11 @@
   </div>
 
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      var session = null;
-      try { session = JSON.parse(localStorage.getItem("internlog_session")); } catch (e) {}
-
-      var companies = [];
-      try { companies = JSON.parse(localStorage.getItem("internlog_companies")) || []; } catch (e) {}
-
+    document.addEventListener("DOMContentLoaded", async function () {
+      if (!await window.InternLog.ready) return;
+      var session = window.InternLog.getSession();
       var company = session && session.role === "company"
-        ? companies.find(function (c) { return String(c.id) === String(session.userId); })
-        : null;
+        ? await window.InternLog.getCompanyById(session.userId) : null;
 
       if (!company) { window.location.href = "login.html"; return; }
 
@@ -155,11 +152,8 @@
       var editId = new URLSearchParams(window.location.search).get("edit");
       if (!editId) return;
 
-      var jobs = [];
-      try { jobs = JSON.parse(localStorage.getItem("internlog_internships")) || []; } catch (e) {}
-      var existing = jobs.find(function (j) {
-        return String(j.id) === String(editId) && String(j.companyId) === String(company.id);
-      });
+      var existing = await window.InternLog.getInternshipById(editId);
+      if (existing && String(existing.companyId) !== String(company.id)) existing = null;
 
       if (!existing) return;
 

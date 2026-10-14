@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard — InternLog</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2342613c'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/design-system.css">
+  <script src="../js/ui-components.js" defer></script>
   <script src="../js/script.js" defer></script>
   <script src="../js/api.js" defer></script>
 </head>
@@ -61,12 +63,13 @@
   </div>
 <script>
 (function(){
-  function read(k,f){try{var v=JSON.parse(localStorage.getItem(k));return v==null?f:v;}catch(e){return f;}}
   function esc(x){return String(x==null?"":x).replace(/[&<>\"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];});}
   function badge(st){var cls=st==="Active"||st==="Published"?"badge-selected":st==="Pending Review"||st==="Pending"?"badge-shortlisted":"badge-disabled";return '<span class="badge '+cls+'">'+esc(st)+'</span>';}
-  document.addEventListener("DOMContentLoaded",function(){
+  document.addEventListener("DOMContentLoaded",async function(){
+    if(!await window.InternLog.ready)return;
+    var session=window.InternLog.getSession();if(!session||session.role!=="admin")return;
     var wrap=document.getElementById("companyModeration"); if(!wrap)return;
-    var companies=read("internlog_companies",[]), jobs=read("internlog_internships",[]);
+    var companies=await window.InternLog.getCompanies(), jobs=await window.InternLog.getInternships();
     var pendingCompanies=companies.filter(function(c){return c.verified===false || c.status==="Pending";}).slice(-4).reverse();
     var pendingJobs=jobs.filter(function(j){return j.status==="Pending Review" || j.status==="Pending";}).slice(-4).reverse();
     var rows=pendingCompanies.map(function(c){return '<div class="mini-row"><span><strong>'+esc(c.name)+'</strong><br><span class="muted">Company account</span></span><span>'+badge(c.verified?c.status||"Active":"Pending")+'</span></div>';});

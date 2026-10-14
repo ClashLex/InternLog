@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Internships — InternLog</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2342613c'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/design-system.css">
+  <script src="../js/ui-components.js" defer></script>
   <script src="../js/script.js" defer></script>
   <script src="../js/api.js" defer></script>
 </head>
@@ -30,13 +32,11 @@
   <script>
     (function(){
       "use strict";
-      var SESSION="internlog_session", COMPANY="internlog_companies", JOBS="internlog_internships";
-      function read(k,f){try{var v=JSON.parse(localStorage.getItem(k));return v==null?f:v;}catch(e){return f;}}
-      function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
       function esc(s){return String(s==null?"":s).replace(/[&<>\"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];});}
       function fmtDate(v){if(!v)return"—";var p=String(v).split("-");return p.length===3?new Date(Number(p[0]),Number(p[1])-1,Number(p[2])).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}):esc(v);}
       function badge(v){var s=v||"Draft";var cls=s==="Published"?"badge-selected":(s==="Pending Review"||s==="Pending")?"badge-shortlisted":s==="Draft"?"badge-applied":"badge-disabled";return'<span class="badge '+cls+'">'+esc(s)+'</span>';}
-      function currentCompany(){var s=read(SESSION,null);if(!s||s.role!=="company")return null;return read(COMPANY,[]).find(function(c){return String(c.id)===String(s.userId);})||null;}
+      var company = null, jobs = [];
+      function currentCompany(){return company;}
       function openModal(job){
         var modal=document.getElementById("jobModal"), body=document.getElementById("modalBody");
         document.getElementById("modalTitle").textContent=job.title||"Internship";
@@ -45,18 +45,20 @@
         body.innerHTML='<dl><dt>Company</dt><dd>'+esc(job.company)+'</dd><dt>Location</dt><dd>'+esc(job.location)+'</dd><dt>Type</dt><dd>'+esc(job.internshipType)+'</dd><dt>Stipend</dt><dd>'+esc(stipend)+'</dd><dt>Positions</dt><dd>'+esc(job.positions||1)+'</dd><dt>Deadline</dt><dd>'+fmtDate(job.deadline)+'</dd><dt>Skills</dt><dd>'+skills+'</dd></dl><p>'+esc(job.description)+'</p>'+(job.education?'<p style="margin-top:10px"><strong>Preferred education:</strong> '+esc(job.education)+'</p>':'')+'<div class="modal-footer" style="margin-top:20px"><button class="btn btn-secondary btn-sm" id="editJob">Edit</button><button class="btn btn-danger btn-sm" id="archiveJob">'+(job.status==="Archived"?"Publish":"Archive")+'</button></div>';
         modal.classList.add("open");
         document.getElementById("editJob").onclick=function(){window.location.href="add-internship.html?edit="+encodeURIComponent(job.id);};
-        document.getElementById("archiveJob").onclick=function(){
-          var all=read(JOBS,[]);var i=all.findIndex(function(j){return String(j.id)===String(job.id);});if(i<0)return;
-          if(job.status==="Archived"){all[i].status="Pending Review";all[i].moderationNote="Resubmitted by company; requires admin review before publication.";}
-          else{all[i].status="Archived";}
-          all[i].updatedAt=new Date().toISOString();
-          write(JOBS,all);modal.classList.remove("open");render();
-          if(window.InternLog)window.InternLog.showNotification(job.status==="Archived"?"Internship resubmitted for admin review.":"Internship archived.","success");
+        document.getElementById("archiveJob").onclick=async function(){
+          var button=this; button.disabled=true;
+          try {
+            await window.InternLog.setInternshipStatus(job.id,job.status==="Archived"?"Pending Review":"Archived");
+            jobs=await window.InternLog.getInternshipsByCompany(company.id);
+            modal.classList.remove("open");render();
+            window.InternLog.showNotification(job.status==="Archived"?"Internship resubmitted for admin review.":"Internship archived.","success");
+          } catch(error) { window.InternLog.showNotification(error.message,"error"); }
+          finally { button.disabled=false; }
         };
       }
       function render(){
         var company=currentCompany();if(!company)return;
-        var all=read(JOBS,[]).filter(function(j){return String(j.companyId)===String(company.id);});
+        var all=jobs.slice();
         var query=document.getElementById("search").value.trim().toLowerCase(), filter=document.getElementById("statusFilter").value;
         if(filter!=="all")all=all.filter(function(j){return j.status===filter;});
         if(query)all=all.filter(function(j){return [j.title,j.company,j.location,j.description,(j.skills||[]).join(" ")].join(" ").toLowerCase().indexOf(query)!==-1;});
@@ -68,9 +70,13 @@
         }).join("");
         wrap.querySelectorAll("[data-view]").forEach(function(btn){btn.addEventListener("click",function(){var j=all.find(function(x){return String(x.id)===String(btn.getAttribute("data-view"));});if(j)openModal(j);});});
       }
-      document.addEventListener("DOMContentLoaded",function(){
-        var company=currentCompany();
+      document.addEventListener("DOMContentLoaded",async function(){
+        if(!await window.InternLog.ready)return;
+        var session=window.InternLog.getSession();
+        if(!session||session.role!=="company"){window.location.href="login.html";return;}
+        company=await window.InternLog.getCompanyById(session.userId);
         if(!company){window.location.href="../user/internships.html";return;}
+        jobs=await window.InternLog.getInternshipsByCompany(company.id);
         document.getElementById("companyName").textContent=company.name;
         document.getElementById("companyEmail").textContent=company.email;
         document.getElementById("avatar").textContent=((company.name||"C").trim().charAt(0)||"C").toUpperCase();

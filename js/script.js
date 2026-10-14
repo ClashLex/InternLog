@@ -1,32 +1,11 @@
-/* InternLog — single shared JS file (vanilla JS, backend-ready data layer). */
+/* InternLog UI helpers. All persistent data and authentication are managed by Java. */
 (function () {
   "use strict";
 
-  var USERS_KEY = "internlog_users";
-  var APPS_KEY = "internlog_applications";
-  var SESSION_KEY = "internlog_session";
-  var SEEDED_KEY = "internlog_seeded_v3";
-
-  var COMPANY_KEY = "internlog_companies";
-  var INTERNSHIPS_KEY = "internlog_internships";
-
-  var SEARCHES_KEY = "internlog_saved_searches";
-  var SNOOZE_KEY = "internlog_followup_snooze";
-  var SEEN_KEY_PREFIX = "internlog_seen_internships_";
-
-
   var STATUSES = ["Applied", "Shortlisted", "Interview", "Selected", "Rejected"];
 
-  /* ---------------- Theme (light / dark) ----------------
-     Choice persists in localStorage; with no saved choice the OS
-     preference is followed. Applied immediately (not on
-     DOMContentLoaded) so the first paint already uses it. */
-  var THEME_KEY = "internlog_theme";
+  /* Guests follow the OS; signed-in theme preferences come from the backend. */
   function preferredTheme() {
-    try {
-      var saved = localStorage.getItem(THEME_KEY);
-      if (saved === "light" || saved === "dark") return saved;
-    } catch (e) {}
     try {
       if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) return "dark";
     } catch (e) {}
@@ -34,31 +13,8 @@
   }
   function applyTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
-    try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
   }
   applyTheme(preferredTheme());
-
-  /* ---------- Future REST API map (Java backend) ----------
-     POST /api/auth/login | POST /api/auth/register
-     GET/POST /api/applications | GET/PUT/DELETE /api/applications/{id}
-     GET/PUT/DELETE /api/users, /api/users/{id} | GET /api/admin/dashboard
-     The functions below intentionally mirror those endpoints so they can
-     later be swapped for fetch() calls without touching UI code. */
-
-  function readJSON(key, fallback) {
-    try {
-      var raw = localStorage.getItem(key);
-      if (!raw) return fallback;
-      var parsed = JSON.parse(raw);
-      return parsed != null ? parsed : fallback;
-    } catch (e) {
-      return fallback;
-    }
-  }
-
-  function writeJSON(key, value) {
-    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
-  }
 
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
@@ -85,152 +41,9 @@
       var link = document.createElement("link");
       link.rel = "icon";
       link.type = "image/svg+xml";
-      link.href = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>";
+      link.href = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2342613c'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>";
       document.head.appendChild(link);
     }
-  }
-
-  /* ---------------- Storage init (no prebuilt profiles or demo data) ----------------
-     Fresh installs start completely empty. On upgrade from earlier versions,
-     any previously seeded demo users/applications are removed while
-     preserving accounts and records created by real users. */
-  function seedIfNeeded() {
-    var existingUsers = readJSON(USERS_KEY, null);
-    var existingApps = readJSON(APPS_KEY, null);
-    if (!Array.isArray(existingUsers)) { existingUsers = []; writeJSON(USERS_KEY, existingUsers); }
-    if (!Array.isArray(existingApps)) { existingApps = []; writeJSON(APPS_KEY, existingApps); }
-    var existingCompanies = readJSON(COMPANY_KEY, null);
-    var existingInternships = readJSON(INTERNSHIPS_KEY, null);
-    if (!Array.isArray(existingCompanies)) writeJSON(COMPANY_KEY, []);
-    if (!Array.isArray(existingInternships)) writeJSON(INTERNSHIPS_KEY, []);
-
-    if (localStorage.getItem(SEEDED_KEY) !== "3") {
-      var seedEmails = ["ananya.nair@example.com", "adithya.menon@example.com", "sneha.pillai@example.com"];
-      var keptUsers = existingUsers.filter(function (u) {
-        var email = String(u.email || "").toLowerCase();
-        if (seedEmails.indexOf(email) !== -1) return false;
-        if (u.id === 101 || u.id === 102 || u.id === 103) return false;
-        return true;
-      });
-      var seedCompanies = ["Infosys", "TCS", "UST", "Wipro", "Zoho", "Tech Mahindra", "IBM", "L&T Technology Services"];
-      var keptApps = existingApps.filter(function (a) {
-        if (a.id >= 1 && a.id <= 8 && seedCompanies.indexOf(a.company) !== -1) return false;
-        return true;
-      });
-      writeJSON(USERS_KEY, keptUsers);
-      writeJSON(APPS_KEY, keptApps);
-      try { localStorage.setItem(SEEDED_KEY, "3"); } catch (e) {}
-    }
-  }
-
-  /* ---------------- Backend-ready data layer ---------------- */
-  async function getUsers() { return readJSON(USERS_KEY, []); }
-  async function getUserById(id) {
-    var users = await getUsers();
-    return users.find(function (u) { return String(u.id) === String(id); }) || null;
-  }
-  async function registerUser(user) {
-    var users = await getUsers();
-    var exists = users.some(function (u) { return u.email.toLowerCase() === user.email.toLowerCase(); });
-    if (exists) throw new Error("An account with this email already exists.");
-    var nextId = users.reduce(function (m, u) { return Math.max(m, u.id || 0); }, 100) + 1;
-    var record = {
-      id: nextId, name: user.name, email: user.email, password: user.password,
-      college: user.college, course: user.course, gradYear: user.gradYear,
-      registeredDate: new Date().toISOString().slice(0, 10), status: "Active"
-    };
-    users.push(record);
-    writeJSON(USERS_KEY, users);
-    return record;
-  }
-  async function updateUser(id, patch) {
-    var users = await getUsers();
-    var i = users.findIndex(function (u) { return String(u.id) === String(id); });
-    if (i < 0) throw new Error("User not found.");
-    users[i] = Object.assign({}, users[i], patch);
-    writeJSON(USERS_KEY, users);
-    return users[i];
-  }
-  async function deleteUser(id) {
-    writeJSON(USERS_KEY, (await getUsers()).filter(function (u) { return String(u.id) !== String(id); }));
-    writeJSON(APPS_KEY, (await getApplications()).filter(function (a) { return String(a.userId) !== String(id); }));
-  }
-
-  async function getApplications() { return readJSON(APPS_KEY, []); }
-  async function getApplicationsByUser(userId) {
-    return (await getApplications()).filter(function (a) { return String(a.userId) === String(userId); });
-  }
-  async function getApplicationById(id) {
-    return (await getApplications()).find(function (a) { return String(a.id) === String(id); }) || null;
-  }
-  async function addApplication(application) {
-    var apps = await getApplications();
-    var nextId = apps.reduce(function (m, a) { return Math.max(m, a.id || 0); }, 0) + 1;
-    var now = new Date().toISOString();
-    var record = Object.assign({ id: nextId, updatedAt: now }, application);
-    apps.push(record);
-    writeJSON(APPS_KEY, apps);
-    return record;
-  }
-  async function updateApplication(id, patch) {
-    var apps = await getApplications();
-    var i = apps.findIndex(function (a) { return String(a.id) === String(id); });
-    if (i < 0) throw new Error("Application not found.");
-    apps[i] = Object.assign({}, apps[i], patch, { updatedAt: new Date().toISOString() });
-    writeJSON(APPS_KEY, apps);
-    return apps[i];
-  }
-  async function deleteApplication(id) {
-    writeJSON(APPS_KEY, (await getApplications()).filter(function (a) { return String(a.id) !== String(id); }));
-  }
-
-  async function getCompanies() { return readJSON(COMPANY_KEY, []); }
-  async function getCompanyById(id) {
-    return (await getCompanies()).find(function (c) { return String(c.id) === String(id); }) || null;
-  }
-  async function updateCompany(id, patch) {
-    var companies = await getCompanies();
-    var i = companies.findIndex(function (c) { return String(c.id) === String(id); });
-    if (i < 0) throw new Error("Company not found.");
-    companies[i] = Object.assign({}, companies[i], patch);
-    writeJSON(COMPANY_KEY, companies);
-    return companies[i];
-  }
-  async function deleteCompany(id) {
-    writeJSON(COMPANY_KEY, (await getCompanies()).filter(function (c) { return String(c.id) !== String(id); }));
-    writeJSON(INTERNSHIPS_KEY, (await getInternships()).filter(function (j) { return String(j.companyId) !== String(id); }));
-    writeJSON(APPS_KEY, (await getApplications()).filter(function (a) { return String(a.companyId) !== String(id); }));
-  }
-  async function getInternships() { return readJSON(INTERNSHIPS_KEY, []); }
-  async function getInternshipsByCompany(companyId) {
-    return (await getInternships()).filter(function (j) { return String(j.companyId) === String(companyId); });
-  }
-  async function getInternshipById(id) {
-    return (await getInternships()).find(function (j) { return String(j.id) === String(id); }) || null;
-  }
-  async function addInternship(internship) {
-    var jobs = await getInternships();
-    var nextId = jobs.reduce(function (m, j) { return Math.max(m, Number(j.id) || 0); }, 0) + 1;
-    var record = Object.assign({ id: nextId, createdAt: new Date().toISOString() }, internship);
-    var company = await getCompanyById(record.companyId);
-    if (record.status === "Published" && !companyIsApproved(company)) record.status = "Pending Review";
-    if (record.deadline && String(record.deadline) < todayISO()) record.status = "Expired";
-    jobs.push(record); writeJSON(INTERNSHIPS_KEY, jobs); return record;
-  }
-  async function updateInternship(id, patch) {
-    var jobs = await getInternships();
-    var i = jobs.findIndex(function (j) { return String(j.id) === String(id); });
-    if (i < 0) throw new Error("Internship not found.");
-    var next = Object.assign({}, jobs[i], patch, { updatedAt: new Date().toISOString() });
-    var company = await getCompanyById(next.companyId);
-    if (next.status === "Published" && !companyIsApproved(company)) next.status = "Pending Review";
-    if (next.status === "Published" && next.deadline && String(next.deadline) < todayISO()) next.status = "Expired";
-    jobs[i] = next;
-    writeJSON(INTERNSHIPS_KEY, jobs); return jobs[i];
-  }
-  async function deleteInternship(id) {
-    writeJSON(INTERNSHIPS_KEY, (await getInternships()).filter(function (j) { return String(j.id) !== String(id); }));
-    writeJSON(APPS_KEY, (await getApplications()).filter(function (a) { return String(a.internshipId) !== String(id); }));
   }
 
   /* ---------------- Thoughtful student helpers: follow-ups + job alerts ----
@@ -257,7 +70,7 @@
     return candidates.length ? candidates[candidates.length - 1] : "";
   }
 
-  function getSnoozeMap() { return readJSON(SNOOZE_KEY, {}); }
+  function getSnoozeMap() { return window.InternLog.getPreference("followupSnooze", {}); }
 
   function isSnoozed(appId) {
     var map = getSnoozeMap();
@@ -266,13 +79,13 @@
     return String(todayISO()) <= String(until);
   }
 
-  function snoozeFollowup(appId, days) {
-    var map = getSnoozeMap();
+  async function snoozeFollowup(appId, days) {
+    var map = Object.assign({}, getSnoozeMap());
     var d = new Date();
     d.setDate(d.getDate() + (days || 7));
     var iso = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
     map[String(appId)] = iso;
-    writeJSON(SNOOZE_KEY, map);
+    await window.InternLog.setPreference("followupSnooze", map);
   }
 
   function getFollowups(apps) {
@@ -299,32 +112,6 @@
     return out;
   }
 
-  function getSavedSearches(userId) {
-    return readJSON(SEARCHES_KEY, []).filter(function (s) { return String(s.userId) === String(userId); });
-  }
-
-  function saveSearch(userId, search) {
-    var all = readJSON(SEARCHES_KEY, []);
-    var nextId = all.reduce(function (m, s) { return Math.max(m, Number(s.id) || 0); }, 0) + 1;
-    var record = {
-      id: nextId, userId: userId,
-      query: String(search.query || "").trim(),
-      location: String(search.location || "").trim(),
-      type: String(search.type || "").trim(),
-      minStipend: Number(search.minStipend) || 0,
-      createdAt: new Date().toISOString()
-    };
-    all.push(record);
-    writeJSON(SEARCHES_KEY, all);
-    return record;
-  }
-
-  function deleteSavedSearch(id, userId) {
-    writeJSON(SEARCHES_KEY, readJSON(SEARCHES_KEY, []).filter(function (s) {
-      return !(String(s.id) === String(id) && String(s.userId) === String(userId));
-    }));
-  }
-
   function matchesSearch(job, search) {
     if (!job || job.status !== "Published") return false;
     var q = String(search.query || "").toLowerCase().trim();
@@ -340,18 +127,18 @@
   }
 
   function getSeenIds(userId) {
-    return readJSON(SEEN_KEY_PREFIX + String(userId), []);
+    return window.InternLog.getPreference("seenInternships", []);
   }
 
-  function markInternshipsSeen(userId, ids) {
+  async function markInternshipsSeen(userId, ids) {
     var seen = {};
     getSeenIds(userId).forEach(function (id) { seen[String(id)] = true; });
     (ids || []).forEach(function (id) { seen[String(id)] = true; });
-    writeJSON(SEEN_KEY_PREFIX + String(userId), Object.keys(seen));
+    await window.InternLog.setPreference("seenInternships", Object.keys(seen));
   }
 
-  function getMatchedAlerts(userId, jobs) {
-    var searches = getSavedSearches(userId);
+  async function getMatchedAlerts(userId, jobs) {
+    var searches = await window.InternLog.getSavedSearches(userId);
     var seen = {};
     getSeenIds(userId).forEach(function (id) { seen[String(id)] = true; });
     return searches.map(function (s) {
@@ -362,7 +149,7 @@
   }
 
   /* ---------------- Company / opportunity moderation ----------------
-     Prototype rules: companies need admin verification before using the
+     Companies need admin verification before using the
      company workspace, and every newly submitted/editied opportunity goes
      through admin review before becoming public. Expired opportunities are
      hidden automatically. */
@@ -386,102 +173,13 @@
     return "Pending Verification";
   }
 
-  function normalizeOpportunityStates() {
-    var companies = readJSON(COMPANY_KEY, []);
-    var jobs = readJSON(INTERNSHIPS_KEY, []);
-    if (!Array.isArray(companies) || !Array.isArray(jobs)) return;
-    var companyMap = {};
-    companies.forEach(function (c) { companyMap[String(c.id)] = c; });
-    var today = todayISO();
-    var changed = false;
-
-    jobs.forEach(function (j) {
-      var company = companyMap[String(j.companyId)];
-      if (j.status === "Published") {
-        if (!companyIsApproved(company)) {
-          j.status = company && company.status === "Suspended" ? "Suspended" : "Pending Review";
-          j.moderatedAt = new Date().toISOString();
-          changed = true;
-        } else if (j.deadline && String(j.deadline) < today) {
-          j.status = "Expired";
-          j.expiredAt = new Date().toISOString();
-          changed = true;
-        }
-      }
-    });
-
-    if (changed) writeJSON(INTERNSHIPS_KEY, jobs);
-  }
-
-  function setCompanySession(company) {
-    setSession({ role: "company", userId: company.id, name: company.name, email: company.email });
-  }
-
-  async function registerCompany(company) {
-    var companies = await getCompanies();
-    var email = String(company.email || "").trim().toLowerCase();
-    if (companies.some(function (c) { return String(c.email || "").toLowerCase() === email; })) {
-      throw new Error("A company account with this email already exists.");
-    }
-    var nextId = companies.reduce(function (m, c) { return Math.max(m, Number(c.id) || 0); }, 0) + 1;
-    var record = {
-      id: nextId,
-      name: String(company.name || "").trim(),
-      email: email,
-      password: company.password || "",
-      website: company.website || "",
-      location: company.location || "",
-      industry: company.industry || "",
-      description: company.description || "",
-      status: "Pending",
-      verified: false,
-      approvalStatus: "Pending",
-      registeredDate: todayISO()
-    };
-    companies.push(record);
-    writeJSON(COMPANY_KEY, companies);
-    return record;
-  }
-
-  async function loginCompany(credentials) {
-    var companies = await getCompanies();
-    var email = String(credentials.email || "").trim().toLowerCase();
-    var company = companies.find(function (c) { return String(c.email || "").toLowerCase() === email; });
-    if (!company || company.password !== credentials.password) throw new Error("Invalid company email or password.");
-    if (company.status === "Suspended") throw new Error("This company account is suspended.");
-    if (company.status === "Rejected" || company.approvalStatus === "Rejected") throw new Error("This company account was rejected by the administrator.");
-    if (!companyIsApproved(company)) throw new Error("Your company account is awaiting admin verification.");
-    return { role: "company", userId: company.id, name: company.name, email: company.email };
-  }
-
-  function companySessionContext() {
-    var s = getSession();
-    if (!s || s.role !== "company") return null;
-    var companies = readJSON(COMPANY_KEY, []);
-    var company = companies.find(function (c) { return String(c.id) === String(s.userId); }) || null;
-    return company ? { session: s, company: company } : null;
-  }
-
   function guardCompanyPage() {
     var path = window.location.pathname.replace(/\\/g, "/");
     if (path.indexOf("/company/") === -1) return;
     var file = (path.split("/").pop() || "").toLowerCase().split("?")[0];
     if (file === "login.html" || file === "register.html") return;
-    // company/internships.html is company-only; students and visitors use
-    // user/internships.html (which redirects here only with a company session).
-    var ctx = companySessionContext();
-    if (!ctx) {
-      var sess = getSession();
-      // Backend mode: a company session may exist without a localStorage
-      // record. Don't nuke it here — the page boot resolves via the API.
-      if (sess && sess.role === "company") return;
-      window.location.href = "login.html";
-      return;
-    }
-    if (!companyIsApproved(ctx.company)) {
-      clearSession();
-      window.location.href = "login.html?pending=1";
-    }
+    var session = getSession();
+    if (!session || session.role !== "company") window.location.href = "login.html";
   }
 
   function initCompanyRegisterGuard() {
@@ -513,7 +211,7 @@
       if (!ok) return;
 
       try {
-        var company = await registerCompany({
+        var company = await window.InternLog.registerCompany({
           name: name.value, email: email.value, password: password.value,
           website: website ? website.value.trim() : "", location: location.value,
           industry: industry ? industry.value.trim() : ""
@@ -568,7 +266,12 @@
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
       e.stopImmediatePropagation();
-      var ctx = companySessionContext();
+      var session = getSession();
+      if (!session || session.role !== "company") { window.location.href = "login.html"; return; }
+      var company;
+      try { company = await window.InternLog.getCompanyById(session.userId); }
+      catch (error) { showNotification(error.message, "error"); return; }
+      var ctx = company ? { session: session, company: company } : null;
       if (!ctx) { window.location.href = "login.html"; return; }
       if (!companyIsApproved(ctx.company)) {
         clearSession();
@@ -590,7 +293,7 @@
       if (d.applyUrl && !validURL(d.applyUrl)) { setFieldError(urlEl, "Use a valid http(s) URL."); ok = false; } else setFieldError(urlEl, "");
       if (!ok) return;
 
-      var jobs = await getInternships();
+      var jobs = await window.InternLog.getInternshipsByCompany(ctx.company.id);
       var now = new Date().toISOString();
       var editId = new URLSearchParams(window.location.search).get("edit");
       var editingIndex = editId ? jobs.findIndex(function (j) { return String(j.id) === String(editId) && String(j.companyId) === String(ctx.company.id); }) : -1;
@@ -605,15 +308,10 @@
         status: requestedStatus, updatedAt: now
       };
 
-      if (existing) {
-        jobs[editingIndex] = Object.assign({}, existing, record);
-        if (requestedStatus === "Pending Review") jobs[editingIndex].moderationNote = "Updated by company; requires admin review before publication.";
-      } else {
-        record.id = jobs.reduce(function (m, j) { return Math.max(m, Number(j.id) || 0); }, 0) + 1;
-        record.createdAt = now;
-        jobs.push(record);
-      }
-      writeJSON(INTERNSHIPS_KEY, jobs);
+      try {
+        if (existing) await window.InternLog.updateInternship(existing.id, record);
+        else await window.InternLog.addInternship(record);
+      } catch (error) { showNotification(error.message, "error"); return; }
 
       var success = document.getElementById("success");
       if (success) {
@@ -634,226 +332,52 @@
     var jobsBody = document.getElementById("companyJobsBody");
     if (!companiesBody && !jobsBody) return;
 
-    function refreshCompanyRows() {
-      if (!companiesBody) return;
-      var companies = readJSON(COMPANY_KEY, []);
-      var jobs = readJSON(INTERNSHIPS_KEY, []);
-      Array.prototype.slice.call(companiesBody.querySelectorAll("tr")).forEach(function (row) {
-        var first = row.querySelector("[data-toggle-company], [data-delete-company]");
-        if (!first) {
-          var companyName = row.cells[0] ? row.cells[0].textContent.trim() : "";
-          var company = companies.find(function (c) { return c.name === companyName; });
-          if (!company) return;
-          first = { getAttribute: function () { return String(company.id); } };
-        }
-        var id = first.getAttribute("data-toggle-company") || first.getAttribute("data-delete-company") || first.getAttribute("data-verify-company") || first.getAttribute("data-reject-company");
-        var company = companies.find(function (c) { return String(c.id) === String(id); });
-        if (!company || !row.cells || row.cells.length < 8) return;
-        var count = jobs.filter(function (j) { return String(j.companyId) === String(company.id); }).length;
-        if (row.cells[5]) row.cells[5].textContent = String(count);
-        if (row.cells[6]) row.cells[6].innerHTML = '<span class="badge ' + (companyIsApproved(company) ? 'badge-selected' : (company.status === 'Suspended' ? 'badge-disabled' : 'badge-shortlisted')) + '">' + esc(companyStatusLabel(company)) + '</span>';
-        if (row.cells[7]) {
-          var actions = '<div class="actions">';
-          if (companyIsApproved(company)) {
-            actions += '<button class="link-btn" data-toggle-company="' + esc(company.id) + '">Suspend</button>';
-          } else if (company.status === "Suspended" && company.verified === true) {
-            actions += '<button class="link-btn" data-toggle-company="' + esc(company.id) + '">Restore</button>';
-          } else {
-            actions += '<button class="link-btn" data-verify-company="' + esc(company.id) + '">Verify</button>';
-            if (company.status !== "Rejected") actions += '<button class="link-btn danger" data-reject-company="' + esc(company.id) + '">Reject</button>';
-          }
-          actions += '<button class="link-btn danger" data-delete-company="' + esc(company.id) + '">Delete</button></div>';
-          row.cells[7].innerHTML = actions;
-        }
-      });
-    }
-
-    function refreshJobRows() {
-      if (!jobsBody) return;
-      var companies = readJSON(COMPANY_KEY, []);
-      var jobs = readJSON(INTERNSHIPS_KEY, []);
-      Array.prototype.slice.call(jobsBody.querySelectorAll("tr")).forEach(function (row) {
-        var title = row.cells[0] ? row.cells[0].textContent.trim() : "";
-        var companyName = row.cells[1] ? row.cells[1].textContent.trim() : "";
-        var job = jobs.find(function (j) { return j.title === title && j.company === companyName; });
-        if (!job || !row.cells || row.cells.length < 6) return;
-        var company = companies.find(function (c) { return String(c.id) === String(job.companyId); });
-        if (row.cells[4]) {
-          var cls = job.status === "Published" ? "badge-selected" : (job.status === "Pending Review" ? "badge-shortlisted" : (job.status === "Rejected" || job.status === "Suspended" || job.status === "Expired" || job.status === "Archived" ? "badge-disabled" : "badge-applied"));
-          row.cells[4].innerHTML = '<span class="badge ' + cls + '">' + esc(job.status || "Draft") + '</span>';
-        }
-        if (row.cells[5]) {
-          var actions = '<div class="actions">';
-          if (job.status === "Pending Review" && companyIsApproved(company)) {
-            actions += '<button class="link-btn" data-approve-job="' + esc(job.id) + '">Approve</button><button class="link-btn danger" data-reject-job="' + esc(job.id) + '">Reject</button>';
-          } else if (job.status === "Published") {
-            actions += '<button class="link-btn" data-archive-job="' + esc(job.id) + '">Archive</button>';
-          } else if (job.status === "Rejected") {
-            actions += '<button class="link-btn" data-approve-job="' + esc(job.id) + '">Approve</button>';
-          } else if (job.status === "Draft") {
-            actions += companyIsApproved(company) ? '<button class="link-btn" data-approve-job="' + esc(job.id) + '">Approve</button>' : '';
-            actions += '<button class="link-btn danger" data-reject-job="' + esc(job.id) + '">Reject</button>';
-          } else if (job.status === "Suspended") {
-            actions += companyIsApproved(company) ? '<button class="link-btn" data-approve-job="' + esc(job.id) + '">Review / Publish</button>' : '';
-          } else if (job.status === "Expired") {
-            actions += '<button class="link-btn" data-archive-job="' + esc(job.id) + '">Archive</button>';
-          } else if (job.status === "Archived") {
-            actions += companyIsApproved(company) ? '<button class="link-btn" data-approve-job="' + esc(job.id) + '">Approve</button>' : '';
-          }
-          // Admin always has full control: every opportunity can be permanently removed.
-          actions += '<button class="link-btn danger" data-delete-job="' + esc(job.id) + '">Delete</button>';
-          actions += '</div>';
-          row.cells[5].innerHTML = actions;
-        }
-      });
-    }
-
-    setTimeout(function () { refreshCompanyRows(); refreshJobRows(); }, 0);
-
-    if (companiesBody) {
-      companiesBody.addEventListener("click", async function (e) {
-        var verify = e.target.closest && e.target.closest("[data-verify-company]");
-        var reject = e.target.closest && e.target.closest("[data-reject-company]");
-        var toggle = e.target.closest && e.target.closest("[data-toggle-company]");
-        var del = e.target.closest && e.target.closest("[data-delete-company]");
-        if (!verify && !reject && !toggle && !del) return;
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        var target = verify || reject || toggle || del;
-        var id = target.getAttribute(verify ? "data-verify-company" : reject ? "data-reject-company" : toggle ? "data-toggle-company" : "data-delete-company");
-        if (del) {
-          if (!confirm("Delete this company and all its internships and applications? This cannot be undone.")) return;
-          await deleteCompany(id);
-          showNotification("Company deleted", "success");
-          // Re-render inline tables if present (admin/users.html owns row HTML).
-          if (typeof window !== "undefined" && window.__internlogRerenderModeration) {
-            try { window.__internlogRerenderModeration(); } catch (err) {}
-          } else {
-            window.location.reload();
-          }
-          return;
-        }
-        var companies = readJSON(COMPANY_KEY, []);
-        var i = companies.findIndex(function (c) { return String(c.id) === String(id); });
-        if (i < 0) return;
-        var company = companies[i];
-        var jobs = readJSON(INTERNSHIPS_KEY, []);
-
-        if (verify) {
-          company.status = "Active";
-          company.verified = true;
-          company.approvalStatus = "Approved";
-          company.approvedAt = new Date().toISOString();
-          showNotification(company.name + " verified.", "success");
-        } else if (reject) {
-          company.status = "Rejected";
-          company.verified = false;
-          company.approvalStatus = "Rejected";
-          company.rejectedAt = new Date().toISOString();
-          jobs.forEach(function (j) { if (String(j.companyId) === String(company.id) && j.status === "Published") j.status = "Pending Review"; });
-          showNotification(company.name + " rejected.", "warning");
-        } else {
-          if (company.status === "Suspended") {
-            company.status = company.verified === true ? "Active" : "Pending";
-            if (company.status === "Active") {
-              company.approvalStatus = "Approved";
-              jobs.forEach(function (j) { if (String(j.companyId) === String(company.id) && j.status === "Suspended") j.status = "Pending Review"; });
+    {
+      [companiesBody, jobsBody].filter(Boolean).forEach(function (body) {
+        body.addEventListener("click", async function (event) {
+          var button = event.target.closest("button");
+          if (!button) return;
+          var companyId = button.getAttribute("data-verify-company") || button.getAttribute("data-reject-company") || button.getAttribute("data-toggle-company") || button.getAttribute("data-delete-company");
+          var jobId = button.getAttribute("data-approve-job") || button.getAttribute("data-reject-job") || button.getAttribute("data-archive-job") || button.getAttribute("data-delete-job");
+          if (!companyId && !jobId) return;
+          event.preventDefault();
+          button.disabled = true;
+          try {
+            if (companyId) {
+              if (button.hasAttribute("data-delete-company")) {
+                if (!confirm("Delete this company, its internships and applications?")) return;
+                await window.InternLog.deleteCompany(companyId);
+              } else {
+                var company = await window.InternLog.getCompanyById(companyId);
+                var status = button.hasAttribute("data-verify-company") ? "Active" : button.hasAttribute("data-reject-company") ? "Rejected" : company.status === "Suspended" ? "Active" : "Suspended";
+                await window.InternLog.setCompanyStatus(companyId, status);
+              }
+            } else if (button.hasAttribute("data-delete-job")) {
+              if (!confirm("Delete this internship and its applications?")) return;
+              await window.InternLog.deleteInternship(jobId);
+            } else {
+              await window.InternLog.setInternshipStatus(jobId, button.hasAttribute("data-approve-job") ? "Published" : button.hasAttribute("data-reject-job") ? "Rejected" : "Archived");
             }
-          } else {
-            company.status = "Suspended";
-            jobs.forEach(function (j) { if (String(j.companyId) === String(company.id) && j.status === "Published") j.status = "Suspended"; });
-          }
-          showNotification(company.name + " is now " + companyStatusLabel(company).toLowerCase() + ".", "success");
-        }
-        companies[i] = company;
-        writeJSON(COMPANY_KEY, companies);
-        writeJSON(INTERNSHIPS_KEY, jobs);
-        refreshCompanyRows();
-        refreshJobRows();
-      }, true);
+            showNotification("Moderation updated.", "success");
+            if (window.__internlogRerenderModeration) await window.__internlogRerenderModeration();
+          } catch (error) { showNotification(error.message, "error"); }
+          finally { button.disabled = false; }
+        });
+      });
+      return;
     }
 
-    if (jobsBody) {
-      jobsBody.addEventListener("click", async function (e) {
-        var approve = e.target.closest && e.target.closest("[data-approve-job]");
-        var reject = e.target.closest && e.target.closest("[data-reject-job]");
-        var archive = e.target.closest && e.target.closest("[data-archive-job]");
-        var delJob = e.target.closest && e.target.closest("[data-delete-job]");
-        var legacy = e.target.closest && e.target.closest("[data-publish-job], [data-unpublish-job]");
-        if (!approve && !reject && !archive && !legacy && !delJob) return;
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        if (delJob) {
-          var delId = delJob.getAttribute("data-delete-job");
-          if (!confirm("Delete this internship and all its applications? This cannot be undone.")) return;
-          await deleteInternship(delId);
-          showNotification("Internship deleted", "success");
-          if (typeof window !== "undefined" && window.__internlogRerenderModeration) {
-            try { window.__internlogRerenderModeration(); } catch (err) {}
-          }
-          refreshCompanyRows();
-          refreshJobRows();
-          return;
-        }
-        var el = approve || reject || archive || legacy;
-        var id = el.getAttribute(approve ? "data-approve-job" : reject ? "data-reject-job" : archive ? "data-archive-job" : (el.getAttribute("data-publish-job") ? "data-publish-job" : "data-unpublish-job"));
-        var jobs = readJSON(INTERNSHIPS_KEY, []);
-        var i = jobs.findIndex(function (j) { return String(j.id) === String(id); });
-        if (i < 0) return;
-        var job = jobs[i];
-        var company = readJSON(COMPANY_KEY, []).find(function (c) { return String(c.id) === String(job.companyId); });
-
-        if (approve || (legacy && el.getAttribute("data-publish-job"))) {
-          if (!companyIsApproved(company)) { showNotification("Verify the company before publishing this internship.", "warning"); return; }
-          if (job.deadline && String(job.deadline) < todayISO()) {
-            job.status = "Expired";
-            writeJSON(INTERNSHIPS_KEY, jobs);
-            showNotification("This internship deadline has already passed.", "warning");
-          } else {
-            job.status = "Published";
-            job.moderatedAt = new Date().toISOString();
-            job.moderationNote = "Approved by admin.";
-            writeJSON(INTERNSHIPS_KEY, jobs);
-            showNotification("Internship approved and published.", "success");
-          }
-        } else if (reject) {
-          job.status = "Rejected";
-          job.moderatedAt = new Date().toISOString();
-          job.moderationNote = "Rejected by admin.";
-          writeJSON(INTERNSHIPS_KEY, jobs);
-          showNotification("Internship rejected.", "warning");
-        } else {
-          job.status = "Archived";
-          job.moderatedAt = new Date().toISOString();
-          writeJSON(INTERNSHIPS_KEY, jobs);
-          showNotification("Internship archived.", "success");
-        }
-        refreshCompanyRows();
-        refreshJobRows();
-      }, true);
-    }
   }
 
-  async function loginUser(credentials) {
-    if (credentials.email.toLowerCase() === "admin@internlog.com" && credentials.password === "admin123") {
-      return { role: "admin", userId: "admin", name: "InternLog Admin", email: "admin@internlog.com" };
-    }
-    var users = await getUsers();
-    var user = users.find(function (u) { return u.email.toLowerCase() === credentials.email.toLowerCase(); });
-    if (!user || user.password !== credentials.password) throw new Error("Invalid email or password");
-    if (user.status === "Disabled") throw new Error("This account has been disabled. Contact support.");
-    return { role: "user", userId: user.id, name: user.name, email: user.email };
+  function getSession() {
+    return window.InternLog.getSession();
   }
-  async function loginAdmin(credentials) {
-    if (credentials.email.toLowerCase() === "admin@internlog.com" && credentials.password === "admin123") {
-      return { role: "admin", userId: "admin", name: "InternLog Admin", email: "admin@internlog.com" };
-    }
-    throw new Error("Invalid admin credentials");
+  function setSession(s) {
+    window.InternLog.setSession(s);
   }
-
-  function getSession() { return readJSON(SESSION_KEY, null); }
-  function setSession(s) { writeJSON(SESSION_KEY, s); }
-  function clearSession() { try { localStorage.removeItem(SESSION_KEY); } catch (e) {} }
+  function clearSession() {
+    return window.InternLog.clearSession();
+  }
 
   function computeStats(apps) {
     var s = { total: apps.length, Applied: 0, Shortlisted: 0, Interview: 0, Selected: 0, Rejected: 0 };
@@ -887,6 +411,7 @@
         (a.notes || "").replace(/[\r\n]+/g, " ")
       ].map(function (val) {
         var str = String(val == null ? "" : val);
+        if (/^[=+@\-\t\r]/.test(str)) str = "'" + str;
         if (/[",\n]/.test(str)) {
           str = '"' + str.replace(/"/g, '""') + '"';
         }
@@ -976,21 +501,7 @@
       });
     }
 
-    // Landing mobile navigation (legacy: landingMenuBtn/landingMobileNav)
-    var landingMenuBtn = document.getElementById("landingMenuBtn");
-    var landingMobileNav = document.getElementById("landingMobileNav");
-    if (landingMenuBtn && landingMobileNav) {
-      landingMenuBtn.addEventListener("click", function () {
-        landingMobileNav.classList.toggle("open");
-      });
-      landingMobileNav.querySelectorAll("a").forEach(function (a) {
-        a.addEventListener("click", function () {
-          landingMobileNav.classList.remove("open");
-        });
-      });
-    }
-
-    // Pill nav mobile popover (current landing header)
+    // Pill nav mobile popover (landing header; Pill Nav adaptation, see ui-components + style.css)
     var pillBtn = document.getElementById("pillMenuBtn");
     var pillPopover = document.getElementById("pillMenuPopover");
     if (pillBtn && pillPopover) {
@@ -1032,9 +543,10 @@
 
     // Logout handling
     document.querySelectorAll("[data-logout]").forEach(function (el) {
-      el.addEventListener("click", function (e) {
+      el.addEventListener("click", async function (e) {
+        if (!el.hasAttribute("data-logout")) return;
         e.preventDefault();
-        clearSession();
+        try { await clearSession(); } catch (error) { showNotification(error.message, "error"); return; }
         showNotification("Logged out successfully", "success");
         setTimeout(function () {
           window.location.href = el.getAttribute("href") || "../index.html";
@@ -1052,19 +564,7 @@
       });
     });
 
-    // Populate user chips across all authenticated pages
-    var s = getSession();
-    if (s) {
-      document.querySelectorAll("[data-user-name]").forEach(function (el) {
-        el.textContent = s.name || (s.role === "admin" ? "Admin" : "Student");
-      });
-      document.querySelectorAll("[data-user-email]").forEach(function (el) {
-        el.textContent = s.email || "";
-      });
-      document.querySelectorAll("[data-avatar]").forEach(function (el) {
-        if (s.name) el.textContent = s.name.trim().charAt(0).toUpperCase();
-      });
-    }
+    populateSessionUI();
 
     // Global modal close on ESC key
     document.addEventListener("keydown", function (e) {
@@ -1075,6 +575,14 @@
         }
       }
     });
+  }
+
+  function populateSessionUI() {
+    var s = getSession();
+    if (!s) return;
+    document.querySelectorAll("[data-user-name]").forEach(function (el) { el.textContent = s.name || (s.role === "admin" ? "Admin" : "Student"); });
+    document.querySelectorAll("[data-user-email]").forEach(function (el) { el.textContent = s.email || ""; });
+    document.querySelectorAll("[data-avatar]").forEach(function (el) { if (s.name) el.textContent = s.name.trim().charAt(0).toUpperCase(); });
   }
 
   function setFieldError(input, msg) {
@@ -1126,7 +634,6 @@
       e.preventDefault();
       var email = document.getElementById("email");
       var password = document.getElementById("password");
-      var remember = document.getElementById("remember");
       var ok = true;
 
       if (!isEmail(email.value.trim())) { setFieldError(email, "Enter a valid email address."); ok = false; }
@@ -1141,7 +648,6 @@
         if (session.role !== "user") {
           throw new Error("Invalid email or password");
         }
-        session.remember = !!(remember && remember.checked);
         setSession(session);
         showNotification("Welcome back, " + session.name.split(" ")[0] + "!", "success");
         setTimeout(function () { window.location.href = "dashboard.html"; }, 500);
@@ -1154,28 +660,6 @@
         showNotification(err.message || "Invalid email or password", "error");
       }
     });
-  }
-
-  /* Direct visits to the console login (typed address, bookmark, link)
-     with no fresh tap-through pass see a plain not-found page instead.
-     Signed-in console sessions are unaffected. */
-  function initConsoleGate() {
-    if (!document.getElementById("adminLoginForm")) return;
-    var s = getSession();
-    if (s && s.role === "admin") return;
-    if (hasConsolePass()) return;
-    document.title = "Page not found — InternLog";
-    document.body.innerHTML =
-      '<main style="min-height:100vh;display:flex;align-items:center;justify-content:center;' +
-      'font-family:\'Helvetica Neue\',Helvetica,Arial,sans-serif;background:#f8fafc;color:#0f172a;' +
-      'padding:24px;text-align:center;">' +
-      '<div style="max-width:560px;">' +
-      '<div style="font-family:Georgia,serif;font-style:italic;font-size:88px;line-height:1;">404</div>' +
-      "<h1 style=\"font-family:Georgia,serif;font-weight:400;font-size:28px;margin:12px 0 8px;\">This page doesn't exist.</h1>" +
-      '<p style="color:#64748b;font-size:15px;margin:0 0 24px;">The address may be mistyped, or the page may have moved.</p>' +
-      '<p><a href="../index.html" style="display:inline-block;border-radius:8px;padding:10px 22px;' +
-      'font-size:14px;font-weight:600;text-decoration:none;background:#1a56d5;color:#fff;">Back to home</a></p>' +
-      "</div></main>";
   }
 
   async function initAdminLogin() {
@@ -1200,8 +684,7 @@
       if (!ok) return;
 
       try {
-        var session = await loginAdmin({ email: email.value.trim(), password: password.value });
-        clearConsolePass();
+        var session = await window.InternLog.loginAdmin({ email: email.value.trim(), password: password.value });
         setSession(session);
         showNotification("Welcome, Admin!", "success");
         setTimeout(function () { window.location.href = "dashboard.html"; }, 500);
@@ -1263,7 +746,7 @@
           name: name.value.trim(), email: email.value.trim(), password: password.value,
           college: college.value.trim(), course: course.value.trim(), gradYear: gradYear.value
         });
-        setSession({ role: "user", userId: user.id, name: user.name, email: user.email });
+        setSession(await window.InternLog.loginUser({ email: email.value.trim(), password: password.value }));
         showNotification("Account created successfully!", "success");
         setTimeout(function () { window.location.href = "dashboard.html"; }, 600);
       } catch (err) {
@@ -1331,8 +814,7 @@
   async function openAppModal(id) {
     var a = await window.InternLog.getApplicationById(id);
     if (!a) { showNotification("Application not found", "error"); return; }
-    var users = await window.InternLog.getUsers();
-    var owner = users.find(function (u) { return String(u.id) === String(a.userId); });
+    var owner = await window.InternLog.getUserById(a.userId);
     var backdrop = document.getElementById("modalBackdrop");
     var body = document.getElementById("modalBody");
     if (!backdrop || !body) return;
@@ -1350,7 +832,7 @@
       "<dt>Deadline</dt><dd>" + fmtDate(a.deadline) + "</dd>" +
       (a.interviewDate ? "<dt>Interview Date</dt><dd><strong>" + fmtDate(a.interviewDate) + "</strong></dd>" : "") +
       "<dt>Stipend</dt><dd>" + (a.stipend && Number(a.stipend) > 0 ? "₹" + Number(a.stipend).toLocaleString("en-IN") + " / month" : "Unpaid / Not specified") + "</dd>" +
-      (a.url ? "<dt>Posting URL</dt><dd><a href='" + esc(a.url) + "' target='_blank' rel='noopener'>Open posting ↗</a></dd>" : "") +
+      (a.url && validURL(a.url) ? "<dt>Posting URL</dt><dd><a href='" + esc(a.url) + "' target='_blank' rel='noopener'>Open posting ↗</a></dd>" : "") +
       "<dt>Status</dt><dd>" + statusBadge(a.status) + "</dd>" +
       "<dt>Notes</dt><dd>" + (a.notes ? esc(a.notes).replace(/\n/g, "<br>") : "<span class='muted'>No notes added.</span>") + "</dd>" +
       "</dl>" +
@@ -1418,8 +900,8 @@
             '<button class="link-btn" data-snooze="' + n.app.id + '">Snooze</button></span></div>';
         }).join("");
         Array.prototype.slice.call(followEl.querySelectorAll("[data-snooze]")).forEach(function (btn) {
-          btn.addEventListener("click", function () {
-            snoozeFollowup(btn.getAttribute("data-snooze"), 7);
+          btn.addEventListener("click", async function () {
+            await snoozeFollowup(btn.getAttribute("data-snooze"), 7);
             showNotification("Snoozed for 7 days. You have got this.", "info");
             initUserDashboard();
           });
@@ -1435,9 +917,8 @@
     // Job alerts: saved searches matched against Published internships.
     var alertsEl = document.getElementById("jobAlertsList");
     if (alertsEl) {
-      var allJobs = await getInternships();
-      var pubJobs = allJobs.filter(function (j) { return j.status === "Published"; });
-      var alerts = getMatchedAlerts(s.userId, pubJobs);
+      var pubJobs = await window.InternLog.getPublicInternships();
+      var alerts = await window.InternLog.getMatchedAlerts(s.userId, pubJobs);
       if (!alerts.length) {
         alertsEl.innerHTML = '<p class="muted">Save a search on the <a href="internships.html">opportunity board</a> (e.g. “React, Remote”) and new matches will appear here.</p>';
       } else {
@@ -1450,8 +931,8 @@
             '<button class="link-btn danger" data-unsave-search="' + al.search.id + '">Remove</button></span></div>';
         }).join("");
         Array.prototype.slice.call(alertsEl.querySelectorAll("[data-unsave-search]")).forEach(function (btn) {
-          btn.addEventListener("click", function () {
-            deleteSavedSearch(btn.getAttribute("data-unsave-search"), s.userId);
+          btn.addEventListener("click", async function () {
+            await window.InternLog.deleteSavedSearch(btn.getAttribute("data-unsave-search"), s.userId);
             showNotification("Alert removed", "success");
             initUserDashboard();
           });
@@ -1686,24 +1167,12 @@
         var nw = document.getElementById("newPassword").value;
         var conf = document.getElementById("confirmNewPassword") ? document.getElementById("confirmNewPassword").value : nw;
 
-        if (cur !== user.password) { showNotification("Current password is incorrect.", "error"); return; }
         if (nw !== conf) { showNotification("New passwords do not match.", "error"); return; }
         var err = passwordStrength(nw);
         if (err) { showNotification(err, "error"); return; }
 
-        if (user.password) {
-          // Local-prototype account: verify + store directly.
-          if (cur !== user.password) { showNotification("Current password is incorrect.", "error"); return; }
-          await window.InternLog.updateUser(user.id, { password: nw });
-        } else {
-          // Backend account (no local password hash): verify server-side.
-          try {
-            await window.InternLog.changeUserPassword(user.id, cur, nw);
-          } catch (pwErr) {
-            showNotification((pwErr && pwErr.message) || "Could not change password.", "error");
-            return;
-          }
-        }
+        try { await window.InternLog.changeUserPassword(user.id, cur, nw); }
+        catch (pwErr) { showNotification(pwErr.message || "Could not change password.", "error"); return; }
         showNotification("Password changed successfully", "success");
         pwForm.reset();
       });
@@ -1894,39 +1363,17 @@
     document.getElementById("adminName").value = s.name || "InternLog Admin";
     document.getElementById("adminEmail").value = s.email || "admin@internlog.com";
 
-    form.addEventListener("submit", function (e) {
+    form.addEventListener("submit", async function (e) {
       e.preventDefault();
       var name = document.getElementById("adminName").value.trim();
       if (name.length < 3) { showNotification("Enter a valid name.", "error"); return; }
-      setSession({ role: "admin", userId: "admin", name: name, email: document.getElementById("adminEmail").value.trim() });
+      await window.InternLog.setPreference("adminName", name);
+      setSession(Object.assign({}, s, { name: name }));
       showNotification("Admin profile updated", "success");
       setTimeout(function () { window.location.reload(); }, 500);
     });
   }
 
-  /* ---------------- Secret console access ----------------
-     Tapping the InternLog logo 5 times within 3 seconds opens the
-     restricted console login. Tap timestamps are kept in sessionStorage
-     so rapid taps still count even if a tap navigates between pages.
-     A successful tap-through also stamps a short-lived pass (valid 10
-     minutes). Without that pass — e.g. someone typing the console
-     address manually — the login page disguises itself as a 404.
-     There is intentionally no visible hint of this anywhere in the UI. */
-  var CONSOLE_PASS_KEY = "internlog_console_pass";
-  var CONSOLE_PASS_MS = 10 * 60 * 1000;
-
-  function stampConsolePass() {
-    try { sessionStorage.setItem(CONSOLE_PASS_KEY, String(Date.now())); } catch (e) {}
-  }
-  function hasConsolePass() {
-    try {
-      var t = Number(sessionStorage.getItem(CONSOLE_PASS_KEY) || 0);
-      return Date.now() - t < CONSOLE_PASS_MS;
-    } catch (e) { return false; }
-  }
-  function clearConsolePass() {
-    try { sessionStorage.removeItem(CONSOLE_PASS_KEY); } catch (e) {}
-  }
   /* Moon/sun toggle injected into the page header (or floating on
      pages without one), so every page gets the switch with no markup. */
   var ICON_MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
@@ -1944,8 +1391,9 @@
     btn.type = "button";
     btn.className = "theme-toggle";
     paintThemeToggle(btn);
-    btn.addEventListener("click", function () {
+    btn.addEventListener("click", async function () {
       var next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      if (getSession()) await window.InternLog.setPreference("theme", next);
       applyTheme(next);
       paintThemeToggle(btn);
       showNotification(next === "dark" ? "Dark mode on" : "Light mode on", "info");
@@ -1994,7 +1442,7 @@
         var href = a.getAttribute("href") || "";
         if (href.charAt(0) === "#") spyLinks[href] = a;
       });
-      var spyIds = ["#about", "#features", "#how", "#get-started"];
+      var spyIds = ["#internships", "#features", "#companies", "#get-started"];
       var spyTargets = spyIds.map(function (sel) {
         try { return document.querySelector(sel); } catch (err) { return null; }
       }).filter(Boolean);
@@ -2072,39 +1520,6 @@
       });
       card.addEventListener("focusout", function () {
         card.style.setProperty("--glow-intensity", "0");
-      });
-    });
-  }
-
-  function initSecretConsoleAccess() {
-    var REQUIRED_TAPS = 5;
-    var WINDOW_MS = 3000;
-    var STORE_KEY = "internlog_logo_taps";
-    if (document.getElementById("adminLoginForm")) return; // already there
-
-    function readTaps() {
-      try { return JSON.parse(sessionStorage.getItem(STORE_KEY) || "[]"); }
-      catch (e) { return []; }
-    }
-    function resolveConsoleLogin() {
-      var here = window.location.pathname.replace(/\\/g, "/");
-      if (here.indexOf("/admin/") !== -1) return "login.html";
-      if (here.indexOf("/user/") !== -1) return "../admin/login.html";
-      return "admin/login.html";
-    }
-
-    document.querySelectorAll(".brand").forEach(function (brand) {
-      brand.addEventListener("click", function (e) {
-        var now = Date.now();
-        var taps = readTaps().filter(function (t) { return now - t < WINDOW_MS; });
-        taps.push(now);
-        try { sessionStorage.setItem(STORE_KEY, JSON.stringify(taps)); } catch (err) {}
-        if (taps.length >= REQUIRED_TAPS) {
-          e.preventDefault();
-          try { sessionStorage.removeItem(STORE_KEY); } catch (err) {}
-          stampConsolePass();
-          window.location.href = resolveConsoleLogin();
-        }
       });
     });
   }
@@ -2336,26 +1751,42 @@
     });
   }
 
-  document.addEventListener("DOMContentLoaded", function () {
+  document.addEventListener("DOMContentLoaded", async function () {
     injectFavicon();
-    seedIfNeeded();
-    normalizeOpportunityStates();
-    guardCompanyPage();
+    if (!window.InternLog) return;
+    // Public navigation, effects and account forms do not wait for Java.
     initCompanyRegisterGuard();
     initCompanyLoginGuard();
-    initCompanyInternshipSubmitGuard();
-    initCompanyModerationControls();
     initNavigation();
     initPillNav();
     initMagicBento();
     initThemeToggle();
-    initSecretConsoleAccess();
-    initConsoleGate();
+    if (window.InternLogUI) window.InternLogUI.init();
     initGalaxy();
     initCurvedLoop();
     initUserLogin();
     initAdminLogin();
     initRegister();
+    var connected = await window.InternLog.ready;
+    if (!connected) {
+      var parts = window.location.pathname.split("/").filter(Boolean);
+      var role = parts[parts.length - 2], file = parts[parts.length - 1];
+      if (["user", "company", "admin"].includes(role) && !["login.html", "register.html"].includes(file) && !(role === "user" && file === "internships.html")) window.location.href = "login.html";
+      return;
+    }
+    applyTheme(window.InternLog.getPreference("theme", preferredTheme()));
+    var toggle = document.querySelector(".theme-toggle");
+    if (toggle) paintThemeToggle(toggle);
+    populateSessionUI();
+    var identity = getSession();
+    var path = window.location.pathname.replace(/\\/g, "/");
+    if (identity && path.endsWith("/" + identity.role + "/login.html")) {
+      window.location.href = "dashboard.html";
+      return;
+    }
+    guardCompanyPage();
+    initCompanyInternshipSubmitGuard();
+    initCompanyModerationControls();
     initUserDashboard();
     initUserApplications();
     initAddApplication();
@@ -2368,43 +1799,10 @@
   });
 
   window.InternLog = {
-    getApplications: getApplications,
-    addApplication: addApplication,
-    updateApplication: updateApplication,
-    deleteApplication: deleteApplication,
-    getUsers: getUsers,
-    getCompanies: getCompanies,
-    getCompanyById: getCompanyById,
-    updateCompany: updateCompany,
-    deleteCompany: deleteCompany,
-    getInternships: getInternships,
-    getInternshipsByCompany: getInternshipsByCompany,
-    getInternshipById: getInternshipById,
-    addInternship: addInternship,
-    updateInternship: updateInternship,
-    deleteInternship: deleteInternship,
-    registerCompany: registerCompany,
-    loginCompany: loginCompany,
     companyIsApproved: companyIsApproved,
-    getPublicInternships: async function () {
-      normalizeOpportunityStates();
-      var jobs = await getInternships();
-      var companies = await getCompanies();
-      var map = {}; companies.forEach(function (c) { map[String(c.id)] = c; });
-      var today = todayISO();
-      return jobs.filter(function (j) {
-        var c = map[String(j.companyId)];
-        return j.status === "Published" && companyIsApproved(c) && (!j.deadline || String(j.deadline) >= today);
-      });
-    },
-    loginUser: loginUser,
-    registerUser: registerUser,
     exportApplicationsToCSV: exportApplicationsToCSV,
     getFollowups: getFollowups,
     snoozeFollowup: snoozeFollowup,
-    getSavedSearches: getSavedSearches,
-    saveSearch: saveSearch,
-    deleteSavedSearch: deleteSavedSearch,
     matchesSearch: matchesSearch,
     getMatchedAlerts: getMatchedAlerts,
     getSeenIds: getSeenIds,

@@ -27,10 +27,10 @@
   --shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
   --shadow-md: none;
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
-  --ff-display: "Space Grotesk", "Helvetica Neue", Helvetica, Arial, "Segoe UI", Roboto, sans-serif;
-  --ff-sans: "Inter", "Helvetica Neue", Helvetica, Arial, "Segoe UI", Roboto, sans-serif;
-  --ff-serif: "Inter", "Helvetica Neue", Helvetica, Arial, "Segoe UI", Roboto, sans-serif;
-  --ff-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --ff-display: "Helvetica Neue", Helvetica, Arial, "Segoe UI", Roboto, sans-serif;
+  --ff-sans: "Helvetica Neue", Helvetica, Arial, "Segoe UI", Roboto, sans-serif;
+  --ff-serif: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --ff-mono: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -74,31 +74,13 @@ h1, h2, h3 { font-family: var(--ff-display); font-weight: 700; letter-spacing: -
 .nav-links a.nav { color: var(--text); font-family: var(--ff-mono); font-style: normal; font-weight: 500; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; padding: 10px 14px; border-radius: 9999px; }
 .nav-links a.nav:hover { color: var(--text); background: var(--primary-light); text-decoration: none; }
 
-.landing-menu-btn {
-  display: none; background: none; border: 1px solid var(--border);
-  border-radius: 8px; padding: 10px 14px; cursor: pointer; font-size: 18px; color: var(--text);
-  min-height: 44px;
-}
-.landing-mobile-nav {
-  display: none; flex-direction: column; gap: 8px; padding: 16px 20px;
-  background: var(--surface); border-bottom: 1px solid var(--border);
-}
-.landing-mobile-nav.open { display: flex; }
-.landing-mobile-nav a { padding: 8px 0; font-family: var(--ff-mono); font-style: normal; font-weight: 500; font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: var(--text); }
-.landing-mobile-nav a:hover { color: var(--text); }
 
 .hero { display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(1.25rem, 1rem + 3vw, 2.25rem); padding-block: clamp(2.5rem, 1.5rem + 6vh, 3.75rem) clamp(1.5rem, 1rem + 3vh, 2.5rem); align-items: center; }
 /* Single-column hero (landing): one centered narrow column at every width */
-.hero-single { grid-template-columns: 1fr; max-width: 760px; }
 /* CTA button row: wraps cleanly instead of colliding on narrow screens */
 .cta-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 0 0 16px; }
 .hero h1 { font-size: clamp(2rem, 1.25rem + 4vw, 2.75rem); line-height: 1.05; margin: 0 0 16px; letter-spacing: -0.03em; font-weight: 700; color: var(--text); text-transform: uppercase; }
 .hero p.lead { font-family: var(--ff-sans); font-style: normal; font-weight: 400; font-size: clamp(16px, 2vw, 20px); line-height: 1.5; color: var(--muted); margin: 0 0 24px; }
-.hero-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-md);
-}
-.hero-card h3 { margin: 0 0 14px; font-size: 16px; }
 .mini-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-top: 1px solid var(--border); font-size: 14px; gap: 12px; }
 .mini-row:first-of-type { border-top: 0; }
 .mini-row strong { font-family: var(--ff-sans); font-weight: 700; font-size: 14px; }
@@ -508,174 +490,9 @@ table strong { font-family: var(--ff-sans); font-weight: 700; font-size: 14px; }
 .alert-success { background: var(--success-bg); border-color: var(--success-bg); color: var(--success); }
 .admin-note { background: var(--warning-bg); border: 1px solid var(--warning-bg); color: var(--warning); border-radius: 14px; padding: 11px 16px; font-size: 13px; }
 
-/* ---------- Landing restructure components ---------- */
-.soft-pill-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
-  user-select: none;
-
-  font-family: sans-serif;
-  font-weight: 600;
-
-  border: none;
-  outline: none;
-
-  transition:
-    background-color 200ms cubic-bezier(0.32, 0.72, 0, 1),
-    box-shadow 200ms cubic-bezier(0.32, 0.72, 0, 1),
-    color 200ms cubic-bezier(0.32, 0.72, 0, 1),
-    transform 200ms cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-/* Sizes */
-
-.soft-pill-button[data-size="sm"] {
-  height: 36px;
-  gap: 6px;
-  padding: 0 16px;
-  border-radius: 9999px;
-  font-size: 12px;
-}
-
-.soft-pill-button[data-size="md"] {
-  height: 40px;
-  gap: 8px;
-  padding: 0 20px;
-  border-radius: 9999px;
-  font-size: 14px;
-}
-
-.soft-pill-button[data-size="lg"] {
-  height: 48px;
-  gap: 8px;
-  padding: 0 24px;
-  border-radius: 9999px;
-  font-size: 14px;
-}
-
-/* Light variant */
-
-.soft-pill-button[data-variant="light"] {
-  background: #fff;
-  color: #262626;
-
-  box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.06),
-    0 8px 20px rgba(0, 0, 0, 0.08);
-}
-
-.soft-pill-button[data-variant="light"]:hover {
-  background: #fafafa;
-  color: #171717;
-}
-
-.soft-pill-button[data-variant="light"]:active {
-  background: #f5f5f5;
-
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.06),
-    0 3px 8px rgba(0, 0, 0, 0.06);
-}
-
-/* Dark variant */
-
-.soft-pill-button[data-variant="dark"] {
-  background: #262626;
-  color: #fff;
-
-  box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.2),
-    0 8px 20px rgba(0, 0, 0, 0.25);
-}
-
-.soft-pill-button[data-variant="dark"]:hover {
-  background: #404040;
-}
-
-.soft-pill-button[data-variant="dark"]:active {
-  background: #171717;
-
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.2),
-    0 3px 8px rgba(0, 0, 0, 0.2);
-}
-
-/* Press animation */
-
-.soft-pill-button:active {
-  transform: translateY(1px);
-}
-
-/* Keyboard focus */
-
-.soft-pill-button:focus-visible {
-  outline: 2px solid #171717;
-  outline-offset: 2px;
-}
-
-/* Disabled */
-
-.soft-pill-button:disabled {
-  pointer-events: none;
-  cursor: not-allowed;
-  opacity: 0.4;
-}
-
-/* Reduced motion */
-
-@media (prefers-reduced-motion: reduce) {
-  .soft-pill-button {
-    transition: none;
-  }
-
-  .soft-pill-button:active {
-    transform: none;
-  }
-}
-
-/* Eyebrow usage: static label form of the soft pill (mono voice) */
-p.soft-pill-button {
-  cursor: default;
-  font-family: var(--ff-mono);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  margin: 0 0 18px;
-}
-:root[data-theme="dark"] .soft-pill-button[data-variant="light"] {
-  background: #262626;
-  color: #fff;
-  box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.2),
-    0 8px 20px rgba(0, 0, 0, 0.25);
-}
-:root[data-theme="dark"] .soft-pill-button[data-variant="light"]:hover {
-  background: #404040;
-}
-.hero-proof {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-family: var(--ff-mono);
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  color: var(--muted);
-}
-.hero-proof li { display: inline-flex; align-items: center; gap: 16px; }
-.hero-proof li + li::before {
-  content: "·";
-  color: var(--border);
-}
-/* Features bento (magic-bento inspo): dark cards, cursor-tracked
-   purple border-glow, asymmetric 4-col grid on desktop. */
+/* ---------- Landing feature grid (Magic Bento adaptation) ---------- */
+/* React Bits Magic Bento: feature cards with cursor-tracked border glow.
+   Wired in index.html (.landing-feature-grid.bento) + initMagicBento. */
 .bento {
   display: grid;
   gap: 0.5em;
@@ -801,35 +618,6 @@ p.soft-pill-button {
   }
   .bento .magic-bento-card:hover { transform: none; }
 }
-/* Steps timeline: mono numerals on a connecting rule */
-.timeline { position: relative; }
-.timeline .steps { position: relative; }
-.timeline .steps::before {
-  content: "";
-  position: absolute;
-  top: 34px;
-  left: 24px;
-  right: 24px;
-  border-top: 1px solid var(--border);
-}
-.timeline .step { position: relative; }
-.timeline .step .num { position: relative; z-index: 1; }
-/* CTA band above the footer loop */
-.cta-band {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: clamp(1.75rem, 1.25rem + 3vw, 2.75rem);
-  text-align: center;
-  margin-bottom: clamp(1.75rem, 1rem + 4vw, 2.75rem);
-}
-.cta-band h2 {
-  margin: 0 0 8px;
-  font-size: clamp(1.5rem, 1.2rem + 2vw, 2rem);
-  text-transform: uppercase;
-}
-.cta-band p { color: var(--muted); margin: 0 0 20px; }
-.cta-band .cta-row { justify-content: center; margin: 0; }
 /* Footer columns */
 .site-footer .footer-grid {
   display: grid;
@@ -860,11 +648,7 @@ p.soft-pill-button {
   margin-top: 8px;
 }
 @media (max-width: 768px) {
-  .timeline .steps::before { display: none; }
   .site-footer .footer-grid { grid-template-columns: 1fr; }
-  .cta-band { text-align: start; }
-  .cta-band .cta-row { justify-content: flex-start; }
-  .hero-single .hero-proof { justify-content: center; }
 }
 
 /* Responsive — only viewport-level shifts live here.
@@ -876,10 +660,6 @@ p.soft-pill-button {
 }
 @media (max-width: 768px) {
   .nav-links { display: none; }
-  .landing-menu-btn { display: inline-flex; }
-  /* Center the landing page content on phones */
-  .hero-single { text-align: center; }
-  .hero-single .cta-row { justify-content: center; }
   .section { text-align: center; }
   .section .card, .section .step { text-align: start; }
   .app-layout { grid-template-columns: 1fr; }
@@ -953,8 +733,6 @@ p.soft-pill-button {
 }
 :root[data-theme="dark"] .nav-links a.nav { color: var(--muted); }
 :root[data-theme="dark"] .nav-links a.nav:hover { color: var(--text); background: var(--primary-light); }
-:root[data-theme="dark"] .landing-mobile-nav { background: #0e0e0e; }
-:root[data-theme="dark"] .landing-mobile-nav a { color: var(--muted); }
 :root[data-theme="dark"] .hero h1 { color: var(--text); }
 :root[data-theme="dark"] .site-footer { background: #0e0e0e; }
 :root[data-theme="dark"] .btn { background: #fff; border-color: #fff; color: #000; }
@@ -1157,7 +935,7 @@ p.soft-pill-button {
   }
 }
 
-/* ---------- Pill Nav (provided snippet, preserved verbatim) ---------- */
+/* ---------- Pill Nav (React Bits adaptation) ---------- */
 .pill-nav-container {
   position: absolute;
   top: 1em;
@@ -1690,3 +1468,13 @@ p.soft-pill-button {
     animation: none !important;
   }
 }
+/* The application is blocked until Java and its database are ready. */
+.backend-gate { position: fixed; inset: 0; z-index: 10000; display: grid; place-items: center; padding: 24px; background: var(--bg, #f8fafc); color: var(--text, #0f172a); }
+.backend-gate .card { width: min(560px, 100%); text-align: center; }
+.backend-gate h1 { margin-bottom: 16px; }
+.backend-gate p { margin-bottom: 20px; }
+.backend-connection-dialog { width: min(520px, calc(100% - 32px)); padding: 28px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); color: var(--text); box-shadow: var(--shadow-lg); max-height: calc(100dvh - 40px); overflow-y: auto; }
+.backend-connection-dialog::backdrop { background: rgb(15 25 14 / .48); backdrop-filter: blur(4px); }
+.backend-connection-dialog h2 { margin: 0; font-size: 24px; line-height: 1.2; text-transform: none; }
+.backend-connection-dialog p { font-size: 13px; line-height: 1.7; }
+.backend-connection-dialog .modal-footer { justify-content: flex-end; }

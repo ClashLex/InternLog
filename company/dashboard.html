@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Company Dashboard — InternLog</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2342613c'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/design-system.css">
+  <script src="../js/ui-components.js" defer></script>
   <script src="../js/script.js" defer></script>
   <script src="../js/api.js" defer></script>
 </head>
@@ -37,15 +39,13 @@
           <section class="card"><h3>Recent opportunities</h3><p class="muted">Your latest internship posts and their current status.</p><div id="recentPosts" style="margin-top:12px"></div></section>
           <section class="card"><h3>Quick actions</h3><p class="muted">Move from an idea to a published student opportunity.</p><div class="cta-row" style="margin-top:16px"><a class="btn btn-sm" href="add-internship.html">+ Post Internship</a><a class="btn btn-secondary btn-sm" href="applicants.html">View Applicants</a></div><div id="profileNote" class="admin-note" style="margin-top:16px"></div></section>
         </div>
-        <section class="card" style="margin-top:18px"><h3>Prototype workflow</h3><p class="muted">Company data, internship posts, and prototype application links live in browser localStorage. This keeps GitHub Pages deployment simple while the product shape is being validated.</p></section>
+        <section class="card" style="margin-top:18px"><h3>Connected workspace</h3><p class="muted">Company data, internship posts and applications are stored in MySQL through the Java backend.</p></section>
       </main>
     </div>
   </div>
   <script>
     (function () {
       "use strict";
-      var COMPANY_KEY = "internlog_companies", JOB_KEY = "internlog_internships", APP_KEY = "internlog_applications", SESSION_KEY = "internlog_session";
-      function read(key, fallback) { try { var v = JSON.parse(localStorage.getItem(key)); return v == null ? fallback : v; } catch (e) { return fallback; } }
       function esc(s) { return String(s == null ? "" : s).replace(/[&<>\"']/g, function (c) { return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }
       function badge(status) {
         var value = status || "Draft";
@@ -54,13 +54,14 @@
           (value === "Draft" ? "badge-applied" : "badge-disabled"));
         return '<span class="badge ' + cls + '">' + esc(value) + '</span>';
       }
-      function auth() { var s = read(SESSION_KEY, null); if (!s || s.role !== "company") { window.location.href = "login.html"; return null; } return s; }
-      document.addEventListener("DOMContentLoaded", function () {
+      function auth() { var s = window.InternLog.getSession(); if (!s || s.role !== "company") { window.location.href = "login.html"; return null; } return s; }
+      document.addEventListener("DOMContentLoaded", async function () {
+        if (!await window.InternLog.ready) return;
         var s = auth(); if (!s) return;
-        var companies = read(COMPANY_KEY, []), company = companies.find(function (c) { return String(c.id) === String(s.userId); });
-        if (!company) { try { localStorage.removeItem(SESSION_KEY); } catch (e) {} window.location.href = "login.html"; return; }
-        var jobs = read(JOB_KEY, []).filter(function (j) { return String(j.companyId) === String(company.id); });
-        var apps = read(APP_KEY, []), jobIds = {}; jobs.forEach(function (j) { jobIds[j.id] = true; });
+        var company = await window.InternLog.getCompanyById(s.userId);
+        if (!company) { await window.InternLog.clearSession(); window.location.href = "login.html"; return; }
+        var jobs = await window.InternLog.getInternshipsByCompany(company.id);
+        var apps = await window.InternLog.getApplications(), jobIds = {}; jobs.forEach(function (j) { jobIds[j.id] = true; });
         var companyApps = apps.filter(function (a) { return jobIds[a.internshipId]; });
         var initial = ((company.name || "C").trim().charAt(0) || "C").toUpperCase();
         document.getElementById("companyNameChip").textContent = company.name; document.getElementById("companyEmailChip").textContent = company.email; document.getElementById("welcomeName").textContent = company.name; document.getElementById("companyAvatar").textContent = initial;

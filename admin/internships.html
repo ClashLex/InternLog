@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Internship Moderation — InternLog Admin</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2342613c'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/design-system.css">
+  <script src="../js/ui-components.js" defer></script>
   <script src="../js/script.js" defer></script>
   <script src="../js/api.js" defer></script>
 </head>
@@ -92,8 +94,7 @@
       }
 
       function readSession() {
-        try { return JSON.parse(localStorage.getItem("internlog_session") || "null"); }
-        catch (e) { return null; }
+        return window.InternLog.getSession();
       }
 
       function formatDate(value) {
@@ -229,7 +230,8 @@
         render();
       }
 
-      document.addEventListener("DOMContentLoaded", function () {
+      document.addEventListener("DOMContentLoaded", async function () {
+        if (!await window.InternLog.ready) return;
         var session = readSession();
         if (!session || session.role !== "admin") {
           window.location.href = "login.html";
@@ -245,7 +247,7 @@
           if (!target) return;
           var id = target.getAttribute("data-approve") || target.getAttribute("data-reject") || target.getAttribute("data-archive") || target.getAttribute("data-delete");
           var type = target.hasAttribute("data-approve") ? "approve" : target.hasAttribute("data-reject") ? "reject" : target.hasAttribute("data-archive") ? "archive" : "delete";
-          moderate(type, id);
+          moderate(type, id).catch(function(error){window.InternLog.showNotification(error.message,"error");});
         });
       });
     }());

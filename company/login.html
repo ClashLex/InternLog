@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Company Login — InternLog</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2342613c'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/design-system.css">
+  <script src="../js/ui-components.js" defer></script>
   <script src="../js/script.js" defer></script>
   <script src="../js/api.js" defer></script>
 </head>
@@ -20,7 +22,7 @@
         <li>Manage applicants from one dashboard</li>
         <li>Keep a company profile students can inspect</li>
       </ul>
-      <p style="margin-top:22px;font-size:13.5px;background:rgba(255,255,255,.1);padding:10px 14px;border-radius:8px">Prototype mode: company accounts and internship posts are stored in this browser using localStorage.</p>
+      <p style="margin-top:22px;font-size:13.5px;background:rgba(255,255,255,.1);padding:10px 14px;border-radius:8px">Company accounts and internship posts are securely managed by the Java backend.</p>
     </section>
     <section class="auth-form-side">
       <div class="auth-card">
@@ -54,21 +56,6 @@
   <script>
     (function () {
       "use strict";
-      var KEY = "internlog_companies";
-
-      function read(key, fallback) {
-        try {
-          var value = JSON.parse(localStorage.getItem(key));
-          return value == null ? fallback : value;
-        } catch (e) {
-          return fallback;
-        }
-      }
-
-      function write(key, value) {
-        try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
-      }
-
       function emailOK(value) {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
       }
@@ -95,29 +82,7 @@
         return !!company && company.verified === true && company.status === "Active";
       }
 
-      function loginCompany(company) {
-        write("internlog_session", {
-          role: "company",
-          userId: company.id,
-          name: company.name,
-          email: company.email
-        });
-      }
-
-      document.addEventListener("DOMContentLoaded", function () {
-        var session = read("internlog_session", null);
-        if (session && session.role === "company") {
-          var existingCompanies = read(KEY, []);
-          var existing = existingCompanies.find(function (c) {
-            return String(c.id) === String(session.userId);
-          });
-          if (companyIsApproved(existing)) {
-            window.location.href = "dashboard.html";
-            return;
-          }
-          try { localStorage.removeItem("internlog_session"); } catch (e) {}
-        }
-
+      document.addEventListener("DOMContentLoaded", async function () {
         if (new URLSearchParams(window.location.search).get("pending") === "1") {
           showAlert("Your company account is awaiting admin verification. You can log in after it is approved.", "warning");
         }
@@ -125,7 +90,7 @@
         var form = document.getElementById("companyLoginForm");
         if (!form) return;
 
-        form.addEventListener("submit", function (e) {
+        form.addEventListener("submit", async function (e) {
           e.preventDefault();
 
           var email = document.getElementById("email");
@@ -148,38 +113,31 @@
 
           if (!ok) return;
 
-          var companies = read(KEY, []);
-          var company = companies.find(function (c) {
-            return String(c.email || "").toLowerCase() === email.value.trim().toLowerCase();
-          });
-
-          if (!company || company.password !== password.value) {
-            showAlert("Invalid company email or password.", "error");
-            if (window.InternLog) window.InternLog.showNotification("Invalid company email or password.", "error");
+          var button = form.querySelector("button[type=submit]");
+          button.disabled = true;
+          try {
+            var signedIn = await window.InternLog.loginCompany({ email: email.value.trim(), password: password.value });
+            window.InternLog.setSession(signedIn);
+          } catch (error) {
+            showAlert(error.message, "error");
+            button.disabled = false;
             return;
           }
-
-          if (company.status === "Suspended") {
-            showAlert("This company account is suspended by the administrator.", "error");
-            return;
-          }
-
-          if (company.status === "Rejected" || company.approvalStatus === "Rejected") {
-            showAlert("This company account was rejected by the administrator.", "error");
-            return;
-          }
-
-          if (!companyIsApproved(company)) {
-            showAlert("Your company account is awaiting admin verification.", "warning");
-            return;
-          }
-
-          loginCompany(company);
-          if (window.InternLog) window.InternLog.showNotification("Welcome, " + company.name + ".", "success");
+          window.InternLog.showNotification("Welcome, " + signedIn.name + ".", "success");
           setTimeout(function () {
             window.location.href = "dashboard.html";
           }, 350);
         });
+        // Account form remains usable offline; session restoration is optional.
+        if (!await window.InternLog.ready) return;
+        var session = window.InternLog.getSession();
+        if (session && session.role === "company") {
+          var existing;
+          try { existing = await window.InternLog.getCompanyById(session.userId); }
+          catch (error) { showAlert(error.message, "error"); return; }
+          if (companyIsApproved(existing)) window.location.href = "dashboard.html";
+          else await window.InternLog.clearSession();
+        }
       });
     }());
   </script></body>
