@@ -15,7 +15,7 @@
     <section class="auth-panel" aria-label="Company onboarding">
       <a class="brand" href="../index.html" style="color:#fff"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog<small style="color:rgba(255,255,255,.72)">Track. Apply. Grow.</small></span></a>
       <h1>Create your company profile.</h1>
-      <p>Give students a clear place to discover your internships and understand what your company offers.</p>
+      <p>Give students a clear view of your internships and what your company offers.</p>
       <ul>
         <li>Company profile students can view</li>
         <li>Internship publishing workflow</li>
@@ -29,6 +29,7 @@
         <p class="muted">Create the account used by your recruiting team. Your account will be reviewed by an administrator before you can access the company workspace.</p>
         <div class="alert alert-error" id="formAlert" role="alert" style="display:none"></div>
         <form id="companyRegisterForm" novalidate>
+          <div class="stepper-pane" data-step-title="Account">
           <div class="form-group">
             <label for="companyName">Company Name *</label>
             <input type="text" id="companyName" placeholder="e.g. Example Technologies" required>
@@ -44,7 +45,7 @@
               <label for="password">Password *</label>
               <div class="password-wrap">
                 <input type="password" id="password" autocomplete="new-password" placeholder="Min. 8 chars" required>
-                <button type="button" class="password-toggle" data-password-toggle="password">Show</button>
+                <button type="button" class="password-toggle" data-password-toggle="password" aria-label="Show password" aria-pressed="false">Show</button>
               </div>
               <div class="field-error" id="password-error" role="alert"></div>
             </div>
@@ -52,11 +53,13 @@
               <label for="confirmPassword">Confirm Password *</label>
               <div class="password-wrap">
                 <input type="password" id="confirmPassword" autocomplete="new-password" placeholder="Repeat password" required>
-                <button type="button" class="password-toggle" data-password-toggle="confirmPassword">Show</button>
+                <button type="button" class="password-toggle" data-password-toggle="confirmPassword" aria-label="Show confirm password" aria-pressed="false">Show</button>
               </div>
               <div class="field-error" id="confirmPassword-error" role="alert"></div>
             </div>
           </div>
+          </div>
+          <div class="stepper-pane" data-step-title="Profile">
           <div class="form-row">
             <div class="form-group"><label for="website">Website</label><input type="url" id="website" placeholder="https://example.com"><div class="field-error" id="website-error" role="alert"></div></div>
             <div class="form-group"><label for="location">Primary Location *</label><input type="text" id="location" placeholder="Kochi, Kerala" required><div class="field-error" id="location-error" role="alert"></div></div>
@@ -65,6 +68,7 @@
           <div class="checkbox-row"><input type="checkbox" id="terms" required><label for="terms" style="font-weight:400">I confirm that this is a company or recruiting team profile used for legitimate internship opportunities.</label></div>
           <p style="margin-top:16px"><button class="btn" type="submit" style="width:100%">Submit for Verification</button></p>
         <p class="muted" style="margin-top:12px;font-size:13px;text-align:center">After submission, wait for admin verification before logging in.</p>
+          </div>
         </form>
         <div class="auth-links">
           <span>Already registered? <a href="login.html">Company login</a></span>

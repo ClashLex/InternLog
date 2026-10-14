@@ -15,7 +15,7 @@
     <section class="auth-panel" aria-label="InternLog for companies">
       <a class="brand" href="../index.html" style="color:#fff"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog<small style="color:rgba(255,255,255,.72)">Track. Apply. Grow.</small></span></a>
       <h1>Bring internship opportunities to students.</h1>
-      <p>Create a company presence on InternLog and publish opportunities for students to discover and apply.</p>
+      <p>Create a company presence and publish opportunities students can discover and apply to.</p>
       <ul>
         <li>Publish internship opportunities</li>
         <li>Manage applicants from one dashboard</li>
@@ -29,26 +29,30 @@
         <p class="muted">Log in to publish and manage internship opportunities.</p>
         <div class="alert alert-error" id="formAlert" role="alert" style="display:none"></div>
         <form id="companyLoginForm" novalidate>
+          <div class="stepper-pane" data-step-title="Email">
           <div class="form-group">
             <label for="email">Work Email</label>
             <input type="email" id="email" autocomplete="email" placeholder="hr@company.com" required>
             <div class="field-error" id="email-error" role="alert"></div>
           </div>
+          </div>
+          <div class="stepper-pane" data-step-title="Password">
           <div class="form-group">
             <label for="password">Password</label>
             <div class="password-wrap">
               <input type="password" id="password" autocomplete="current-password" placeholder="Enter your password" required>
-              <button type="button" class="password-toggle" data-password-toggle="password">Show</button>
+              <button type="button" class="password-toggle" data-password-toggle="password" aria-label="Show password" aria-pressed="false">Show</button>
             </div>
             <div class="field-error" id="password-error" role="alert"></div>
           </div>
           <p style="margin-top:16px"><button class="btn" type="submit" style="width:100%">Login as Company</button></p>
+          </div>
         </form>
         <div class="auth-links">
           <span>New company? <a href="register.html">Create company account</a></span>
           <span><a href="../user/login.html">Student login</a></span>
         </div>
-        <p class="muted" style="font-size:13px;margin-top:16px"><a href="../index.html">← Back to home</a></p>
+        <p class="muted" style="font-size:13px;margin-top:16px"><a href="../index.html"><span aria-hidden="true">←</span> Back to home</a></p>
       </div>
     </section>
   </main>
@@ -66,6 +70,8 @@
         if (el) {
           el.textContent = message || "";
           el.classList.toggle("visible", !!message);
+          if (message) input.setAttribute("aria-describedby", input.id + "-error");
+          else input.removeAttribute("aria-describedby");
         }
       }
 
@@ -89,15 +95,32 @@
         var form = document.getElementById("companyLoginForm");
         if (!form) return;
 
+        if (window.InternLog && window.InternLog.initAuthStepper) {
+          window.InternLog.initAuthStepper(form, {
+            validateStep: function (n) {
+              if (n !== 1) return true;
+              var email = document.getElementById("email");
+              if (!email || !emailOK(email.value.trim())) {
+                fieldError(email, "Enter a valid work email.");
+                return false;
+              }
+              fieldError(email, "");
+              return true;
+            }
+          });
+        }
+
         form.addEventListener("submit", async function (e) {
           e.preventDefault();
 
           var email = document.getElementById("email");
           var password = document.getElementById("password");
           var ok = true;
+          var errs = [];
 
           if (!emailOK(email.value.trim())) {
             fieldError(email, "Enter a valid work email.");
+            errs.push({ id: "email", message: "Enter a valid work email." });
             ok = false;
           } else {
             fieldError(email, "");
@@ -105,21 +128,28 @@
 
           if (!password.value) {
             fieldError(password, "Enter your password.");
+            errs.push({ id: "password", message: "Enter your password." });
             ok = false;
           } else {
             fieldError(password, "");
           }
 
-          if (!ok) return;
+          if (!ok) {
+            if (window.InternLog && window.InternLog.showErrorSummary) window.InternLog.showErrorSummary(form, errs);
+            return;
+          }
+          if (window.InternLog && window.InternLog.hideErrorSummary) window.InternLog.hideErrorSummary(form);
 
           var button = form.querySelector("button[type=submit]");
-          button.disabled = true;
+          if (window.InternLog && window.InternLog.setBusy) window.InternLog.setBusy(form, true);
+          else if (button) button.disabled = true;
           try {
             var signedIn = await window.InternLog.loginCompany({ email: email.value.trim(), password: password.value });
             window.InternLog.setSession(signedIn);
           } catch (error) {
             showAlert(error.message, "error");
-            button.disabled = false;
+            if (window.InternLog && window.InternLog.setBusy) window.InternLog.setBusy(form, false);
+            else if (button) button.disabled = false;
             return;
           }
           window.InternLog.showNotification("Welcome, " + signedIn.name + ".", "success");

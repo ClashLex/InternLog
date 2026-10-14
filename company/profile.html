@@ -19,7 +19,7 @@
       <div class="side-foot"><nav><a href="../index.html" data-logout>Logout</a></nav></div>
     </aside>
     <div class="main">
-      <header class="topbar"><button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button><h1>Company Profile</h1><div class="spacer"></div><div class="user-chip"><span class="avatar" id="avatar">C</span><span><strong id="companyNameChip"></strong><br><span class="muted" id="companyEmailChip"></span></span></div></header>
+      <header class="topbar"><button class="menu-btn" id="menuBtn" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar"><span aria-hidden="true" class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span></button><h1>Company Profile</h1><div class="spacer"></div><div class="user-chip"><span class="avatar" id="avatar">C</span><span><strong id="companyNameChip"></strong><br><span class="muted" id="companyEmailChip"></span></span></div></header>
       <main class="content">
         <section class="card"><div class="profile-head"><span class="profile-avatar" id="avatarBig">C</span><div><h2 id="profileName">Company</h2><p class="muted" id="profileMeta"></p></div></div></section>
         <div class="grid-2" style="margin-top:18px">
@@ -48,10 +48,13 @@
           var name=document.getElementById("name").value.trim(),email=document.getElementById("email").value.trim(),website=document.getElementById("website").value.trim(),location=document.getElementById("location").value.trim();
           if(name.length<2||!validEmail(email)||!location){notify("Check the required company fields.","warning");return;}
           if(website){try{var u=new URL(website);if(!/^https?:$/.test(u.protocol))throw 0;}catch(x){notify("Use a valid http(s) website URL.","warning");return;}}
+          var profileForm = document.getElementById("profileForm");
+          if (window.InternLog && window.InternLog.setBusy) window.InternLog.setBusy(profileForm, true);
           try{
             c=await window.InternLog.updateCompany(c.id,{name:name,email:email,website:website,location:location,industry:document.getElementById("industry").value.trim(),description:document.getElementById("description").value.trim()});
-          }catch(err){notify((err&&err.message)||"Could not save company profile.","error");return;}
+          }catch(err){notify((err&&err.message)||"Could not save company profile.","error");if (window.InternLog && window.InternLog.setBusy) window.InternLog.setBusy(profileForm, false);return;}
            window.InternLog.setSession({role:"company",userId:c.id,name:c.name,email:c.email});
+          if (window.InternLog && window.InternLog.setBusy) window.InternLog.setBusy(profileForm, false);
           paint();notify("Company profile saved.","success");
         });
         document.getElementById("passwordForm").addEventListener("submit",async function(e){
@@ -59,11 +62,13 @@
           var cur=document.getElementById("current").value,next=document.getElementById("next").value,confirm=document.getElementById("confirm").value;
           if(next.length<8||!/[A-Za-z]/.test(next)||!/[0-9]/.test(next)){notify("New password must be 8+ characters with letters and numbers.","warning");return;}
           if(next!==confirm){notify("New passwords do not match.","warning");return;}
+          var passwordForm = document.getElementById("passwordForm");
+          if (window.InternLog && window.InternLog.setBusy) window.InternLog.setBusy(passwordForm, true);
           try{
             await window.InternLog.changeCompanyPassword(c.id,cur,next);
             c=await window.InternLog.getCompanyById(c.id);
-          }catch(err){notify((err&&err.message)||"Could not change password.","error");return;}
-          document.getElementById("passwordForm").reset();notify("Password changed.","success");
+          }catch(err){notify((err&&err.message)||"Could not change password.","error");if (window.InternLog && window.InternLog.setBusy) window.InternLog.setBusy(passwordForm, false);return;}
+          document.getElementById("passwordForm").reset();if (window.InternLog && window.InternLog.setBusy) window.InternLog.setBusy(passwordForm, false);notify("Password changed.","success");
         });
       });
     }());

@@ -312,7 +312,7 @@ test("homepage displays empty/error states without invented offline listings", a
   assert.equal(unavailable.messages.length, 0);
 });
 
-test("original page markup uses only original styling and functional accessibility fixes", () => {
+test("pages share base styling and accessibility without loading archived redesign assets", () => {
   const root = path.join(__dirname, "..");
   const pages = ["index.html", "404.html"];
   for (const folder of ["user", "company", "admin"]) {
@@ -329,7 +329,7 @@ test("original page markup uses only original styling and functional accessibili
   }
   const homepage = fs.readFileSync(path.join(root, "index.html"), "utf8");
   assert.match(homepage, /class="wrap hero hero-single"/);
-  assert.match(homepage, /Seven tools that do the remembering for you/);
+  assert.match(homepage, /Seven tools for the whole search/);
   assert.match(homepage, /class="wrap section timeline"/);
   assert.match(homepage, /Four stages, tracked in one list/);
   assert.equal((homepage.match(/class="card magic-bento-card /g) || []).length, 7);
@@ -444,4 +444,101 @@ test("entrance and click feedback animate only while active and clean up", () =>
   assert.equal(page.body.children.length, 1);
   assert.equal(page.card.classes.has("rb-entrance"), false);
   page.ui.destroy();
+});
+
+function stepperHarness() {
+  const document = { querySelectorAll() {}, activeElement: null };
+  class Element {
+    constructor() {
+      this.children = []; this.attributes = {}; this.events = {}; this.style = {};
+      this.classList = { add() {}, remove() {} };
+    }
+    appendChild(child) { this.children.push(child); }
+    insertBefore(child, target) { this.children.splice(this.children.indexOf(target), 0, child); }
+    get firstChild() { return this.children[0]; }
+    setAttribute(name, value) { this.attributes[name] = value; }
+    getAttribute(name) { return this.attributes[name] || null; }
+    removeAttribute(name) { delete this.attributes[name]; }
+    addEventListener(name, listener) { (this.events[name] ||= []).push(listener); }
+    querySelector() { return this.children[0] || null; }
+    contains(field) { return this.children.includes(field); }
+    focus() { document.activeElement = this; }
+  }
+  document.createElement = () => new Element();
+  const form = new Element(), panes = [new Element(), new Element()];
+  panes.forEach(pane => { pane.appendChild(new Element()); form.appendChild(pane); });
+  form.querySelectorAll = () => panes;
+  const source = fs.readFileSync(path.join(__dirname, "..", "js/script.js"), "utf8");
+  const context = vm.createContext({ document, window: { matchMedia: () => ({ matches: true }) }, STEP_CHECK_SVG: "check" });
+  vm.runInContext(source.slice(source.indexOf("  function initAuthStepper("), source.indexOf("  /* ---------------- Page initializers")), context);
+  let valid = false;
+  const config = { validateStep: () => valid };
+  const stepper = context.initAuthStepper(form, config);
+  return { form, panes, document, stepper, context, config, validate: () => { valid = true; } };
+}
+
+test("auth stepper gates Enter, focuses the next field and reveals hidden invalid fields", () => {
+  const page = stepperHarness();
+  assert.equal(page.panes[1].hidden, true);
+  let prevented = 0, stopped = 0;
+  const submit = () => page.form.events.submit[0]({ preventDefault() { prevented++; }, stopImmediatePropagation() { stopped++; } });
+  submit();
+  assert.equal(page.panes[1].hidden, true);
+  page.validate(); submit();
+  assert.equal(page.panes[0].hidden, true);
+  assert.equal(page.document.activeElement, page.panes[1].children[0]);
+  submit();
+  assert.equal(prevented, 2);
+  assert.equal(stopped, 2);
+  page.stepper.reveal(page.panes[0].children[0]);
+  assert.equal(page.panes[0].hidden, false);
+  assert.equal(page.panes[1].hidden, true);
+  assert.equal(page.context.initAuthStepper(page.form, page.config), page.stepper);
+  assert.equal(page.form.events.submit.length, 1);
+});
+
+test("failed student saves release the busy button and do not redirect", async () => {
+  const source = fs.readFileSync(path.join(__dirname, "..", "js/script.js"), "utf8");
+  for (const mode of ["Add", "Edit"]) {
+    let submit;
+    const busy = [], messages = [], redirects = [];
+    const form = { addEventListener: (name, listener) => { if (name === "submit") submit = listener; } };
+    const context = vm.createContext({ document: { getElementById: id => id === (mode === "Add" ? "addForm" : "editForm") ? form : null },
+      window: { location: { search: "?id=4" }, InternLog: {
+        getApplicationById: async () => ({ id: 4, userId: 1 }),
+        addApplication: async () => { throw new Error("Write failed"); },
+        updateApplication: async () => { throw new Error("Write failed"); }
+      } }, URLSearchParams, requireAuth: () => ({ userId: 1 }), collectApplicationForm: () => ({}),
+      validateApplication: () => ({}), paintErrors: () => true, hideErrorSummary() {},
+      setBusy: (form, value) => busy.push(value), showNotification: message => messages.push(message),
+      setTimeout: callback => redirects.push(callback) });
+    const name = `init${mode}Application`;
+    const start = source.indexOf(`  async function ${name}(`);
+    const end = source.indexOf("  async function ", start + 1);
+    vm.runInContext(source.slice(start, end), context);
+    await context[name]();
+    assert.equal(typeof submit, "function");
+    await submit({ preventDefault() {} });
+    assert.deepEqual(busy, [true, false]);
+    assert.deepEqual(messages, ["Write failed"]);
+    assert.equal(redirects.length, 0);
+  }
+});
+
+test("company internship submit recovers when the initial listing read fails", async () => {
+  const source = fs.readFileSync(path.join(__dirname, "..", "js/script.js"), "utf8");
+  let submit;
+  const busy = [], messages = [];
+  const form = { addEventListener: (event, listener) => { submit = listener; } };
+  const context = vm.createContext({ document: { getElementById: id => id === "internshipForm" ? form : {} },
+    window: { InternLog: { getCompanyById: async () => ({ id: 2 }), getInternshipsByCompany: async () => { throw new Error("Read failed"); } } },
+    getSession: () => ({ role: "company", userId: 2 }), companyIsApproved: () => true,
+    readInternshipForm: () => ({ title: "Test Internship", location: "Remote", deadline: "2099-01-01", description: "Description" }),
+    todayISO: () => "2026-01-01", flagError: () => true, hideErrorSummary() {},
+    setBusy: (form, value) => busy.push(value), showNotification: message => messages.push(message) });
+  vm.runInContext(source.slice(source.indexOf("  function initCompanyInternshipSubmitGuard("), source.indexOf("  function initCompanyModerationControls(")), context);
+  context.initCompanyInternshipSubmitGuard();
+  await submit({ preventDefault() {}, stopImmediatePropagation() {} });
+  assert.deepEqual(busy, [true, false]);
+  assert.deepEqual(messages, ["Read failed"]);
 });

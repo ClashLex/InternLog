@@ -53,7 +53,11 @@
         });
         state.appendChild(retry);
       } else if (!jobs.length) {
-        var link = element("a", "landing-text-link", "Start your application tracker ↗");
+        var link = element("a", "landing-text-link", "Start your application tracker ");
+        var ext = element("span", "");
+        ext.setAttribute("aria-hidden", "true");
+        ext.textContent = "↗";
+        link.appendChild(ext);
         link.href = "user/register.html";
         state.appendChild(link);
       }
@@ -105,7 +109,11 @@
         card.appendChild(detail(stipendLabel(job), "◇"));
         var bottom = element("div", "og-job-bottom");
         bottom.appendChild(element("span", "muted", job.deadline ? "Apply by " + dateLabel(job.deadline) : "Deadline not specified"));
-        var view = element("button", "btn btn-secondary btn-sm", "View role ↗");
+        var view = element("button", "btn btn-secondary btn-sm", "View role ");
+        var viewGlyph = element("span", "");
+        viewGlyph.setAttribute("aria-hidden", "true");
+        viewGlyph.textContent = "↗";
+        view.appendChild(viewGlyph);
         view.type = "button";
         view.setAttribute("aria-label", "View " + (job.title || "internship") + " at " + (job.company || "company"));
         view.addEventListener("click", function () { openJob(job); });

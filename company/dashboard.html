@@ -26,7 +26,7 @@
     </aside>
     <div class="main">
       <header class="topbar">
-        <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button>
+        <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar"><span aria-hidden="true" class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span></button>
         <h1>Company Dashboard</h1>
         <div class="spacer"></div>
         <div class="user-chip"><span class="avatar" id="companyAvatar">C</span><span><strong id="companyNameChip">Company</strong><br><span class="muted" id="companyEmailChip"></span></span></div>
@@ -36,7 +36,7 @@
         <div class="stat-grid" id="stats"></div>
         <div class="grid-2">
           <section class="card"><h3>Recent opportunities</h3><p class="muted">Your latest internship posts and their current status.</p><div id="recentPosts" style="margin-top:12px"></div></section>
-          <section class="card"><h3>Quick actions</h3><p class="muted">Move from an idea to a published student opportunity.</p><div class="cta-row" style="margin-top:16px"><a class="btn btn-sm" href="add-internship.html">+ Post Internship</a><a class="btn btn-secondary btn-sm" href="applicants.html">View Applicants</a></div><div id="profileNote" class="admin-note" style="margin-top:16px"></div></section>
+          <section class="card"><h3>Quick actions</h3><p class="muted">Turn a role description into a published opportunity.</p><div class="cta-row" style="margin-top:16px"><a class="btn btn-sm" href="add-internship.html">+ Post Internship</a><a class="btn btn-secondary btn-sm" href="applicants.html">View Applicants</a></div><div id="profileNote" class="admin-note" style="margin-top:16px"></div></section>
         </div>
         <section class="card" style="margin-top:18px"><h3>Connected workspace</h3><p class="muted">Company data, internship posts and applications are stored in MySQL through the Java backend.</p></section>
       </main>

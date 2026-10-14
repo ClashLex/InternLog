@@ -19,7 +19,7 @@
       <div class="side-foot"><nav><a href="../index.html" data-logout>Logout</a></nav></div>
     </aside>
     <div class="main">
-      <header class="topbar"><button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button><h1 id="pageTitle">Internships</h1><div class="spacer"></div><div class="user-chip" id="companyChip"><span class="avatar" id="avatar">C</span><span><strong id="companyName"></strong><br><span class="muted" id="companyEmail"></span></span></div></header>
+      <header class="topbar"><button class="menu-btn" id="menuBtn" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar"><span aria-hidden="true" class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span></button><h1 id="pageTitle">Internships</h1><div class="spacer"></div><div class="user-chip" id="companyChip"><span class="avatar" id="avatar">C</span><span><strong id="companyName"></strong><br><span class="muted" id="companyEmail"></span></span></div></header>
       <main class="content">
         <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap"><div><h2 id="heading" style="margin:0 0 6px">Your Internships</h2><p class="muted" id="subheading" style="margin:0">Manage the opportunities your company has posted.</p></div><a class="btn btn-sm" id="postButton" href="add-internship.html">+ Post Internship</a></div>
         <div class="toolbar"><input class="search-input" type="search" id="search" placeholder="Search internships, skills, or locations" aria-label="Search internships"><select id="statusFilter"><option value="all">All statuses</option><option value="Published">Published</option><option value="Pending Review">Pending Review</option><option value="Draft">Draft</option><option value="Rejected">Rejected</option><option value="Expired">Expired</option><option value="Suspended">Suspended</option><option value="Archived">Archived</option></select></div>
@@ -27,7 +27,7 @@
       </main>
     </div>
   </div>
-  <div class="modal-backdrop" id="jobModal" role="dialog" aria-modal="true" aria-label="Internship details"><div class="modal"><div class="modal-header"><h3 id="modalTitle">Internship</h3><button class="modal-close-icon" id="closeModal" aria-label="Close dialog">&times;</button></div><div id="modalBody"></div></div></div>
+  <div class="modal-backdrop" id="jobModal" role="dialog" aria-modal="true" aria-label="Internship details"><div class="modal"><div class="modal-header"><h3 id="modalTitle">Internship</h3><button class="modal-close-icon" id="closeModal" aria-label="Close dialog"><span aria-hidden="true">&times;</span></button></div><div id="modalBody"></div></div></div>
   <script>
     (function(){
       "use strict";

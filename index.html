@@ -33,6 +33,7 @@
               <li><a class="pill" href="company/login.html"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Companies</span><span class="pill-label-hover" aria-hidden="true">Companies</span></span></a></li>
               <li><a class="pill" href="user/login.html" data-landing-account><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Login</span><span class="pill-label-hover" aria-hidden="true">Login</span></span></a></li>
               <li><a class="pill pill--cta" href="user/register.html"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Register</span><span class="pill-label-hover" aria-hidden="true">Register</span></span></a></li>
+              <li><a class="pill" href="#faq"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">FAQ</span><span class="pill-label-hover" aria-hidden="true">FAQ</span></span></a></li>
               <li><a class="pill" href="#get-started"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Get started</span><span class="pill-label-hover" aria-hidden="true">Get started</span></span></a></li>
             </ul>
           </div>
@@ -49,6 +50,7 @@
             <li><a class="mobile-menu-link" href="company/login.html">For Companies</a></li>
             <li><a class="mobile-menu-link" href="user/login.html" data-landing-account>Student Login</a></li>
             <li><a class="mobile-menu-link" href="user/register.html">Register</a></li>
+            <li><a class="mobile-menu-link" href="#faq">FAQ</a></li>
             <li><a class="mobile-menu-link" href="#get-started">Get started</a></li>
           </ul>
         </div>
@@ -59,11 +61,37 @@
   <main>
     <div class="wrap hero hero-single">
       <div>
+        <p class="hero-announce"><a href="#internships"><span class="hero-announce-dot" aria-hidden="true"></span>Verified company board — browse roles with no account needed</a></p>
         <h1>Every internship application, in one place.</h1>
-        <p class="lead">InternLog helps students organize internship applications, monitor progress, and keep their entire internship search in one place — from first application to final offer.</p>
-        <p class="cta-row"><a class="btn" href="user/register.html">Create free account</a><a class="btn btn-secondary" href="user/login.html">Student Login</a></p>
+        <p class="lead">InternLog helps students organize applications, track statuses, and never miss a deadline — from first application to final offer.</p>
+        <p class="cta-row"><a class="btn" href="user/register.html">Create free account</a><a class="btn btn-secondary" href="#internships">Explore internships</a></p>
         <ul class="hero-proof" aria-label="At a glance"><li>Free for students</li><li>Company opportunities</li><li>Placement-cell ready</li></ul>
       </div>
+      <figure class="hero-visual">
+        <div class="mock" aria-hidden="true">
+          <div class="mock-bar"><span class="mock-dot"></span><span class="mock-dot"></span><span class="mock-dot"></span><span class="mock-url">internlog · dashboard</span></div>
+          <div class="mock-body">
+            <div class="mock-row"><strong>Your week</strong><span class="badge badge-shortlisted">3 follow-ups</span></div>
+            <div class="mock-stats">
+              <div><strong>12</strong><span>Applied</span></div>
+              <div><strong>4</strong><span>Shortlisted</span></div>
+              <div><strong>2</strong><span>Interview</span></div>
+              <div><strong>1</strong><span>Selected</span></div>
+            </div>
+            <div class="mock-list">
+              <div><span><strong>Acme Corp</strong><span>Frontend Intern · Remote</span></span><span class="badge badge-interview">Interview</span></div>
+              <div><span><strong>Bright Labs</strong><span>Design Intern · Hybrid</span></span><span class="badge badge-shortlisted">Shortlisted</span></div>
+              <div><span><strong>Northwind</strong><span>Data Intern · On-site</span></span><span class="badge badge-applied">Applied</span></div>
+            </div>
+            <div class="mock-bars">
+              <div><span>Applied</span><div class="status-track"><div class="status-fill status-fill-applied" style="width:64%"></div></div><strong>12</strong></div>
+              <div><span>Shortlisted</span><div class="status-track"><div class="status-fill status-fill-shortlisted" style="width:34%"></div></div><strong>4</strong></div>
+              <div><span>Interview</span><div class="status-track"><div class="status-fill status-fill-interview" style="width:22%"></div></div><strong>2</strong></div>
+            </div>
+          </div>
+        </div>
+        <figcaption class="muted">Illustrated preview with sample data — your dashboard fills in as you track.</figcaption>
+      </figure>
     </div>
 
     <div class="curved-loop-jacket" data-curved-loop data-text="TRACK ✦ APPLY ✦ GROW ✦ INTERNSHIPS ✦ " data-speed="0.8">
@@ -74,10 +102,21 @@
       <span class="curved-loop-fallback">Track, Apply, Grow — InternLog internships.</span>
     </div>
 
+    <div class="wrap section" id="audience" aria-labelledby="audienceTitle">
+      <p class="soft-pill-button" data-size="sm" data-variant="light">Who it's for</p>
+      <h2 id="audienceTitle">One tracker, three perspectives</h2>
+      <p class="sub">Students track, companies publish, placement cells review — each with a workspace of their own.</p>
+      <div class="grid-3">
+        <div class="card"><h3>Students</h3><p>Log every application, follow statuses from Applied to Selected, and get nudged on follow-ups and interviews.</p><p style="margin-top:14px"><a class="btn btn-secondary btn-sm" href="user/register.html">Create student account</a></p></div>
+        <div class="card"><h3>Companies</h3><p>Publish verified opportunities and review applicants in one place, after a quick admin verification.</p><p style="margin-top:14px"><a class="btn btn-secondary btn-sm" href="company/register.html">Register as a company</a></p></div>
+        <div class="card"><h3>Placement cells</h3><p>Students export clean CSV histories — consistent records, valid deadlines, clear status history.</p><p style="margin-top:14px"><a class="btn btn-secondary btn-sm" href="#features">See what's included</a></p></div>
+      </div>
+    </div>
+
     <div class="wrap section" id="about">
       <p class="soft-pill-button" data-size="sm" data-variant="light">Why InternLog</p>
       <h2>For students in the middle of applications</h2>
-      <p class="sub">Stop juggling spreadsheets, emails, and deadlines. InternLog is an internship-only tracker designed around the student workflow.</p>
+      <p class="sub">Stop losing track in spreadsheets and inboxes. One tracker built for the student workflow.</p>
       <div class="grid-2">
         <div class="card"><h3>One place for everything</h3><p>Company, role, location, dates, stipend, notes, and status — stored together and searchable in seconds.</p></div>
         <div class="card"><h3>Placement-ready discipline</h3><p>Consistent records, valid deadlines, and clear status history you can export to CSV and show mentors and placement officers.</p></div>
@@ -105,16 +144,16 @@
 
     <div class="wrap section section-roomy" id="features">
       <p class="soft-pill-button" data-size="sm" data-variant="light">What you get</p>
-      <h2>Seven tools that do the remembering for you</h2>
-      <p class="sub">Seven focused tools. Nothing decorative.</p>
+      <h2>Seven tools for the whole search</h2>
+      <p class="sub">Seven focused tools, from first lead to final decision.</p>
       <div class="grid-2 bento" id="bentoGrid">
-        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Track</span><span class="magic-bento-card__index">01</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title">Internship Application Tracking</h3><p class="magic-bento-card__description">Add, edit, and organize every internship application with structured details.</p></div></div>
-        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Status</span><span class="magic-bento-card__index">02</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title">Application Status Management</h3><p class="magic-bento-card__description">Move applications from Applied to Selected with clear, readable status badges and visual progress bars.</p></div></div>
-        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Dashboard</span><span class="magic-bento-card__index">03</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title">Personal Dashboard</h3><p class="magic-bento-card__description">Totals, recent applications, status overview, and upcoming interviews in one view.</p></div></div>
-        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Search</span><span class="magic-bento-card__index">04</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title">Search, Filter &amp; Export</h3><p class="magic-bento-card__description">Find any application by company, role, or location, and export records to CSV when you need them.</p></div></div>
-        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Profile</span><span class="magic-bento-card__index">05</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title">Student Account Management</h3><p class="magic-bento-card__description">Profile, college details, and password controls built specifically for students.</p></div></div>
-        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Export</span><span class="magic-bento-card__index">06</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title">Placement-Ready Exports</h3><p class="magic-bento-card__description">Export your application history to CSV for placement cells and mentor reviews.</p></div></div>
-        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Network</span><span class="magic-bento-card__index">07</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title">Company Opportunities</h3><p class="magic-bento-card__description">Companies can publish internship opportunities while the admin workspace monitors company accounts, posts, and applications.</p></div></div>
+        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Track</span><span class="magic-bento-card__index">01</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title" title="Track: add, edit, and organize every internship application with structured details.">Internship Application Tracking</h3><p class="magic-bento-card__description">Add, edit, and organize every internship application with structured details.</p></div></div>
+        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Status</span><span class="magic-bento-card__index">02</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title" title="Status: move applications from Applied to Selected with readable badges and progress bars.">Application Status Management</h3><p class="magic-bento-card__description">Move applications from Applied to Selected with clear, readable status badges and visual progress bars.</p></div></div>
+        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Dashboard</span><span class="magic-bento-card__index">03</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title" title="Dashboard: totals, recent applications, status overview, and upcoming interviews in one view.">Personal Dashboard</h3><p class="magic-bento-card__description">Totals, recent applications, status overview, and upcoming interviews in one view.</p></div></div>
+        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Search</span><span class="magic-bento-card__index">04</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title" title="Search: find any application by company, role, or location, and export records to CSV.">Search, Filter &amp; Export</h3><p class="magic-bento-card__description">Find any application by company, role, or location, and export records to CSV when you need them.</p></div></div>
+        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Profile</span><span class="magic-bento-card__index">05</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title" title="Profile: college details and password controls built for students.">Student Account Management</h3><p class="magic-bento-card__description">Profile, college details, and password controls built specifically for students.</p></div></div>
+        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Export</span><span class="magic-bento-card__index">06</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title" title="Export: application history as CSV for placement cells and mentor reviews.">Placement-Ready Exports</h3><p class="magic-bento-card__description">Export your application history to CSV for placement cells and mentor reviews.</p></div></div>
+        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Network</span><span class="magic-bento-card__index">07</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title" title="Network: companies publish verified internships; admins review accounts, posts, and applications.">Company Opportunities</h3><p class="magic-bento-card__description">Companies publish verified internships. Admins review accounts, posts, and applications.</p></div></div>
       </div>
     </div>
 
@@ -126,6 +165,19 @@
         <div class="step"><div class="num">2</div><h3>Add Internships</h3><p class="muted">Log every internship you apply to.</p></div>
         <div class="step"><div class="num">3</div><h3>Track Applications</h3><p class="muted">Update status as replies come in.</p></div>
         <div class="step"><div class="num">4</div><h3>Get Your Internship</h3><p class="muted">Convert interviews into offers.</p></div>
+      </div>
+    </div>
+
+    <div class="wrap section" id="faq" aria-labelledby="faqTitle">
+      <p class="soft-pill-button" data-size="sm" data-variant="light">FAQ</p>
+      <h2 id="faqTitle">Questions, answered</h2>
+      <p class="sub">The short version of how InternLog works.</p>
+      <div class="faq">
+        <details><summary>Do I need an account to browse internships?</summary><p>No. The board shows published roles from verified companies to everyone. A free student account is only needed to save roles or record applications.</p></details>
+        <details><summary>Is InternLog free for students?</summary><p>Yes. Tracking, follow-up reminders, saved searches, and CSV exports cost nothing.</p></details>
+        <details><summary>How do company posts get published?</summary><p>Companies register, an administrator verifies the account, and each post is approved before it appears publicly. Expired or rejected posts never show.</p></details>
+        <details><summary>Can I track applications from other websites?</summary><p>Yes. Add a manual entry with the company, role, dates, and status — it lives alongside board applications in the same pipeline.</p></details>
+        <details><summary>Who sees my application data?</summary><p>You can view your own records. Companies see only applications sent to their posts. Administrators can review application records, accounts, and posts as part of platform administration.</p></details>
       </div>
     </div>
 
@@ -152,7 +204,7 @@
   </div></footer>
 
   <dialog class="og-job-dialog" id="landingJobDialog" aria-labelledby="landingJobTitle">
-    <div class="modal-header"><div><p class="muted" id="landingJobCompany"></p><h2 id="landingJobTitle">Internship details</h2></div><button class="modal-close-icon" type="button" id="landingJobClose" aria-label="Close internship details">&times;</button></div>
+    <div class="modal-header"><div><p class="muted" id="landingJobCompany"></p><h2 id="landingJobTitle">Internship details</h2></div><button class="modal-close-icon" type="button" id="landingJobClose" aria-label="Close internship details"><span aria-hidden="true">&times;</span></button></div>
     <dl id="landingJobMeta"></dl><h3>About the role</h3><p id="landingJobDescription"></p>
     <div id="landingJobSkills" class="og-job-skills"></div><p id="landingJobEducation" class="muted"></p>
     <a id="landingExternalLink" target="_blank" rel="noopener noreferrer" hidden>View company application page ↗</a>

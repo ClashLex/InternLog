@@ -16,7 +16,7 @@
       gate.id = "backendGate";
       gate.className = "backend-connection-dialog";
       gate.setAttribute("aria-labelledby", "backendGateTitle");
-      gate.innerHTML = '<div class="modal-header"><h2 id="backendGateTitle">Java connection required</h2><button class="modal-close-icon" id="backendClose" type="button" aria-label="Close connection message">&times;</button></div><p id="backendGateMessage" role="status" aria-live="polite"></p><p class="muted">You can keep browsing. To create an account or sign in, start the Java backend and its database, then retry.</p><div class="modal-footer"><button class="btn btn-secondary" id="backendBrowse" type="button">Keep browsing</button><button class="btn" id="backendRetry" type="button">Retry connection</button></div>';
+      gate.innerHTML = '<div class="modal-header"><h2 id="backendGateTitle">Java connection required</h2><button class="modal-close-icon" id="backendClose" type="button" aria-label="Close connection message"><span aria-hidden="true">&times;</span></button></div><p id="backendGateMessage" role="status" aria-live="polite"></p><p class="muted">You can keep browsing. To create an account or sign in, start the Java backend and its database, then retry.</p><div class="modal-footer"><button class="btn btn-secondary" id="backendBrowse" type="button">Keep browsing</button><button class="btn" id="backendRetry" type="button">Retry connection</button></div>';
       document.body.appendChild(gate);
       document.getElementById("backendClose").onclick = function () { gate.close(); };
       document.getElementById("backendBrowse").onclick = function () { gate.close(); };

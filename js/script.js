@@ -1,4 +1,27 @@
 /* InternLog UI helpers. All persistent data and authentication are managed by Java. */
+/* React Bits adaptations: StaggeredMenu and Stepper.
+ * Upstream: https://github.com/DavidHDev/react-bits
+ * MIT + Commons Clause License Condition v1.0
+ * Copyright (c) 2026 David Haz
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, and distribute the Software as part of an
+ * application, website, or product, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * Commons Clause Restriction: You may use this Software, including for any
+ * commercial purpose, so long as you do not sell, sublicense, or redistribute
+ * the components themselves-whether alone, in a bundle, or as a ported version.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 (function () {
   "use strict";
 
@@ -187,6 +210,23 @@
   function initCompanyRegisterGuard() {
     var form = document.getElementById("companyRegisterForm");
     if (!form) return;
+    initAuthStepper(form, {
+      validateStep: function (n) {
+        if (n !== 1) return true;
+        var name = document.getElementById("companyName");
+        var email = document.getElementById("email");
+        var password = document.getElementById("password");
+        var confirm = document.getElementById("confirmPassword");
+        var ok = true;
+        if (!name || name.value.trim().length < 2) { setFieldError(name, "Enter the company name."); ok = false; } else setFieldError(name, "");
+        if (!email || !isEmail(email.value.trim())) { setFieldError(email, "Enter a valid work email."); ok = false; } else setFieldError(email, "");
+        var pwErr = password ? passwordStrength(password.value) : "Enter a password.";
+        if (pwErr) { setFieldError(password, pwErr); ok = false; } else setFieldError(password, "");
+        if (!confirm || !password || confirm.value !== password.value) { setFieldError(confirm, "Passwords do not match."); ok = false; } else setFieldError(confirm, "");
+        if (!ok) showNotification("Please fix the highlighted fields to continue.", "error");
+        return ok;
+      }
+    });
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
       e.stopImmediatePropagation();
@@ -201,16 +241,19 @@
       var terms = document.getElementById("terms");
       var alertEl = document.getElementById("formAlert");
       var ok = true;
+      var errs = [];
 
-      if (!name || name.value.trim().length < 2) { setFieldError(name, "Enter the company name."); ok = false; } else setFieldError(name, "");
-      if (!email || !isEmail(email.value.trim())) { setFieldError(email, "Enter a valid work email."); ok = false; } else setFieldError(email, "");
+      ok = flagError(errs, name, !name || name.value.trim().length < 2 ? "Enter the company name." : "") && ok;
+      ok = flagError(errs, email, !email || !isEmail(email.value.trim()) ? "Enter a valid work email." : "") && ok;
       var pwErr = password ? passwordStrength(password.value) : "Enter a password.";
-      if (pwErr) { setFieldError(password, pwErr); ok = false; } else setFieldError(password, "");
-      if (!confirm || confirm.value !== password.value) { setFieldError(confirm, "Passwords do not match."); ok = false; } else setFieldError(confirm, "");
-      if (website && website.value.trim() && !validURL(website.value.trim())) { setFieldError(website, "Use a valid http(s) website URL."); ok = false; } else setFieldError(website, "");
-      if (!location || !location.value.trim()) { setFieldError(location, "Enter the company's main location."); ok = false; } else setFieldError(location, "");
-      if (!terms || !terms.checked) { showNotification("Please confirm the company profile terms.", "warning"); ok = false; }
-      if (!ok) return;
+      ok = flagError(errs, password, pwErr) && ok;
+      ok = flagError(errs, confirm, !confirm || !password || confirm.value !== password.value ? "Passwords do not match." : "") && ok;
+      ok = flagError(errs, website, website && website.value.trim() && !validURL(website.value.trim()) ? "Use a valid http(s) website URL." : "") && ok;
+      ok = flagError(errs, location, !location || !location.value.trim() ? "Enter the company's main location." : "") && ok;
+      if (!terms || !terms.checked) { errs.push({ id: "terms", message: "Please confirm the company profile terms." }); showNotification("Please confirm the company profile terms.", "warning"); ok = false; }
+      if (!ok) { showErrorSummary(form, errs); return; }
+      hideErrorSummary(form);
+      setBusy(form, true);
 
       try {
         var company = await window.InternLog.registerCompany({
@@ -232,6 +275,8 @@
           alertEl.style.display = "block";
         }
         showNotification(err.message || "Unable to create company account.", "error");
+      } finally {
+        setBusy(form, false);
       }
     }, true);
   }
@@ -283,23 +328,28 @@
 
       var d = readInternshipForm();
       var ok = true;
+      var errs = [];
       var titleEl = document.getElementById("title");
       var locEl = document.getElementById("location");
       var deadlineEl = document.getElementById("deadline");
       var descEl = document.getElementById("description");
       var urlEl = document.getElementById("applyUrl");
-      if (d.title.length < 3) { setFieldError(titleEl, "Enter an internship title."); ok = false; } else setFieldError(titleEl, "");
-      if (!d.location) { setFieldError(locEl, "Enter a location or Remote."); ok = false; } else setFieldError(locEl, "");
-      if (!d.deadline || d.deadline < todayISO()) { setFieldError(deadlineEl, d.deadline ? "Deadline cannot be in the past." : "Choose an application deadline."); ok = false; } else setFieldError(deadlineEl, "");
-      if (!d.description) { setFieldError(descEl, "Add a short role description."); ok = false; } else setFieldError(descEl, "");
-      if (d.applyUrl && !validURL(d.applyUrl)) { setFieldError(urlEl, "Use a valid http(s) URL."); ok = false; } else setFieldError(urlEl, "");
-      if (!ok) return;
+      ok = flagError(errs, titleEl, d.title.length < 3 ? "Enter an internship title." : "") && ok;
+      ok = flagError(errs, locEl, !d.location ? "Enter a location or Remote." : "") && ok;
+      ok = flagError(errs, deadlineEl, !d.deadline || d.deadline < todayISO() ? (d.deadline ? "Deadline cannot be in the past." : "Choose an application deadline.") : "") && ok;
+      ok = flagError(errs, descEl, !d.description ? "Add a short role description." : "") && ok;
+      ok = flagError(errs, urlEl, d.applyUrl && !validURL(d.applyUrl) ? "Use a valid http(s) URL." : "") && ok;
+      if (!ok) { showErrorSummary(form, errs); return; }
+      hideErrorSummary(form);
+      setBusy(form, true);
 
-      var jobs = await window.InternLog.getInternshipsByCompany(ctx.company.id);
+      var jobs;
+      try { jobs = await window.InternLog.getInternshipsByCompany(ctx.company.id); }
+      catch (error) { setBusy(form, false); showNotification(error.message || "Could not load internships.", "error"); return; }
       var now = new Date().toISOString();
       var editId = new URLSearchParams(window.location.search).get("edit");
       var editingIndex = editId ? jobs.findIndex(function (j) { return String(j.id) === String(editId) && String(j.companyId) === String(ctx.company.id); }) : -1;
-      if (editId && editingIndex < 0) { showNotification("Internship not found.", "error"); return; }
+      if (editId && editingIndex < 0) { setBusy(form, false); showNotification("Internship not found.", "error"); return; }
 
       var existing = editingIndex >= 0 ? jobs[editingIndex] : null;
       var requestedStatus = d.publishRequested ? "Pending Review" : "Draft";
@@ -313,7 +363,7 @@
       try {
         if (existing) await window.InternLog.updateInternship(existing.id, record);
         else await window.InternLog.addInternship(record);
-      } catch (error) { showNotification(error.message, "error"); return; }
+      } catch (error) { setBusy(form, false); showNotification(error.message, "error"); return; }
 
       var success = document.getElementById("success");
       if (success) {
@@ -325,7 +375,7 @@
       }
       showNotification(requestedStatus === "Pending Review" ? "Internship sent for admin review." : "Internship draft saved.", "success");
       if (existing) { setTimeout(function () { window.location.href = "internships.html"; }, 500); }
-      else { form.reset(); var pub = document.getElementById("published"); if (pub) pub.checked = true; }
+      else { setBusy(form, false); form.reset(); var pub = document.getElementById("published"); if (pub) pub.checked = true; }
     }, true);
   }
 
@@ -473,7 +523,7 @@
     close.className = "toast-close";
     close.type = "button";
     close.setAttribute("aria-label", "Dismiss notification");
-    close.textContent = "×";
+    close.innerHTML = '<span aria-hidden="true">×</span>';
     close.onclick = function () { dismissToast(el); };
     el.appendChild(icon);
     el.appendChild(text);
@@ -513,7 +563,229 @@
     return s;
   }
 
+  /* ---------------- StaggeredMenu (React Bits adaptation, vanilla, no GSAP) ----------------
+     Overlay menu with prelayers + staggered items + socials. Built from the
+     page's own nav links (sidebar on workspaces, pills on landing); the static
+     nav stays in markup as the no-JS fallback and hides via body.sm-nav.
+     Toggle injected into .topbar (workspaces) or .nav-bar--pill (landing). */
+  function initStaggeredMenu() {
+    if (typeof document.querySelectorAll !== "function" || typeof document.createElement !== "function" || !document.body) return;
+    if (document.querySelector(".staggered-menu-wrapper")) return;
+    var sidebar = document.querySelector(".sidebar");
+    var isLanding = !sidebar;
+    var links = [];
+    if (isLanding) {
+      var pills = document.querySelectorAll("[data-pill-nav] .pill");
+      if (!pills || !pills.length) return;
+      Array.prototype.forEach.call(pills, function (a) {
+        var label = a.querySelector(".pill-label");
+        links.push({
+          href: a.getAttribute("href") || "#",
+          text: label ? label.textContent : a.textContent,
+          current: a.classList.contains("is-active"),
+          logout: a.hasAttribute("data-logout"),
+          account: a.hasAttribute("data-landing-account")
+        });
+      });
+    } else {
+      var anchors = document.querySelectorAll(".sidebar nav a");
+      if (!anchors || !anchors.length) return;
+      Array.prototype.forEach.call(anchors, function (a) {
+        links.push({
+          href: a.getAttribute("href") || "#",
+          text: (a.textContent || "").trim(),
+          current: a.classList.contains("active"),
+          logout: a.hasAttribute("data-logout"),
+          account: false
+        });
+      });
+    }
+    if (!links.length) return;
+
+    var socials = [];
+    if (isLanding) {
+      var foot = document.querySelectorAll(".site-footer nav a");
+      Array.prototype.forEach.call(foot, function (a, i) {
+        if (i < 4) socials.push({ href: a.getAttribute("href") || "#", text: (a.textContent || "").trim() });
+      });
+    } else {
+      var brand = document.querySelector(".sidebar .brand");
+      socials.push({ href: brand ? (brand.getAttribute("href") || "../index.html") : "../index.html", text: "Back to Home" });
+    }
+
+    var wrapper = document.createElement("div");
+    wrapper.className = "staggered-menu-wrapper";
+    wrapper.setAttribute("data-position", "right");
+    var layers = document.createElement("div");
+    layers.className = "sm-prelayers";
+    layers.setAttribute("aria-hidden", "true");
+    for (var li = 0; li < 3; li++) {
+      var layer = document.createElement("div");
+      layer.className = "sm-prelayer";
+      layers.appendChild(layer);
+    }
+    var panel = document.createElement("aside");
+    panel.className = "sm-panel";
+    panel.setAttribute("aria-hidden", "true");
+    panel.setAttribute("aria-label", "Menu");
+    panel.id = "staggeredMenu";
+    panel.inert = true;
+    var inner = document.createElement("div");
+    inner.className = "sm-panel-inner";
+    var list = document.createElement("ul");
+    list.className = "sm-panel-list";
+    list.setAttribute("role", "list");
+    list.setAttribute("data-numbering", "true");
+    var items = [];
+    links.forEach(function (link, idx) {
+      var wrap = document.createElement("li");
+      wrap.className = "sm-panel-itemWrap" + (link.logout ? " has-separator" : "");
+      var a = document.createElement("a");
+      a.className = "sm-panel-item" + (link.current ? " is-active" : "") + (link.logout ? " is-danger" : "");
+      a.setAttribute("href", link.href);
+      a.setAttribute("data-index", String(idx + 1));
+      if (link.current) a.setAttribute("aria-current", "page");
+      if (link.logout) a.setAttribute("data-logout", "");
+      if (link.account) a.setAttribute("data-landing-account", "");
+      var label = document.createElement("span");
+      label.className = "sm-panel-itemLabel";
+      label.textContent = link.text;
+      a.appendChild(label);
+      wrap.appendChild(a);
+      list.appendChild(wrap);
+      items.push(a);
+    });
+    inner.appendChild(list);
+    var socialEls = [];
+    if (socials.length) {
+      var soc = document.createElement("div");
+      soc.className = "sm-socials";
+      soc.setAttribute("aria-label", "Secondary links");
+      var title = document.createElement("h3");
+      title.className = "sm-socials-title";
+      title.textContent = isLanding ? "Explore" : "Navigate";
+      soc.appendChild(title);
+      var socList = document.createElement("ul");
+      socList.className = "sm-socials-list";
+      socList.setAttribute("role", "list");
+      socials.forEach(function (s) {
+        var sli = document.createElement("li");
+        var sa = document.createElement("a");
+        sa.className = "sm-socials-link";
+        sa.setAttribute("href", s.href);
+        sa.textContent = s.text;
+        sli.appendChild(sa);
+        socList.appendChild(sli);
+        socialEls.push(sa);
+      });
+      soc.appendChild(socList);
+      inner.appendChild(soc);
+    }
+    panel.appendChild(inner);
+    wrapper.appendChild(layers);
+    wrapper.appendChild(panel);
+    document.body.appendChild(wrapper);
+
+    var toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "sm-toggle";
+    toggle.setAttribute("aria-label", "Open menu");
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-controls", panel.id);
+    toggle.innerHTML = '<span class="sm-toggle-text" aria-hidden="true"><span class="sm-toggle-textInner"><span class="sm-toggle-line">Menu</span><span class="sm-toggle-line">Close</span></span></span><span class="sm-icon" aria-hidden="true"><span class="sm-icon-h"></span><span class="sm-icon-v"></span></span>';
+    var host = null;
+    if (isLanding) host = document.querySelector(".nav-bar--pill");
+    else host = document.querySelector(".topbar");
+    if (!host) { wrapper.remove(); return; }
+    if (isLanding) host.appendChild(toggle);
+    else host.insertBefore(toggle, host.firstChild);
+    document.body.classList.add("sm-nav");
+
+    var open = false, previousOverflow = "", backgroundState = [];
+    function lockBackground() {
+      var branch = toggle;
+      while (branch && branch !== document.body) {
+        Array.prototype.forEach.call(branch.parentElement.children, function (element) {
+          if (element === branch || element === wrapper || /^(SCRIPT|STYLE|LINK|DIALOG)$/.test(element.tagName)) return;
+          backgroundState.push({ element: element, inert: element.inert });
+          element.inert = true;
+        });
+        branch = branch.parentElement;
+      }
+    }
+    function paintDelays(opening) {
+      items.forEach(function (a, i) {
+        try { a.style.transitionDelay = opening ? (260 + i * 70) + "ms" : "0ms"; } catch (e) {}
+      });
+      socialEls.forEach(function (a) {
+        try { a.style.transitionDelay = opening ? "620ms" : "0ms"; } catch (e) {}
+      });
+      try {
+        var soc = panel.querySelector(".sm-socials");
+        if (soc) soc.style.transitionDelay = opening ? "560ms" : "0ms";
+      } catch (e) {}
+    }
+    function setOpen(next, focusToggle) {
+      if (open === next) return;
+      open = next;
+      paintDelays(open);
+      if (open) {
+        document.body.setAttribute("data-sm-open", "true");
+        panel.setAttribute("aria-hidden", "false");
+        panel.inert = false;
+        toggle.setAttribute("aria-expanded", "true");
+        toggle.setAttribute("aria-label", "Close menu");
+        previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        lockBackground();
+        if (items[0]) { try { items[0].focus(); } catch (e) {} }
+      } else {
+        document.body.removeAttribute("data-sm-open");
+        panel.setAttribute("aria-hidden", "true");
+        panel.inert = true;
+        toggle.setAttribute("aria-expanded", "false");
+        toggle.setAttribute("aria-label", "Open menu");
+        document.body.style.overflow = previousOverflow;
+        backgroundState.forEach(function (state) { state.element.inert = state.inert; });
+        backgroundState = [];
+        if (focusToggle !== false) { try { toggle.focus(); } catch (e) {} }
+      }
+    }
+    toggle.addEventListener("click", function (e) {
+      e.stopPropagation();
+      setOpen(!open);
+    });
+    panel.addEventListener("click", function (e) {
+      var a = e.target.closest ? e.target.closest("a[href]") : null;
+      if (a) setOpen(false);
+    });
+    document.addEventListener("click", function (e) {
+      if (!open) return;
+      var t = e.target;
+      var inside = false;
+      try { inside = !!(t && t.closest && (t.closest(".sm-panel") || t.closest(".sm-toggle"))); } catch (err) {}
+      if (!inside) setOpen(false);
+    });
+    document.addEventListener("keydown", function (e) {
+      if (!open || document.querySelector("dialog[open], .modal-backdrop.open")) return;
+      if (e.key === "Escape" && open) {
+        e.preventDefault();
+        e.stopPropagation();
+        setOpen(false);
+      }
+      if (e.key === "Tab") {
+        var controls = [toggle].concat(items, socialEls);
+        var index = controls.indexOf(document.activeElement);
+        if (index < 0 || (e.shiftKey && index === 0) || (!e.shiftKey && index === controls.length - 1)) {
+          e.preventDefault();
+          controls[e.shiftKey ? controls.length - 1 : 0].focus();
+        }
+      }
+    });
+  }
+
   function initNavigation() {
+    initStaggeredMenu();
     var sidebar = document.getElementById("sidebar");
     var btn = document.getElementById("menuBtn");
     var backdrop = document.getElementById("sidebarBackdrop");
@@ -560,13 +832,18 @@
       });
     }
 
-    // Active sidebar link
+    // Active link (sidebar anchors + staggered panel items share hrefs)
     var normalizedPath = window.location.pathname.replace(/\\/g, "/");
     var file = (normalizedPath.split("/").pop() || "index.html").split("?")[0];
-    document.querySelectorAll(".sidebar nav a").forEach(function (a) {
+    document.querySelectorAll(".sidebar nav a, .sm-panel-item").forEach(function (a) {
       var href = (a.getAttribute("href") || "").replace(/\\/g, "/").split("?")[0];
       if (href === file) {
-        a.classList.add("active");
+        if (a.classList.contains("sm-panel-item")) {
+          a.classList.add("is-active");
+          a.setAttribute("aria-current", "page");
+        } else {
+          a.classList.add("active");
+        }
       }
     });
 
@@ -642,7 +919,7 @@
       clear.type = "button";
       clear.className = "search-clear";
       clear.setAttribute("aria-label", "Clear search");
-      clear.textContent = "×";
+      clear.innerHTML = '<span aria-hidden="true">×</span>';
       clear.addEventListener("click", function () {
         input.value = "";
         sync();
@@ -731,7 +1008,80 @@
     if (err) {
       err.textContent = msg || "";
       err.classList.toggle("visible", !!msg);
+      var descriptions = (input.getAttribute("aria-describedby") || "").split(/\s+/).filter(function (id) { return id && id !== err.id; });
+      if (msg) descriptions.push(err.id);
+      if (descriptions.length) input.setAttribute("aria-describedby", descriptions.join(" "));
+      else input.removeAttribute("aria-describedby");
     }
+  }
+
+  /* Field error that also feeds the submit-time error summary. Always paints
+     the inline slot; returns false when a message was set. */
+  function flagError(list, input, msg) {
+    setFieldError(input, msg || "");
+    if (msg && input && input.id) list.push({ id: input.id, message: msg });
+    return !msg;
+  }
+
+  /* Focusable, linked error summary kept alongside inline field errors. */
+  function showErrorSummary(form, items) {
+    if (!form || !items || !items.length) return;
+    var box = null;
+    try { box = form.querySelector(".form-error-summary"); } catch (e) {}
+    if (!box) {
+      box = document.createElement("div");
+      box.className = "alert alert-error form-error-summary";
+      box.setAttribute("role", "alert");
+      box.tabIndex = -1;
+      form.insertBefore(box, form.firstChild);
+    }
+    box.textContent = "";
+    var head = document.createElement("strong");
+    head.textContent = items.length === 1 ? "Please fix 1 field below." : "Please fix " + items.length + " fields below.";
+    box.appendChild(head);
+    var ul = document.createElement("ul");
+    items.forEach(function (it) {
+      var li = document.createElement("li");
+      var a = document.createElement("a");
+      a.setAttribute("href", "#" + it.id);
+      a.textContent = it.message;
+      a.addEventListener("click", function (e) {
+        e.preventDefault();
+        var target = document.getElementById(it.id);
+        if (form._internlogStepper) form._internlogStepper.reveal(target);
+        if (target) { try { target.focus(); } catch (err) {} }
+      });
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+    box.appendChild(ul);
+    box.style.display = "block";
+    if (form._internlogStepper) form._internlogStepper.reveal(document.getElementById(items[0].id));
+    try { box.focus(); } catch (e) {}
+  }
+  function hideErrorSummary(form) {
+    if (!form) return;
+    var box = null;
+    try { box = form.querySelector(".form-error-summary"); } catch (e) {}
+    if (box) box.style.display = "none";
+  }
+
+  /* Busy submit buttons: disabled + spinner while an async submit runs. */
+  function setBusy(form, on) {
+    if (!form) return null;
+    var btn = null;
+    try { btn = form.querySelector('button[type="submit"], button:not([type]), input[type="submit"]'); } catch (e) {}
+    if (!btn) return null;
+    if (on) {
+      btn.disabled = true;
+      try { btn.classList.add("is-loading"); } catch (e) {}
+      btn.setAttribute("aria-busy", "true");
+    } else {
+      btn.disabled = false;
+      try { btn.classList.remove("is-loading"); } catch (e) {}
+      btn.removeAttribute("aria-busy");
+    }
+    return btn;
   }
 
   function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
@@ -748,6 +1098,171 @@
     } catch (e) {
       return false;
     }
+  }
+
+  /* ---------------- Auth stepper (React Bits Stepper adaptation, vanilla) ----------------
+     Frameless multi-step flow for auth forms. Panes are `.stepper-pane` sections
+     carrying `data-step-title`; the numbered track, gliding pill, badges and the
+     Back/Continue footer are built here. `validateStep(n)` (1-based) gates forward
+     moves; the form's own submit handler keeps full validation as final authority.
+     Only stub-safe DOM APIs are used. */
+  var STEP_CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+  function initAuthStepper(form, cfg) {
+    if (!form || !cfg) return null;
+    if (form._internlogStepper) return form._internlogStepper;
+    if (typeof document.querySelectorAll !== "function" || typeof document.createElement !== "function") return null;
+    var panes = null;
+    try { panes = form.querySelectorAll(".stepper-pane"); } catch (e) { return null; }
+    if (!panes || panes.length < 2) return null;
+    var list = Array.prototype.slice.call(panes);
+    var total = list.length;
+    var current = 1, reached = 1, direction = 1;
+    var reduceMotion = false;
+    try { reduceMotion = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); } catch (e) {}
+
+    var track = document.createElement("div");
+    track.className = "stepper-track";
+    track.setAttribute("role", "group");
+    track.setAttribute("aria-label", "Progress");
+    var glider = document.createElement("span");
+    glider.className = "stepper-glider";
+    glider.setAttribute("aria-hidden", "true");
+    track.appendChild(glider);
+    var segs = list.map(function (pane, i) {
+      var n = i + 1;
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "stepper-seg";
+      var title = pane.getAttribute("data-step-title") || ("Step " + n);
+      b.setAttribute("aria-label", "Step " + n + ": " + title);
+      var badge = document.createElement("span");
+      badge.className = "stepper-badge";
+      badge.setAttribute("aria-hidden", "true");
+      badge.textContent = String(n);
+      var label = document.createElement("span");
+      label.className = "stepper-seg-title";
+      label.textContent = title;
+      b.appendChild(badge);
+      b.appendChild(label);
+      b.addEventListener("click", function () { if (n <= reached && n !== current) go(n); });
+      track.appendChild(b);
+      return b;
+    });
+    form.insertBefore(track, list[0]);
+
+    var foot = document.createElement("div");
+    foot.className = "stepper-foot";
+    var back = document.createElement("button");
+    back.type = "button";
+    back.className = "btn btn-secondary btn-sm stepper-back";
+    back.textContent = "Back";
+    var next = document.createElement("button");
+    next.type = "button";
+    next.className = "btn btn-sm stepper-next";
+    next.textContent = "Continue";
+    back.addEventListener("click", function () { go(current - 1); });
+    next.addEventListener("click", function () { go(current + 1); });
+    foot.appendChild(back);
+    foot.appendChild(next);
+    form.appendChild(foot);
+
+    function placeGlider() {
+      var seg = segs[current - 1];
+      if (!seg) return;
+      var left = 0, width = 0;
+      try { left = seg.offsetLeft; width = seg.offsetWidth; } catch (e) { return; }
+      if (!width) return;
+      try {
+        glider.style.transform = "translateX(" + left + "px)";
+        glider.style.width = width + "px";
+        glider.classList.add("is-placed");
+      } catch (e) {}
+    }
+
+    function paint() {
+      segs.forEach(function (b, i) {
+        var n = i + 1;
+        var status = n < current ? "complete" : (n === current ? "active" : "upcoming");
+        b.setAttribute("data-status", status);
+        if (n === current) b.setAttribute("aria-current", "step");
+        else b.removeAttribute("aria-current");
+        var badge = b.firstChild;
+        if (badge) {
+          if (status === "complete") badge.innerHTML = STEP_CHECK_SVG;
+          else badge.textContent = String(n);
+        }
+        b.disabled = !(n <= reached);
+      });
+      list.forEach(function (pane, i) {
+        var on = (i + 1) === current;
+        if (on) {
+          pane.hidden = false;
+          try {
+            pane.classList.remove("is-active", "is-back");
+            void pane.offsetWidth;
+            if (direction < 0) pane.classList.add("is-back");
+            pane.classList.add("is-active");
+          } catch (e) {}
+        } else {
+          pane.hidden = true;
+          try { pane.classList.remove("is-active", "is-back"); } catch (e) {}
+        }
+      });
+      back.hidden = current <= 1;
+      next.hidden = current >= total;
+      placeGlider();
+    }
+
+    function go(n) {
+      n = Math.max(1, Math.min(total, Math.round(n) || 1));
+      if (n === current) return true;
+      if (n > current) {
+        for (var s = current; s < n; s++) {
+          var gate = true;
+          try { gate = cfg.validateStep ? cfg.validateStep(s) !== false : true; }
+          catch (e) { gate = false; }
+          if (!gate) return false;
+        }
+        direction = 1;
+      } else {
+        direction = -1;
+      }
+      current = n;
+      if (n > reached) reached = n;
+      paint();
+      var focusTarget = list[current - 1].querySelector("input, select, textarea, button");
+      if (focusTarget) focusTarget.focus();
+      return true;
+    }
+
+    try {
+      if (typeof window.addEventListener === "function") {
+        window.addEventListener("resize", function () { placeGlider(); });
+      }
+    } catch (e) {}
+    paint();
+    // Enter on an earlier pane advances through validation, never submits
+    // credentials or hidden required fields prematurely.
+    form.addEventListener("submit", function (event) {
+      if (current >= total) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      go(current + 1);
+    }, true);
+    if (!reduceMotion) {
+      try {
+        setTimeout(function () { placeGlider(); }, 120);
+      } catch (e) {}
+    }
+    form._internlogStepper = { go: go, reveal: function (field) {
+      var index = list.findIndex(function (pane) { return field && pane.contains(field); });
+      if (index < 0 || index + 1 === current) return;
+      direction = index + 1 < current ? -1 : 1;
+      current = index + 1;
+      reached = Math.max(reached, current);
+      paint();
+    } };
+    return form._internlogStepper;
   }
 
   /* ---------------- Page initializers ---------------- */
@@ -769,19 +1284,33 @@
       });
     }
 
+    initAuthStepper(form, {
+      validateStep: function (n) {
+        if (n !== 1) return true;
+        var email = document.getElementById("email");
+        if (!email || !isEmail(email.value.trim())) {
+          setFieldError(email, "Enter a valid email address.");
+          showNotification("Please fix the highlighted fields to continue.", "error");
+          return false;
+        }
+        setFieldError(email, "");
+        return true;
+      }
+    });
+
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
       var email = document.getElementById("email");
       var password = document.getElementById("password");
       var ok = true;
+      var errs = [];
 
-      if (!isEmail(email.value.trim())) { setFieldError(email, "Enter a valid email address."); ok = false; }
-      else setFieldError(email, "");
+      ok = flagError(errs, email, !isEmail(email.value.trim()) ? "Enter a valid email address." : "") && ok;
+      ok = flagError(errs, password, !password.value ? "Enter your password." : "") && ok;
 
-      if (!password.value) { setFieldError(password, "Enter your password."); ok = false; }
-      else setFieldError(password, "");
-
-      if (!ok) return;
+      if (!ok) { showErrorSummary(form, errs); return; }
+      hideErrorSummary(form);
+      setBusy(form, true);
       try {
         var session = await window.InternLog.loginUser({ email: email.value.trim(), password: password.value });
         if (session.role !== "user") {
@@ -791,6 +1320,7 @@
         showNotification("Welcome back, " + session.name.split(" ")[0] + "!", "success");
         setTimeout(function () { window.location.href = "dashboard.html"; }, 500);
       } catch (err) {
+        setBusy(form, false);
         var alertEl = document.getElementById("formAlert");
         if (alertEl) {
           alertEl.textContent = err.message || "Invalid email or password";
@@ -811,16 +1341,31 @@
       return;
     }
 
+    initAuthStepper(form, {
+      validateStep: function (n) {
+        if (n !== 1) return true;
+        var email = document.getElementById("email");
+        if (!email || !email.value.trim()) {
+          setFieldError(email, "Enter your admin email.");
+          showNotification("Please fix the highlighted fields to continue.", "error");
+          return false;
+        }
+        setFieldError(email, "");
+        return true;
+      }
+    });
+
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
       var email = document.getElementById("email");
       var password = document.getElementById("password");
       var ok = true;
-      if (!email.value.trim()) { setFieldError(email, "Enter your admin email."); ok = false; }
-      else setFieldError(email, "");
-      if (!password.value) { setFieldError(password, "Enter your password."); ok = false; }
-      else setFieldError(password, "");
-      if (!ok) return;
+      var errs = [];
+      ok = flagError(errs, email, !email.value.trim() ? "Enter your admin email." : "") && ok;
+      ok = flagError(errs, password, !password.value ? "Enter your password." : "") && ok;
+      if (!ok) { showErrorSummary(form, errs); return; }
+      hideErrorSummary(form);
+      setBusy(form, true);
 
       try {
         var session = await window.InternLog.loginAdmin({ email: email.value.trim(), password: password.value });
@@ -828,6 +1373,7 @@
         showNotification("Welcome, Admin!", "success");
         setTimeout(function () { window.location.href = "dashboard.html"; }, 500);
       } catch (err) {
+        setBusy(form, false);
         var alertEl = document.getElementById("formAlert");
         if (alertEl) { alertEl.textContent = err.message; alertEl.style.display = "block"; }
         showNotification(err.message, "error");
@@ -857,6 +1403,24 @@
       });
     }
 
+    initAuthStepper(form, {
+      validateStep: function (n) {
+        if (n !== 1) return true;
+        var name = document.getElementById("fullName");
+        var email = document.getElementById("email");
+        var password = document.getElementById("password");
+        var confirm = document.getElementById("confirmPassword");
+        var ok = true;
+        if (!name || name.value.trim().length < 3) { setFieldError(name, "Enter your full name."); ok = false; } else setFieldError(name, "");
+        if (!email || !isEmail(email.value.trim())) { setFieldError(email, "Enter a valid email address."); ok = false; } else setFieldError(email, "");
+        var pwErr = password ? passwordStrength(password.value) : "Enter a password.";
+        if (pwErr) { setFieldError(password, pwErr); ok = false; } else setFieldError(password, "");
+        if (!confirm || !password || confirm.value !== password.value) { setFieldError(confirm, "Passwords do not match."); ok = false; } else setFieldError(confirm, "");
+        if (!ok) showNotification("Please fix the highlighted fields to continue.", "error");
+        return ok;
+      }
+    });
+
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
       var name = document.getElementById("fullName");
@@ -868,17 +1432,20 @@
       var gradYear = document.getElementById("gradYear");
       var terms = document.getElementById("terms");
       var ok = true;
+      var errs = [];
 
-      if (name.value.trim().length < 3) { setFieldError(name, "Enter your full name."); ok = false; } else setFieldError(name, "");
-      if (!isEmail(email.value.trim())) { setFieldError(email, "Enter a valid email address."); ok = false; } else setFieldError(email, "");
+      ok = flagError(errs, name, name.value.trim().length < 3 ? "Enter your full name." : "") && ok;
+      ok = flagError(errs, email, !isEmail(email.value.trim()) ? "Enter a valid email address." : "") && ok;
       var pwErr = passwordStrength(password.value);
-      if (pwErr) { setFieldError(password, pwErr); ok = false; } else setFieldError(password, "");
-      if (confirm.value !== password.value) { setFieldError(confirm, "Passwords do not match."); ok = false; } else setFieldError(confirm, "");
-      if (!college.value.trim()) { setFieldError(college, "Enter your college or university."); ok = false; } else setFieldError(college, "");
-      if (!course.value.trim()) { setFieldError(course, "Enter your course."); ok = false; } else setFieldError(course, "");
-      if (!gradYear.value) { setFieldError(gradYear, "Select your graduation year."); ok = false; } else setFieldError(gradYear, "");
-      if (!terms.checked) { showNotification("Please accept the terms and conditions.", "warning"); ok = false; }
-      if (!ok) return;
+      ok = flagError(errs, password, pwErr) && ok;
+      ok = flagError(errs, confirm, confirm.value !== password.value ? "Passwords do not match." : "") && ok;
+      ok = flagError(errs, college, !college.value.trim() ? "Enter your college or university." : "") && ok;
+      ok = flagError(errs, course, !course.value.trim() ? "Enter your course." : "") && ok;
+      ok = flagError(errs, gradYear, !gradYear.value ? "Select your graduation year." : "") && ok;
+      if (!terms.checked) { errs.push({ id: "terms", message: "Please accept the terms and conditions." }); showNotification("Please accept the terms and conditions.", "warning"); ok = false; }
+      if (!ok) { showErrorSummary(form, errs); return; }
+      hideErrorSummary(form);
+      setBusy(form, true);
 
       try {
         var user = await window.InternLog.registerUser({
@@ -889,6 +1456,7 @@
         showNotification("Account created successfully!", "success");
         setTimeout(function () { window.location.href = "dashboard.html"; }, 600);
       } catch (err) {
+        setBusy(form, false);
         showNotification(err.message, "error");
       }
     });
@@ -961,7 +1529,7 @@
     body.innerHTML =
       '<div class="modal-header">' +
         "<h3>" + esc(a.company) + " — " + esc(a.role) + "</h3>" +
-        '<button class="modal-close-icon" id="modalCloseIcon" aria-label="Close dialog">&times;</button>' +
+        '<button class="modal-close-icon" id="modalCloseIcon" aria-label="Close dialog"><span aria-hidden="true">&times;</span></button>' +
       "</div>" +
       "<dl>" +
       (owner ? "<dt>Student</dt><dd><strong>" + esc(owner.name) + "</strong> (" + esc(owner.email) + ")<br><span class='muted'>" + esc(owner.college) + "</span></dd>" : "") +
@@ -971,7 +1539,7 @@
       "<dt>Deadline</dt><dd>" + fmtDate(a.deadline) + "</dd>" +
       (a.interviewDate ? "<dt>Interview Date</dt><dd><strong>" + fmtDate(a.interviewDate) + "</strong></dd>" : "") +
       "<dt>Stipend</dt><dd>" + (a.stipend && Number(a.stipend) > 0 ? "₹" + Number(a.stipend).toLocaleString("en-IN") + " / month" : "Unpaid / Not specified") + "</dd>" +
-      (a.url && validURL(a.url) ? "<dt>Posting URL</dt><dd><a href='" + esc(a.url) + "' target='_blank' rel='noopener'>Open posting ↗</a></dd>" : "") +
+      (a.url && validURL(a.url) ? "<dt>Posting URL</dt><dd><a href='" + esc(a.url) + "' target='_blank' rel='noopener'>Open posting <span aria-hidden='true'>↗</span></a></dd>" : "") +
       "<dt>Status</dt><dd>" + statusBadge(a.status) + "</dd>" +
       "<dt>Notes</dt><dd>" + (a.notes ? esc(a.notes).replace(/\n/g, "<br>") : "<span class='muted'>No notes added.</span>") + "</dd>" +
       "</dl>" +
@@ -1028,7 +1596,6 @@
         if (apps.length >= 12) {
           var replied = apps.filter(function (a) { return a.status !== "Applied"; }).length;
           if (replied === 0) encouragement = " You have applied to a lot — consider tailoring each application and asking a mentor for feedback.";
-          else encouragement = " Steady progress — keep going at a sustainable pace.";
         }
         followEl.innerHTML = '<p class="muted">All caught up. No follow-ups needed right now.' + esc(encouragement) + "</p>";
       } else {
@@ -1041,7 +1608,7 @@
         Array.prototype.slice.call(followEl.querySelectorAll("[data-snooze]")).forEach(function (btn) {
           btn.addEventListener("click", async function () {
             await snoozeFollowup(btn.getAttribute("data-snooze"), 7);
-            showNotification("Snoozed for 7 days. You have got this.", "info");
+            showNotification("Snoozed for 7 days.", "info");
             initUserDashboard();
           });
         });
@@ -1196,11 +1763,16 @@
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
       var d = collectApplicationForm();
-      if (!paintErrors(validateApplication(d))) {
+      var errors = validateApplication(d);
+      if (!paintErrors(errors)) {
+        showErrorSummary(form, Object.keys(errors).map(function (k) { return { id: k, message: errors[k] }; }));
         showNotification("Please fix the highlighted fields.", "error");
         return;
       }
-      await window.InternLog.addApplication(Object.assign({ userId: s.userId }, d));
+      hideErrorSummary(form);
+      setBusy(form, true);
+      try { await window.InternLog.addApplication(Object.assign({ userId: s.userId }, d)); }
+      catch (error) { setBusy(form, false); showNotification(error.message || "Could not save application.", "error"); return; }
       showNotification("Application added successfully!", "success");
       setTimeout(function () { window.location.href = "applications.html"; }, 500);
     });
@@ -1233,11 +1805,16 @@
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
       var d = collectApplicationForm();
-      if (!paintErrors(validateApplication(d))) {
+      var errors = validateApplication(d);
+      if (!paintErrors(errors)) {
+        showErrorSummary(form, Object.keys(errors).map(function (k) { return { id: k, message: errors[k] }; }));
         showNotification("Please fix the highlighted fields.", "error");
         return;
       }
-      await window.InternLog.updateApplication(app.id, d);
+      hideErrorSummary(form);
+      setBusy(form, true);
+      try { await window.InternLog.updateApplication(app.id, d); }
+      catch (error) { setBusy(form, false); showNotification(error.message || "Could not save changes.", "error"); return; }
       showNotification("Changes saved successfully", "success");
       setTimeout(function () { window.location.href = "applications.html"; }, 500);
     });
@@ -1564,7 +2141,7 @@
         if (!href || href.charAt(0) === "#") return;
         var hrefFile = href.replace(/\\/g, "/").split("/").pop() || "index.html";
         if (hrefFile === file && file !== "index.html") {
-          document.querySelectorAll("[data-pill-nav] .pill.is-active").forEach(function (el) {
+          document.querySelectorAll("[data-pill-nav] .pill.is-active, .sm-panel-item.is-active").forEach(function (el) {
             el.classList.remove("is-active");
             el.removeAttribute("aria-current");
           });
@@ -1581,7 +2158,7 @@
         var href = a.getAttribute("href") || "";
         if (href.charAt(0) === "#") spyLinks[href] = a;
       });
-      var spyIds = ["#about", "#internships", "#features", "#how", "#get-started"];
+      var spyIds = ["#about", "#internships", "#features", "#how", "#faq", "#get-started"];
       var spyTargets = spyIds.map(function (sel) {
         try { return document.querySelector(sel); } catch (err) { return null; }
       }).filter(Boolean);
@@ -1593,7 +2170,7 @@
         function setActivePill(pill) {
           if (spyCurrent === pill) return;
           spyCurrent = pill;
-          document.querySelectorAll("[data-pill-nav] .pill.is-active").forEach(function (el) {
+          document.querySelectorAll("[data-pill-nav] .pill.is-active, .sm-panel-item.is-active").forEach(function (el) {
             el.classList.remove("is-active");
             el.removeAttribute("aria-current");
           });
@@ -1604,7 +2181,8 @@
             pill.classList.add("is-active");
             pill.setAttribute("aria-current", "page");
             var href = pill.getAttribute("href");
-            document.querySelectorAll('.mobile-menu-link[href="' + href + '"]').forEach(function (m) {
+            document.querySelectorAll('.mobile-menu-link[href="' + href + '"], .sm-panel-item[href="' + href + '"]').forEach(function (m) {
+              if (m.classList.contains("sm-panel-item")) m.classList.add("is-active");
               m.setAttribute("aria-current", "page");
             });
           }
@@ -1940,6 +2518,10 @@
   window.InternLog = {
     companyIsApproved: companyIsApproved,
     companyStatusLabel: companyStatusLabel,
+    initAuthStepper: initAuthStepper,
+    showErrorSummary: showErrorSummary,
+    hideErrorSummary: hideErrorSummary,
+    setBusy: setBusy,
     exportApplicationsToCSV: exportApplicationsToCSV,
     getFollowups: getFollowups,
     snoozeFollowup: snoozeFollowup,

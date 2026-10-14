@@ -24,6 +24,16 @@ instead of introducing React/GSAP into the Java-served static frontend.
 Upstream: [reactbits.dev](https://reactbits.dev/) / [React Bits](https://github.com/DavidHDev/react-bits).
 The upstream license notice remains with the archived JavaScript source.
 
+## Active React Bits adaptations
+
+The current frontend also adapts the following components in `js/script.js`
+and `css/style.css`, with keyboard/focus support and reduced-motion handling:
+
+- [StaggeredMenu](https://github.com/DavidHDev/react-bits/tree/main/src/content/Components/StaggeredMenu) — overlay navigation built from each page's own links; animation uses CSS transitions instead of GSAP.
+- [Stepper](https://github.com/DavidHDev/react-bits/tree/main/src/content/Components/Stepper) — multi-step account forms with validation; CSS motion and inline SVG instead of React and animation/icon dependencies.
+
+The React Bits license below is also retained in the active JavaScript source.
+
 ## SpotlightBar (OpenSourceUI)
 
 The homepage internship search adapts [SpotlightBar](https://opensourceui.in/components/spotlight-bar)

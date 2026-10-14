@@ -5,9 +5,31 @@
   function init() {
     if (initialized) return;
     initialized = true;
+    /* Skip link + scrollable table regions (keyboard operability). */
+    try {
+      var main = document.querySelector("main.content") || document.querySelector("main");
+      if (main && !document.querySelector(".skip-link, .landing-skip")) {
+        if (!main.id) main.id = "mainContent";
+        var skip = document.createElement("a");
+        skip.className = "skip-link";
+        skip.setAttribute("href", "#" + main.id);
+        skip.textContent = "Skip to content";
+        document.body.insertBefore(skip, document.body.firstChild);
+      }
+      var wraps = document.querySelectorAll(".table-wrap");
+      Array.prototype.forEach.call(wraps, function (wrap) {
+        if (wrap.getAttribute("tabindex") !== null) return;
+        wrap.setAttribute("tabindex", "0");
+        wrap.setAttribute("role", "region");
+        var table = null;
+        try { table = wrap.querySelector("table"); } catch (e) {}
+        var label = (table && table.getAttribute("aria-label")) || "Scrollable table";
+        wrap.setAttribute("aria-label", label);
+      });
+    } catch (e) {}
     var sidebar = document.getElementById("sidebar"), menu = document.getElementById("menuBtn"), backdrop = document.getElementById("sidebarBackdrop");
     var main = document.querySelector(".app-layout > .main");
-    if (sidebar && menu) {
+    if (sidebar && menu && !document.body.classList.contains("sm-nav")) {
       var compact = window.matchMedia("(max-width: 768px)");
       menu.setAttribute("aria-controls", "sidebar");
       function sync() {
@@ -19,7 +41,7 @@
       }
       function close() { sidebar.classList.remove("open"); if (backdrop) backdrop.classList.remove("show"); sync(); menu.focus(); }
       var button = document.createElement("button");
-      button.className = "workspace-drawer-close"; button.type = "button"; button.textContent = "×";
+      button.className = "workspace-drawer-close"; button.type = "button"; button.innerHTML = '<span aria-hidden="true">×</span>';
       button.setAttribute("aria-label", "Close navigation"); button.addEventListener("click", close); sidebar.appendChild(button);
       menu.addEventListener("click", function () { sync(); if (compact.matches && sidebar.classList.contains("open")) sidebar.querySelector("nav a").focus(); });
       if (backdrop) backdrop.addEventListener("click", function () { sync(); menu.focus(); });

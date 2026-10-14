@@ -25,7 +25,7 @@
       <div class="side-foot"><nav><a href="../index.html" data-logout>Logout</a></nav></div>
     </aside>
     <div class="main">
-      <header class="topbar"><button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button><h1>Discover Internships</h1><div class="spacer"></div><div class="user-chip" id="studentChip"><span class="avatar" data-avatar>U</span><span><strong data-user-name>Account</strong><br><span class="muted" data-user-email></span></span></div></header>
+      <header class="topbar"><button class="menu-btn" id="menuBtn" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar"><span aria-hidden="true" class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span></button><h1>Discover Internships</h1><div class="spacer"></div><div class="user-chip" id="studentChip"><span class="avatar" data-avatar>U</span><span><strong data-user-name>Account</strong><br><span class="muted" data-user-email></span></span></div></header>
       <main class="content">
         <div><h2 style="margin:0 0 6px">Internship Opportunities</h2><p class="muted" style="margin:0">Browse published internships and apply directly. No login needed to look around.</p></div>
         <div class="toolbar"><input class="search-input" type="search" id="search" placeholder="Search internships, skills, or locations" aria-label="Search internships"><select id="typeFilter" aria-label="Filter by type"><option value="all">All types</option><option>On-site</option><option>Remote</option><option>Hybrid</option></select><button class="btn btn-secondary btn-sm" id="saveSearchBtn" style="display:none" title="Save current search as an alert">Save search</button></div>
@@ -34,7 +34,7 @@
       </main>
     </div>
   </div>
-  <div class="modal-backdrop" id="jobModal" role="dialog" aria-modal="true" aria-label="Internship details"><div class="modal"><div class="modal-header"><h3 id="modalTitle">Internship</h3><button class="modal-close-icon" id="closeModal" aria-label="Close dialog">&times;</button></div><div id="modalBody"></div></div></div>
+  <div class="modal-backdrop" id="jobModal" role="dialog" aria-modal="true" aria-label="Internship details"><div class="modal"><div class="modal-header"><h3 id="modalTitle">Internship</h3><button class="modal-close-icon" id="closeModal" aria-label="Close dialog"><span aria-hidden="true">&times;</span></button></div><div id="modalBody"></div></div></div>
   <script>
     (function(){
       "use strict";
@@ -133,8 +133,13 @@
         if(!st){
           var chip=document.getElementById("studentChip");
           if(chip)chip.innerHTML='<span class="muted">Browsing as guest</span><span class="actions"><a class="btn btn-secondary btn-sm" href="login.html">Login</a><a class="btn btn-sm" href="register.html">Register</a></span>';
-          var foot=document.querySelector("[data-logout]");
-          if(foot){foot.textContent="Back to Home";foot.removeAttribute("data-logout");foot.setAttribute("href","../index.html");}
+          document.querySelectorAll("[data-logout]").forEach(function(foot){
+            var label=foot.querySelector(".sm-panel-itemLabel");
+            if(label)label.textContent="Back to Home";else foot.textContent="Back to Home";
+            foot.removeAttribute("data-logout");foot.setAttribute("href","../index.html");
+            foot.classList.remove("is-danger");
+            if(foot.parentElement)foot.parentElement.classList.remove("has-separator");
+          });
         }
         BOARD=await getBoard();
         await renderAlerts();

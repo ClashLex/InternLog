@@ -1632,3 +1632,180 @@ p.soft-pill-button { cursor: default; font-family: var(--ff-mono); font-weight: 
 .og-job-skills span { background: var(--primary-light); padding: 5px 10px; border-radius: 999px; font-size: 12px; }
 .workspace-drawer-close { display: none; position: absolute; right: 14px; top: 24px; width: 30px; height: 30px; border: 1px solid #444; border-radius: 8px; background: #1c1c1c; color: #fff; font-size: 22px; cursor: pointer; align-items: center; justify-content: center; }
 @media (max-width: 768px) { .workspace-drawer-close { display: inline-flex; } .og-job-dialog dl { grid-template-columns: 1fr; } .og-job-dialog dd { margin-bottom: 8px; } }
+
+/* ---------- Stepper (React Bits Stepper adaptation, vanilla, no GSAP) ----------
+   Frameless multi-step flow for auth forms; the auth-card stays the frame and
+   the auth-panel background is untouched. Wired by initAuthStepper() in
+   js/script.js from .stepper-pane sections. See THIRD_PARTY_NOTICES.md. */
+.stepper-track { position: relative; display: flex; gap: 4px; background: var(--primary-light); border: 1px solid var(--border); border-radius: 16px; padding: 4px; margin: 0 0 22px; }
+.stepper-glider { position: absolute; top: 4px; bottom: 4px; left: 0; width: 0; border-radius: 12px; background: var(--base); opacity: 0; transition: transform .5s cubic-bezier(.22,1,.36,1), width .5s cubic-bezier(.22,1,.36,1), opacity .2s ease; }
+.stepper-glider.is-placed { opacity: 1; }
+.stepper-seg { position: relative; z-index: 1; flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; border: 0; background: none; cursor: pointer; border-radius: 12px; padding: 9px 10px; font-family: inherit; color: var(--muted); min-height: 44px; }
+.stepper-seg:disabled { cursor: default; }
+.stepper-seg[data-status="active"] { color: #fff; }
+.stepper-seg[data-status="complete"] { color: var(--text); }
+.stepper-badge { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-family: var(--ff-mono); font-size: 12px; font-weight: 500; border: 1.5px solid var(--border); background: var(--surface); color: var(--muted); }
+.stepper-seg[data-status="active"] .stepper-badge { background: transparent; border-color: transparent; color: #fff; }
+.stepper-seg[data-status="complete"] .stepper-badge { background: var(--success-bg); border-color: var(--success-bg); color: var(--success); }
+.stepper-badge svg { width: 13px; height: 13px; }
+.stepper-seg-title { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stepper-view { position: relative; }
+.stepper-pane[hidden] { display: none; }
+.stepper-pane.is-active { animation: paneIn .45s cubic-bezier(.22,1,.36,1); }
+.stepper-pane.is-back.is-active { animation-name: paneInBack; }
+@keyframes paneIn { from { transform: translateX(36px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes paneInBack { from { transform: translateX(-36px); opacity: 0; } to { transform: none; opacity: 1; } }
+.stepper-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 20px; }
+.stepper-foot .stepper-back[hidden], .stepper-foot .stepper-next[hidden] { display: none; }
+:root[data-theme="dark"] .stepper-glider { background: #fff; }
+:root[data-theme="dark"] .stepper-seg[data-status="active"] { color: #000; }
+:root[data-theme="dark"] .stepper-seg[data-status="active"] .stepper-badge { color: #000; }
+@media (prefers-reduced-motion: reduce) {
+  .stepper-glider, .stepper-pane.is-active { transition: none; animation: none; }
+}
+
+/* ---------- StaggeredMenu (React Bits adaptation, vanilla CSS, no GSAP) ----------
+   Overlay menu with prelayers + staggered items. Built by initStaggeredMenu()
+   in js/script.js from the page's own nav links; static navs stay in markup
+   as the no-JS fallback and hide under body.sm-nav. See THIRD_PARTY_NOTICES. */
+.sm-toggle { display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 18px; border-radius: 9999px; background: var(--base); color: #fff; border: 1px solid var(--base); cursor: pointer; font-family: var(--ff-mono); font-style: normal; font-weight: 500; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; flex: none; }
+.sm-toggle:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+:root[data-theme="dark"] .sm-toggle:hover { color: #000; }
+.sm-toggle-text { height: 1em; overflow: hidden; }
+.sm-toggle-textInner { display: flex; flex-direction: column; transition: transform .45s cubic-bezier(.22,.61,.36,1); }
+.sm-toggle-line { height: 1em; line-height: 1; white-space: nowrap; }
+body[data-sm-open] .sm-toggle-textInner { transform: translateY(-50%); }
+.sm-icon { position: relative; width: 14px; height: 14px; flex: none; transition: transform .5s cubic-bezier(.22,.61,.36,1); }
+.sm-icon-h, .sm-icon-v { position: absolute; left: 0; top: 6px; width: 14px; height: 2px; background: currentColor; border-radius: 1px; }
+.sm-icon-v { transform: rotate(90deg); }
+body[data-sm-open] .sm-icon { transform: rotate(225deg); }
+.nav-bar--pill .sm-toggle { margin-left: auto; }
+.staggered-menu-wrapper { position: fixed; inset: 0; z-index: 9400; pointer-events: none; }
+.sm-prelayers { position: absolute; inset: 0; }
+.sm-prelayer { position: absolute; inset: 0; transform: translateX(100%); transition: transform .5s cubic-bezier(.76,0,.24,1); }
+.sm-prelayer:nth-child(1) { background: #0c0c0e; }
+.sm-prelayer:nth-child(2) { background: #1b1b20; transition-delay: .07s; }
+.sm-prelayer:nth-child(3) { background: #26262c; transition-delay: .14s; }
+body[data-sm-open] .sm-prelayer { transform: translateX(0); }
+.sm-panel { position: absolute; top: 0; right: 0; height: 100%; width: min(430px, 94vw); background: var(--surface); transform: translateX(100%); transition: transform .55s cubic-bezier(.76,0,.24,1) .12s; pointer-events: auto; overflow-y: auto; display: flex; }
+body[data-sm-open] .sm-panel { transform: translateX(0); }
+body[data-sm-open] .topbar, body[data-sm-open] .site-header { z-index: 9600; }
+.sm-panel-inner { margin: 0; width: 100%; padding: 96px 34px 32px; }
+.sm-panel-list { list-style: none; margin: 0; padding: 0; counter-reset: sm-item; }
+.sm-panel-itemWrap { overflow: hidden; }
+.sm-panel-item { display: flex; align-items: baseline; gap: 14px; padding: 9px 4px; text-decoration: none; color: var(--text); opacity: 0; transform: translateY(140%) rotate(4deg); transition: opacity .45s ease, transform .7s cubic-bezier(.22,.61,.36,1); }
+body[data-sm-open] .sm-panel-item { opacity: 1; transform: none; }
+.sm-panel-item::before { counter-increment: sm-item; content: counter(sm-item, decimal-leading-zero); font-family: var(--ff-mono); font-size: 11px; font-weight: 500; color: var(--muted); flex: none; }
+.sm-panel-itemLabel { font-family: var(--ff-display); font-weight: 700; font-size: clamp(26px, 4.6vw, 38px); line-height: 1.12; letter-spacing: -.02em; transition: transform .2s ease; }
+.sm-panel-item:hover { text-decoration: none; }
+.sm-panel-item:hover .sm-panel-itemLabel { transform: translateX(8px); }
+.sm-panel-item.is-active .sm-panel-itemLabel { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 3px; }
+.sm-socials { margin-top: 28px; opacity: 0; transition: opacity .5s ease; }
+body[data-sm-open] .sm-socials { opacity: 1; }
+.sm-socials-title { font-family: var(--ff-mono); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 10px; }
+.sm-socials-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.sm-socials-link { display: inline-block; padding: 6px 4px; font-size: 14px; font-weight: 600; color: var(--text); }
+/* Static navs hide once the overlay takes over (they remain for no-JS). */
+body.sm-nav .pill-nav-container { display: none; }
+body.sm-nav .sidebar, body.sm-nav .sidebar-backdrop, body.sm-nav .menu-btn { display: none; }
+body.sm-nav .app-layout { grid-template-columns: 1fr; }
+@media (prefers-reduced-motion: reduce) {
+  .sm-toggle-textInner, .sm-icon, .sm-prelayer, .sm-panel, .sm-panel-item, .sm-socials, .sm-panel-itemLabel { transition: none; }
+}
+
+/* ---------- UI/UX Pro Max pass: a11y + interaction fixes ---------- */
+/* Every clickable element shows a pointer. */
+.mobile-menu-link, .sm-panel-item, .sm-socials-link,
+.sidebar nav a, .site-footer nav a,
+.modal-backdrop.open, .sidebar-backdrop.show { cursor: pointer; }
+button, .btn { touch-action: manipulation; }
+/* Visible focus where it was missing or washed out. */
+.mobile-menu-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.sm-panel-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--text) 22%, transparent); }
+:root[data-theme="dark"] input:focus, :root[data-theme="dark"] select:focus, :root[data-theme="dark"] textarea:focus { border-color: var(--text); box-shadow: 0 0 0 3px rgb(255 255 255 / .18); }
+.spotlight:focus-within { border-color: var(--text); box-shadow: 0 0 0 3px color-mix(in srgb, var(--text) 14%, transparent); }
+/* Skip link: keyboard users jump past navigation. */
+.skip-link { position: fixed; top: 12px; left: 12px; z-index: 10001; padding: 12px 20px; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 10px; transform: translateY(-250%); font-weight: 600; font-size: 14px; text-decoration: none; }
+.skip-link:focus-visible { transform: translateY(0); }
+/* Error summary: focusable, linked list kept alongside inline errors. */
+.form-error-summary { display: none; margin: 0 0 16px; }
+.form-error-summary ul { margin: 8px 0 0; padding-left: 20px; }
+.form-error-summary li { margin: 2px 0; }
+.form-error-summary a { color: inherit; font-weight: 600; }
+/* Busy submit buttons: disabled + spinner, label hidden but announced via aria-busy. */
+.btn.is-loading { position: relative; color: transparent !important; pointer-events: none; }
+.btn.is-loading::after { content: ""; position: absolute; width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--border); border-top-color: var(--text); animation: spin360 .7s linear infinite; }
+/* Reflow without clipping: wrap rows, break long tokens, ellipsize the topbar. */
+.mini-row { flex-wrap: wrap; }
+.og-job-top, .og-job-bottom { flex-wrap: wrap; }
+th, td { overflow-wrap: anywhere; }
+.topbar h1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-chip > span:last-child { min-width: 0; }
+.user-chip strong { display: block; max-width: 24ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Unstyled link class used by landing empty states. */
+.landing-text-link { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; }
+/* Legibility over the animated auth backdrop (composed-result scrim rule). */
+.auth-panel p, .auth-panel ul li { text-shadow: 0 1px 10px rgb(0 0 0 / .55); }
+/* Placeholder contrast: explicit pairs for both themes. */
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
+:root[data-theme="dark"] input::placeholder, :root[data-theme="dark"] textarea::placeholder { color: #9a9a9a; opacity: 1; }
+/* Dismiss control meets the 24px web target minimum. */
+.toast-close { min-width: 28px; min-height: 28px; }
+/* Destructive panel entry stays separated from normal items. */
+.sm-panel-item.is-danger { color: var(--danger); }
+.sm-panel-itemWrap.has-separator { border-top: 1px solid var(--border); margin-top: 10px; padding-top: 10px; }
+/* Icon sizing token for the hamburger mark. */
+.menu-icon { display: inline-flex; width: 16px; height: 16px; }
+.menu-icon svg { width: 100%; height: 100%; }
+/* Readable 16px inputs on touch devices (no iOS auto-zoom). */
+@media (pointer: coarse) {
+  input[type="text"], input[type="email"], input[type="password"], input[type="date"],
+  input[type="number"], input[type="url"], input[type="search"], select, textarea { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn.is-loading::after { animation: none; }
+}
+
+/* ---------- Landing redesign: announcement, product visual, FAQ ---------- */
+.hero-announce { margin: 0 0 18px; }
+.hero-announce a { display: inline-flex; align-items: center; gap: 8px; font-family: var(--ff-mono); font-size: 12px; font-weight: 500; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 9999px; padding: 8px 16px; text-decoration: none; box-shadow: var(--shadow); }
+.hero-announce a:hover { border-color: var(--text); text-decoration: none; }
+.hero-announce-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); flex: none; }
+.hero-visual { margin: 44px 0 0; }
+.mock { border: 1px solid var(--border); border-radius: 20px; background: var(--surface); box-shadow: var(--shadow-lg); overflow: hidden; text-align: start; }
+.mock-bar { display: flex; align-items: center; gap: 7px; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--bg); }
+.mock-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); flex: none; }
+.mock-dot:first-child { background: var(--danger); opacity: .55; }
+.mock-url { margin-left: 8px; font-family: var(--ff-mono); font-size: 11px; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 4px 12px; }
+.mock-body { padding: 20px; display: grid; gap: 16px; }
+.mock-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.mock-row strong { font-size: 15px; }
+.mock-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.mock-stats > div { border: 1px solid var(--border); border-radius: 14px; padding: 12px 10px; text-align: center; background: var(--surface); }
+.mock-stats strong { display: block; font-family: var(--ff-display); font-size: clamp(1.3rem, 1rem + 2vw, 1.7rem); letter-spacing: -.02em; }
+.mock-stats > div > span:last-child { font-family: var(--ff-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.mock-list { display: grid; gap: 8px; }
+.mock-list > div { display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; }
+.mock-list strong { display: block; font-size: 14px; }
+.mock-list span span { font-size: 12px; color: var(--muted); }
+.mock-bars { display: grid; gap: 10px; }
+.mock-bars > div { display: grid; grid-template-columns: 100px 1fr 32px; gap: 10px; align-items: center; font-family: var(--ff-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.mock-bars strong { font-family: var(--ff-sans); font-size: 14px; color: var(--text); text-align: end; }
+.hero-visual figcaption { margin-top: 12px; font-size: 12px; text-align: center; }
+.faq { display: grid; gap: 0; border-top: 1px solid var(--border); }
+.faq details { border-bottom: 1px solid var(--border); padding: 18px 4px; }
+.faq summary { cursor: pointer; font-weight: 600; font-size: 15px; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; flex: none; width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 400; font-size: 18px; color: var(--muted); }
+.faq details[open] summary::after { content: "–"; }
+.faq summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; border-radius: 8px; }
+.faq details p { margin: 12px 0 4px; color: var(--muted); font-size: 14px; max-width: 70ch; }
+@media (max-width: 760px) {
+  .mock-stats { grid-template-columns: repeat(2, 1fr); }
+  .mock-bars > div { grid-template-columns: 84px 1fr 28px; }
+  .hero-visual { margin-top: 32px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-announce a { transition: none; }
+}
