@@ -44,7 +44,7 @@ css/style.css                    Shared design system
 js/                              UI logic and Java API client
 backend/                         Spring Boot application, persistence and tests
 tests/ scripts/                  Frontend regression and validation tools
-.github/workflows/               Automated checks and Java packaging
+.github/workflows/               Automated checks, Java packaging and frontend deployment
 ```
 
 ## Documentation
@@ -64,5 +64,6 @@ The Maven wrapper builds the Java application and packages the frontend into its
 runnable JAR. Backend tests use isolated H2 rather than an operational MySQL database.
 Frontend checks use Node.js and Python; neither is required by the application runtime.
 
-GitHub Actions checks both layers and publishes the Java JAR as a build artifact.
-The project does not deploy a standalone GitHub Pages demo.
+GitHub Actions checks both layers, publishes the Java JAR as a build artifact,
+and deploys the verified frontend from `main` to GitHub Pages. Pages hosts only
+static frontend assets; account and data operations still require the Java backend.

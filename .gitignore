@@ -30,6 +30,10 @@ dist/
 build/
 _site/
 
+# Python validation/build helpers
+__pycache__/
+*.pyc
+
 # OS / editors
 .DS_Store
 Thumbs.db
