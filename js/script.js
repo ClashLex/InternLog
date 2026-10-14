@@ -435,6 +435,22 @@
   }
 
   /* ---------------- UI primitives ---------------- */
+  /* Toast icons (OpenSourceUI Toast Notification adaptation, MIT): filled dot
+     + glyph per kind. Message stays textContent-assigned (XSS-safe). */
+  var TOAST_ICONS = {
+    success: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg>',
+    error: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>',
+    warning: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M8 4v5"/><circle cx="8" cy="12" r=".5" fill="currentColor"/></svg>',
+    info: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M8 7.5V12"/><circle cx="8" cy="4.5" r=".5" fill="currentColor"/></svg>'
+  };
+  function dismissToast(el) {
+    if (!el || el.getAttribute("data-closing")) return;
+    el.setAttribute("data-closing", "true");
+    try { el.className += " toast-exit"; } catch (e) {}
+    setTimeout(function () {
+      try { el.remove(); } catch (e) { if (el.parentNode) el.parentNode.removeChild(el); }
+    }, 260);
+  }
   function showNotification(message, type) {
     type = type || "info";
     var container = document.getElementById("toast-container");
@@ -446,13 +462,24 @@
     }
     var el = document.createElement("div");
     el.className = "toast toast-" + type;
-    el.textContent = message;
+    var icon = document.createElement("span");
+    icon.className = "toast-icon";
+    icon.setAttribute("aria-hidden", "true");
+    icon.innerHTML = TOAST_ICONS[type] || TOAST_ICONS.info;
+    var text = document.createElement("span");
+    text.className = "toast-text";
+    text.textContent = message;
+    var close = document.createElement("button");
+    close.className = "toast-close";
+    close.type = "button";
+    close.setAttribute("aria-label", "Dismiss notification");
+    close.textContent = "×";
+    close.onclick = function () { dismissToast(el); };
+    el.appendChild(icon);
+    el.appendChild(text);
+    el.appendChild(close);
     container.appendChild(el);
-    setTimeout(function () {
-      el.style.opacity = "0";
-      el.style.transition = "opacity 0.3s ease";
-      setTimeout(function () { el.remove(); }, 300);
-    }, 3400);
+    setTimeout(function () { dismissToast(el); }, 3400);
   }
 
   function statusBadge(status) {
@@ -556,17 +583,21 @@
       });
     });
 
-    // Password reveal toggles
+    // Password reveal toggles (OpenSourceUI Password Field pattern: pressed state)
     document.querySelectorAll("[data-password-toggle]").forEach(function (btnEl) {
       btnEl.addEventListener("click", function () {
         var input = document.getElementById(btnEl.getAttribute("data-password-toggle"));
         if (!input) return;
         input.type = input.type === "password" ? "text" : "password";
-        btnEl.textContent = input.type === "password" ? "Show" : "Hide";
+        var showing = input.type !== "password";
+        btnEl.textContent = showing ? "Hide" : "Show";
+        btnEl.setAttribute("aria-pressed", showing ? "true" : "false");
       });
     });
 
     populateSessionUI();
+    initSearchFields();
+    initCountUp();
 
     // Global modal close on ESC key
     document.addEventListener("keydown", function (e) {
@@ -585,6 +616,112 @@
     document.querySelectorAll("[data-user-name]").forEach(function (el) { el.textContent = s.name || (s.role === "admin" ? "Admin" : "Student"); });
     document.querySelectorAll("[data-user-email]").forEach(function (el) { el.textContent = s.email || ""; });
     document.querySelectorAll("[data-avatar]").forEach(function (el) { if (s.name) el.textContent = s.name.trim().charAt(0).toUpperCase(); });
+  }
+
+  /* Search fields with leading icon + clear button (OpenSourceUI Search Input
+     adaptation, MIT). Decorates plain toolbar searches in place; the landing
+     spotlight bar is separate. No markup edits required. */
+  var SEARCH_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>';
+  function initSearchFields() {
+    if (typeof document.querySelectorAll !== "function" || typeof document.createElement !== "function") return;
+    var inputs = document.querySelectorAll("input.search-input");
+    if (!inputs || typeof inputs.forEach !== "function") return;
+    inputs.forEach(function (input) {
+      if (!input || input.id === "landingSearch") return;
+      try { if (input.closest && input.closest("[data-spotlight]")) return; } catch (e) {}
+      try {
+        if (input.parentNode && input.parentNode.classList && input.parentNode.classList.contains("search-field")) return;
+      } catch (e) {}
+      var wrap = document.createElement("div");
+      wrap.className = "search-field";
+      var icon = document.createElement("span");
+      icon.className = "search-field-icon";
+      icon.setAttribute("aria-hidden", "true");
+      icon.innerHTML = SEARCH_ICON;
+      var clear = document.createElement("button");
+      clear.type = "button";
+      clear.className = "search-clear";
+      clear.setAttribute("aria-label", "Clear search");
+      clear.textContent = "×";
+      clear.addEventListener("click", function () {
+        input.value = "";
+        sync();
+        try { input.focus(); } catch (e) {}
+        try {
+          if (typeof Event === "function") input.dispatchEvent(new Event("input", { bubbles: true }));
+        } catch (e) {}
+      });
+      function sync() {
+        var has = !!(input.value && String(input.value).length);
+        try {
+          if (wrap.classList) wrap.classList.toggle("has-value", has);
+          else wrap.setAttribute("data-has-value", has ? "true" : "false");
+        } catch (e) {}
+      }
+      input.addEventListener("input", sync);
+      try { input.parentNode.insertBefore(wrap, input); } catch (e) { return; }
+      wrap.appendChild(icon);
+      wrap.appendChild(input);
+      wrap.appendChild(clear);
+      sync();
+    });
+  }
+
+  /* Animated stat numbers (OpenSourceUI Counter adaptation, MIT). Counts
+     `.stat .value` integers up once when visible; instant when reduced motion
+     is preferred or animation APIs are unavailable. Late-rendered stats are
+     picked up via MutationObserver. */
+  function initCountUp() {
+    if (typeof document.querySelectorAll !== "function") return;
+    var reduce = false;
+    try { reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); } catch (e) {}
+    var raf = (typeof window.requestAnimationFrame === "function") ? window.requestAnimationFrame.bind(window) : null;
+    function animate(el) {
+      if (!el || el.getAttribute("data-counted")) return;
+      var target = parseInt(String(el.textContent || "").replace(/[^0-9]/g, ""), 10);
+      if (!isFinite(target)) return;
+      el.setAttribute("data-counted", "true");
+      if (reduce || !raf || target <= 0) { el.textContent = String(target); return; }
+      var start = null, dur = 700;
+      function step(ts) {
+        if (start === null) start = ts;
+        var p = Math.min(1, (ts - start) / dur);
+        el.textContent = String(Math.round(target * (1 - Math.pow(1 - p, 3))));
+        if (p < 1) raf(step); else el.textContent = String(target);
+      }
+      raf(step);
+    }
+    function scan(root) {
+      var nodes = null;
+      try { nodes = (root || document).querySelectorAll(".stat .value"); } catch (e) { return; }
+      if (!nodes || typeof nodes.forEach !== "function") return;
+      nodes.forEach(function (el) {
+        if (!reduce && typeof window.IntersectionObserver === "function") {
+          var io = new window.IntersectionObserver(function (entries, obs) {
+            entries.forEach(function (en) {
+              if (en.isIntersecting) { try { obs.unobserve(en.target); } catch (e) {} animate(en.target); }
+            });
+          }, { threshold: 0.4 });
+          try { io.observe(el); } catch (e) { animate(el); }
+        } else animate(el);
+      });
+    }
+    scan(document);
+    if (typeof window.MutationObserver === "function" && document.body) {
+      try {
+        new window.MutationObserver(function (records) {
+          records.forEach(function (rec) {
+            var added = rec.addedNodes || [];
+            for (var i = 0; i < added.length; i++) {
+              var node = added[i];
+              if (!node || node.nodeType !== 1) continue;
+              if (node.matches && node.matches(".stat .value")) animate(node);
+              else if (node.querySelectorAll) scan(node);
+            }
+          });
+        }).observe(document.body, { childList: true, subtree: true });
+      } catch (e) {}
+    }
   }
 
   function setFieldError(input, msg) {

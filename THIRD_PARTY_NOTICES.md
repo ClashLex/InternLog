@@ -31,6 +31,32 @@ The homepage internship search adapts [SpotlightBar](https://opensourceui.in/com
 shortcut hint) as vanilla HTML/CSS/JS in `index.html`, `css/style.css` and
 `js/landing.js` — no React or Tailwind dependency.
 
+## Additional OpenSourceUI adaptations
+
+The following are adapted as vanilla HTML/CSS/JS (no React, Tailwind or
+lucide dependencies) in `css/style.css` and `js/script.js`, keeping every
+existing class name, element id and event contract unchanged:
+
+- [Tactile 3D](https://opensourceui.in/components) buttons — `.btn` keycaps
+  with layered depth; press sinks the key in (solid / soft / danger variants).
+- [Toast Notification](https://opensourceui.in/components/toast-notification) —
+  light snackbar with per-kind icon, message and dismiss control.
+- [Search Input](https://opensourceui.in/components/search-input) — toolbar
+  searches gain a leading icon and clear button with keyboard-friendly reset.
+- [Checkbox Field Input](https://opensourceui.in/components/checkbox-field-input) —
+  custom checkbox mark with focus and disabled states.
+- [Select Field Input](https://opensourceui.in/components/select-field-input) —
+  native selects restyled with custom chevron, hover and focus treatment.
+- [Text Field Input](https://opensourceui.in/components) — text inputs and
+  textareas gain hover borders and soft focus rings alongside the existing
+  error pattern.
+- [Password Field Input](https://opensourceui.in/components) — show/hide
+  toggles expose pressed state.
+- [Counter](https://opensourceui.in/components) — `.stat .value` numbers
+  count up once when visible (instant under reduced motion).
+- [Spin Loader](https://opensourceui.in/components/spin-loader) — ring loader
+  used by board, dashboard and moderation loading states.
+
 Upstream: [opensourceui.in](https://opensourceui.in/) — MIT licensed. Free for
 personal and commercial use with no UI attribution required; the MIT copyright
 notice travels with the adapted source in `js/landing.js` and `css/style.css`.

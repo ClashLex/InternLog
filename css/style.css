@@ -117,22 +117,34 @@ h1, h2, h3 { font-family: var(--ff-display); font-weight: 700; letter-spacing: -
 .site-footer p { color: var(--muted); font-size: 14px; }
 .site-footer nav a { font-family: var(--ff-mono); font-style: normal; font-weight: 500; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
 
-/* ---------- Buttons / forms ---------- */
+/* ---------- Buttons: tactile 3D keys (OpenSourceUI Tactile 3D adaptation, MIT) ----------
+   Solid / soft keycaps with layered depth; press sinks the key in. */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   border: 1px solid var(--base); border-radius: 9999px;
   padding: 12px 22px; font-family: var(--ff-mono); font-style: normal; font-weight: 500; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; cursor: pointer;
   background: var(--base); color: #fff; line-height: 1;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .22), inset 0 -2px 0 rgb(0 0 0 / .32), 0 3px 0 rgb(0 0 0 / .30), 0 7px 14px rgb(0 0 0 / .14);
+  transition: transform .08s ease, box-shadow .08s ease, background-color .15s ease, border-color .15s ease, color .15s ease;
 }
-.btn:hover { background: var(--primary-dark); border-color: var(--primary-dark); text-decoration: none; color: #fff; }
-.btn:active { transform: none; }
-.btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
-.btn-secondary:hover { background: var(--primary-light); color: var(--text); border-color: var(--text); }
-.btn-danger { background: var(--surface); color: var(--danger); border-color: var(--danger); font-family: var(--ff-mono); font-style: normal; font-weight: 500; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
-.btn-danger:hover { background: var(--danger); border-color: var(--danger); color: #fff; }
-.btn-success { background: var(--base); border-color: var(--base); color: #fff; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
-.btn-success:hover { background: var(--primary-dark); border-color: var(--primary-dark); color: #fff; }
+.btn:hover { background: var(--primary-dark); border-color: var(--primary-dark); text-decoration: none; color: #fff; transform: translateY(-1px); box-shadow: inset 0 1px 0 rgb(255 255 255 / .22), inset 0 -2px 0 rgb(0 0 0 / .32), 0 4px 0 rgb(0 0 0 / .30), 0 9px 16px rgb(0 0 0 / .16); }
+.btn:active { transform: translateY(2px); box-shadow: inset 0 2px 5px rgb(0 0 0 / .35), 0 0 0 rgb(0 0 0 / 0); }
+.btn:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); box-shadow: inset 0 1px 0 rgb(128 128 128 / .18), inset 0 -2px 0 rgb(0 0 0 / .07), 0 3px 0 rgb(0 0 0 / .12), 0 6px 12px rgb(0 0 0 / .06); }
+.btn-secondary:hover { background: var(--primary-light); color: var(--text); border-color: var(--text); transform: translateY(-1px); box-shadow: inset 0 1px 0 rgb(128 128 128 / .18), inset 0 -2px 0 rgb(0 0 0 / .07), 0 4px 0 rgb(0 0 0 / .12), 0 8px 14px rgb(0 0 0 / .08); }
+.btn-secondary:active { transform: translateY(2px); box-shadow: inset 0 2px 5px rgb(0 0 0 / .18), 0 0 0 rgb(0 0 0 / 0); }
+.btn-danger { background: var(--surface); color: var(--danger); border-color: var(--danger); font-family: var(--ff-mono); font-style: normal; font-weight: 500; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; box-shadow: inset 0 1px 0 rgb(128 128 128 / .15), inset 0 -2px 0 rgb(185 28 28 / .12), 0 3px 0 rgb(185 28 28 / .25); }
+.btn-danger:hover { background: var(--danger); border-color: var(--danger); color: #fff; transform: translateY(-1px); box-shadow: inset 0 1px 0 rgb(255 255 255 / .25), inset 0 -2px 0 rgb(0 0 0 / .25), 0 4px 0 rgb(0 0 0 / .30); }
+.btn-danger:active { transform: translateY(2px); box-shadow: inset 0 2px 5px rgb(0 0 0 / .3), 0 0 0 rgb(0 0 0 / 0); }
+.btn-success { background: var(--base); border-color: var(--base); color: #fff; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; box-shadow: inset 0 1px 0 rgb(255 255 255 / .22), inset 0 -2px 0 rgb(0 0 0 / .32), 0 3px 0 rgb(0 0 0 / .30); }
+.btn-success:hover { background: var(--primary-dark); border-color: var(--primary-dark); color: #fff; transform: translateY(-1px); }
+.btn-success:active { transform: translateY(2px); box-shadow: inset 0 2px 5px rgb(0 0 0 / .35), 0 0 0 rgb(0 0 0 / 0); }
 .btn-sm { padding: 10px 18px; font-size: 12px; font-family: var(--ff-mono); font-style: normal; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; border-radius: 9999px; min-height: 40px; }
+@media (prefers-reduced-motion: reduce) {
+  .btn, .btn-secondary, .btn-danger, .btn-success { transition: none; }
+  .btn:hover, .btn-secondary:hover, .btn-danger:hover, .btn-success:hover,
+  .btn:active, .btn-secondary:active, .btn-danger:active, .btn-success:active { transform: none; }
+}
 .btn:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible {
   outline: 2px solid var(--primary); outline-offset: 2px;
 }
@@ -141,13 +153,22 @@ label { display: block; font-weight: 600; font-size: 12px; text-transform: upper
 input[type="text"], input[type="email"], input[type="password"], input[type="date"], input[type="number"], input[type="url"], select, textarea {
   width: 100%; padding: 12px 16px; border: 1px solid var(--border);
   border-radius: 14px; font-size: 14px; font-family: inherit; background: var(--surface); color: var(--text);
+  transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
 }
+input:hover, select:hover, textarea:hover { border-color: var(--muted); }
 input:focus, select:focus, textarea:focus {
   outline: none; border-color: var(--text);
-  box-shadow: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--text) 10%, transparent);
 }
+/* Custom chevron for native selects (OpenSourceUI Select Field visual language) */
+select {
+  appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 38px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236e6e6e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center; background-size: 13px;
+}
+select:disabled { opacity: .55; cursor: not-allowed; }
 textarea { min-height: 90px; resize: vertical; }
-input[aria-invalid="true"], select[aria-invalid="true"] {
+input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"] {
   border-color: var(--danger); box-shadow: 0 0 0 3px rgba(220,38,38,.12);
 }
 .field-error { color: var(--danger); font-size: 13px; margin-top: 5px; display: none; font-weight: 500; }
@@ -155,8 +176,24 @@ input[aria-invalid="true"], select[aria-invalid="true"] {
 .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 16px; }
 .form-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
 .form-actions-left { display: flex; gap: 10px; align-items: center; }
-.checkbox-row { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; }
+.checkbox-row { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
 .checkbox-row input { margin-top: 3px; }
+/* Custom checkbox mark (OpenSourceUI Checkbox Field adaptation, MIT) */
+.checkbox-row input[type="checkbox"] {
+  appearance: none; -webkit-appearance: none; flex: none;
+  width: 18px; height: 18px; margin-top: 1px; padding: 0;
+  border: 1.5px solid var(--border); border-radius: 6px; background: var(--surface);
+  cursor: pointer; display: inline-grid; place-items: center;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+.checkbox-row input[type="checkbox"]:hover { border-color: var(--text); }
+.checkbox-row input[type="checkbox"]:checked {
+  background-color: var(--base); border-color: var(--base);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+  background-size: 11px; background-position: center; background-repeat: no-repeat;
+}
+.checkbox-row input[type="checkbox"]:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.checkbox-row input[type="checkbox"]:disabled { opacity: .5; cursor: not-allowed; }
 
 /* ---------- Auth layout ---------- */
 /* Invalid fields tint their label without any JavaScript (progressive enhancement) */
@@ -381,10 +418,31 @@ input[aria-invalid="true"], select[aria-invalid="true"] {
   padding: 16px; box-shadow: none;
 }
 .stat .label { font-family: var(--ff-mono); font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .06em; }
-.stat .value { font-family: var(--ff-display); font-weight: 700; font-size: clamp(1.6rem, 1.2rem + 2vw, 2rem); letter-spacing: -0.02em; margin-top: 4px; color: var(--text); }
+.stat .value { font-family: var(--ff-display); font-weight: 700; font-size: clamp(1.6rem, 1.2rem + 2vw, 2rem); letter-spacing: -0.02em; margin-top: 4px; color: var(--text); font-variant-numeric: tabular-nums; }
 .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 16px 0; }
 .toolbar input[type="text"], .toolbar input[type="search"], .toolbar select { width: auto; }
 .search-input { flex: 1 1 220px; min-width: 0; max-width: 100%; }
+
+/* ---------- Search field with icon + clear (OpenSourceUI Search Input adaptation, MIT) ----------
+   Applied by initSearchFields() in js/script.js; the landing spotlight bar is separate. */
+.search-field { position: relative; flex: 1 1 220px; min-width: 0; display: flex; align-items: center; }
+.toolbar .search-field input.search-input { flex: 1; width: 100%; min-width: 0; padding-left: 38px; padding-right: 36px; }
+.search-field-icon { position: absolute; left: 13px; width: 15px; height: 15px; color: var(--muted); pointer-events: none; display: inline-flex; }
+.search-field-icon svg { width: 100%; height: 100%; }
+input[type="search"]::-webkit-search-cancel-button, input[type="search"]::-webkit-search-decoration { display: none; -webkit-appearance: none; }
+.search-clear { position: absolute; right: 8px; width: 24px; height: 24px; border: 0; background: none; border-radius: 7px; color: var(--muted); font-size: 16px; line-height: 1; cursor: pointer; display: none; align-items: center; justify-content: center; padding: 0; }
+.search-field.has-value .search-clear { display: inline-flex; }
+.search-clear:hover { background: var(--primary-light); color: var(--text); }
+
+/* ---------- Spin loader (OpenSourceUI Spin Loader adaptation, MIT) ---------- */
+.spin-loader { display: inline-flex; align-items: center; justify-content: center; vertical-align: -3px; }
+.spin-loader::after { content: ""; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border); border-top-color: var(--text); animation: spin360 .7s linear infinite; }
+.spin-loader-lg::after { width: 28px; height: 28px; border-width: 3px; }
+.spin-row { display: flex; align-items: center; justify-content: center; gap: 10px; }
+@keyframes spin360 { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .spin-loader::after { animation: none; border-top-color: var(--border); }
+}
 
 /* ---------- Spotlight search (OpenSourceUI SpotlightBar adaptation, MIT) ----------
    Frosted command-search bar with live suggestions + keyboard nav.
@@ -430,11 +488,12 @@ input[aria-invalid="true"], select[aria-invalid="true"] {
   overflow-x: auto; overflow-y: hidden; box-shadow: none;
   -webkit-overflow-scrolling: touch; scrollbar-width: thin;
 }
-table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 720px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 720px; font-variant-numeric: tabular-nums; }
 th, td { text-align: start; padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-th { background: var(--surface); font-family: var(--ff-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; }
+th { background: var(--bg); font-family: var(--ff-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; white-space: nowrap; }
 tr:last-child td { border-bottom: 0; }
-tr:hover td { background: var(--bg); }
+tbody tr { transition: background-color .12s ease; }
+tr:hover td { background: color-mix(in srgb, var(--primary-light) 55%, var(--surface)); }
 table strong { font-family: var(--ff-sans); font-weight: 700; font-size: 14px; }
 .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .row-select { width: auto; font-size: 13px; padding: 10px 16px; border-radius: 9999px; min-height: 40px; }
@@ -478,20 +537,32 @@ table strong { font-family: var(--ff-sans); font-weight: 700; font-size: 14px; }
 .empty h3 { margin: 0 0 6px; font-weight: 700; text-transform: uppercase; letter-spacing: -0.01em; font-size: clamp(1.3rem, 1.1rem + 1.6vw, 1.625rem); }
 .empty p { font-family: var(--ff-sans); font-style: normal; font-weight: 400; font-size: 14px; color: var(--muted); margin: 0 0 16px; }
 
-/* Toasts */
+/* Toasts: light snackbar (OpenSourceUI Toast Notification adaptation, MIT) */
 #toast-container { position: fixed; right: 18px; bottom: 18px; display: flex; flex-direction: column; gap: 10px; z-index: 9999; max-width: min(380px, 90vw); }
 .toast {
-  display: flex; align-items: center; gap: 10px;
-  background: var(--base); color: #fff; border-radius: 9999px; padding: 12px 18px; font-size: 13px; font-weight: 600;
-  box-shadow: none;
-  animation: slideIn .2s ease;
+  display: inline-flex; align-items: center; gap: 10px; max-width: 320px;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  border: 1px solid var(--border); border-radius: 14px; padding: 10px 12px;
+  font-size: 13px; font-weight: 500; color: var(--text);
+  box-shadow: 0 4px 24px -2px rgb(0 0 0 / .10), 0 0 0 1px rgb(0 0 0 / .02);
+  animation: toastIn .34s cubic-bezier(.25,.46,.45,.94);
 }
-.toast::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: #fff; }
-@keyframes slideIn { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-.toast-success::before { background: #4ade80; }
-.toast-error::before { background: #f87171; }
-.toast-warning::before { background: #fbbf24; }
-.toast-info::before { background: #fff; }
+.toast-icon { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--base); }
+.toast-icon svg { width: 11px; height: 11px; color: #fff; }
+.toast-success .toast-icon { background: #047857; }
+.toast-error .toast-icon { background: #b91c1c; }
+.toast-warning .toast-icon { background: #92400e; }
+.toast-info .toast-icon { background: var(--base); }
+.toast-text { flex: 1; min-width: 0; line-height: 1.35; }
+.toast-close { flex: none; border: 0; background: none; cursor: pointer; padding: 2px 6px; font-size: 13px; line-height: 1; color: var(--muted); border-radius: 6px; }
+.toast-close:hover { color: var(--text); background: var(--primary-light); }
+.toast-exit { transform: translateY(12px); opacity: 0; transition: transform .26s ease-in, opacity .26s ease-in; }
+@keyframes toastIn { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .toast { animation: none; }
+  .toast-exit { transition: none; }
+}
 
 /* Modal */
 .modal-backdrop {
@@ -499,6 +570,11 @@ table strong { font-family: var(--ff-sans); font-weight: 700; font-size: 14px; }
   display: none; align-items: center; justify-content: center; padding: 20px; z-index: 9000;
 }
 .modal-backdrop.open { display: flex; }
+.modal-backdrop.open .modal, dialog[open].og-job-dialog { animation: modalIn .22s cubic-bezier(.16,1,.3,1); }
+@keyframes modalIn { from { transform: translateY(10px) scale(.98); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .modal-backdrop.open .modal, dialog[open].og-job-dialog { animation: none; }
+}
 .modal {
   background: var(--surface); border-radius: 27px; max-width: min(580px, 100%);
   padding: clamp(1.1rem, .9rem + 2vw, 1.5rem); border: 1px solid var(--border); box-shadow: var(--shadow-lg);
