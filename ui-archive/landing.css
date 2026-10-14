@@ -1,4 +1,4 @@
-/* Homepage-only styles; student, company and admin workspaces stay unchanged. */
+/* Archived redesigned homepage styles; not loaded by the original frontend. */
 .landing-page { --landing-tint: #eaf0e3; --landing-accent: #42613c; }
 :root[data-theme="dark"] .landing-page { --landing-tint: #1d281b; --landing-accent: #b0cea3; }
 .landing-page .wrap { max-width: 1180px; padding-inline: 28px; }

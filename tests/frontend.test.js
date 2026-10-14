@@ -107,7 +107,7 @@ test("public navigation and account forms initialize before the readiness check 
   let initialize, resolveReady;
   const calls = [];
   const ready = new Promise(resolve => { resolveReady = resolve; });
-  const scope = { window: { location: { pathname: "/index.html" }, InternLog: { ready }, InternLogUI: { init: () => calls.push("UI") } },
+  const scope = { window: { location: { pathname: "/index.html" }, InternLog: { ready }, InternLogAccessibility: { init: () => calls.push("UI") } },
     document: { addEventListener: (event, listener) => { initialize = listener; }, querySelector: () => null } };
   for (const name of ["injectFavicon", "initCompanyRegisterGuard", "initCompanyLoginGuard", "initNavigation", "initPillNav", "initMagicBento", "initThemeToggle", "initGalaxy", "initCurvedLoop", "initUserLogin", "initAdminLogin", "initRegister", "initUserDashboard"]) {
     scope[name] = () => calls.push(name);
@@ -312,7 +312,7 @@ test("homepage displays empty/error states without invented offline listings", a
   assert.equal(unavailable.messages.length, 0);
 });
 
-test("every page loads the shared application design and UI components", () => {
+test("original page markup uses only original styling and functional accessibility fixes", () => {
   const root = path.join(__dirname, "..");
   const pages = ["index.html", "404.html"];
   for (const folder of ["user", "company", "admin"]) {
@@ -320,15 +320,24 @@ test("every page loads the shared application design and UI components", () => {
   }
   for (const page of pages) {
     const source = fs.readFileSync(path.join(root, page), "utf8");
-    assert.match(source, /href="(?:\.\.\/)?css\/design-system.css"/, page);
-    assert.match(source, /src="(?:\.\.\/)?js\/ui-components.js" defer/, page);
+    assert.doesNotMatch(source, /href="(?:\.\.\/)?css\/(?:classic|design-system|landing).css"/, page);
+    assert.doesNotMatch(source, /src="(?:\.\.\/)?js\/ui-components.js/, page);
+    if (page !== "404.html") {
+      assert.match(source, /href="(?:\.\.\/)?css\/style.css"/, page);
+      assert.match(source, /src="(?:\.\.\/)?js\/accessibility.js" defer/, page);
+    }
   }
-  const ui = fs.readFileSync(path.join(root, "js", "ui-components.js"), "utf8");
-  assert.match(ui, /Copyright \(c\) 2026 David Haz/);
-  assert.match(ui, /Commons Clause/);
+  const homepage = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  assert.match(homepage, /class="wrap hero hero-single"/);
+  assert.match(homepage, /Seven tools that do the remembering for you/);
+  assert.match(homepage, /class="wrap section timeline"/);
+  assert.match(homepage, /Four stages, tracked in one list/);
+  assert.equal((homepage.match(/class="card magic-bento-card /g) || []).length, 7);
+  assert.equal((homepage.match(/data-curved-loop /g) || []).length, 2);
+  assert.doesNotMatch(homepage, /Their first opportunity|Before you<br>get started|landing-journey/);
 });
 
-function uiHarness(reduced = false) {
+function uiHarness(reduced = false, classic = false) {
   const handlers = new Map(), frames = new Map(), observed = [], animationCalls = [];
   let frameId = 0, mutations;
   class Element {
@@ -369,7 +378,7 @@ function uiHarness(reduced = false) {
   const Observer = class { constructor(callback) { this.callback = callback; observed.push(this); } observe(target) { this.target = target; } unobserve() {} disconnect() {} };
   const Mutation = class { constructor(callback) { mutations = callback; } observe() {} disconnect() {} };
   const document = events({ name: "document", body, hidden: false, documentElement: {},
-    querySelector: selector => selector === ".auth-wrap" ? auth : null,
+    querySelector: selector => selector === 'link[href$="classic.css"]' ? (classic ? {} : null) : selector === ".auth-wrap" ? auth : null,
     querySelectorAll: selector => selector === ".rb-spotlight-active" ? body.children.filter(child => child.classes.has("rb-spotlight-active")) : [],
     getElementById: () => null, createElement: () => new Element() });
   const window = events({ name: "window", InternLog: {}, location: { pathname: "/user/login.html" }, devicePixelRatio: 1,
@@ -378,7 +387,7 @@ function uiHarness(reduced = false) {
   const context = vm.createContext({ window, document, Element, IntersectionObserver: Observer, MutationObserver: Mutation,
     performance: { now: () => 0 }, requestAnimationFrame: callback => { frames.set(++frameId, callback); return frameId; },
     cancelAnimationFrame: id => frames.delete(id), getComputedStyle: () => ({ getPropertyValue: () => "#42613c" }) });
-  vm.runInContext(fs.readFileSync(path.join(__dirname, "..", "js", "ui-components.js"), "utf8"), context);
+  vm.runInContext(fs.readFileSync(path.join(__dirname, "..", "ui-archive", "ui-components.js"), "utf8"), context);
   const emit = (name, event) => (handlers.get(`document:${name}`) || []).forEach(listener => listener(event));
   return { ui: window.InternLogUI, body, card, motion, handlers, frames, observed, animationCalls, emit, Element,
     addCard: () => { const item = new Element("stat"); body.appendChild(item); mutations([{ addedNodes: [item] }]); return item; }, document };
@@ -393,6 +402,16 @@ test("UI enhancements are idempotent and include API-rendered cards", () => {
   assert.ok(page.addCard().classes.has("rb-spotlight"));
   page.ui.destroy();
   assert.equal(page.handlers.get("document:click").length, 0);
+});
+
+test("classic appearance does not enable the redesigned shell or motion effects", () => {
+  const page = uiHarness(false, true);
+  page.ui.init();
+  assert.equal(page.card.classes.has("rb-spotlight"), false);
+  assert.equal(page.body.classes.has("auth-page"), false);
+  assert.equal(page.frames.size, 0);
+  assert.equal(page.animationCalls.length, 0);
+  page.ui.destroy();
 });
 
 test("React Bits effects respect reduced motion and never hide readable content", () => {

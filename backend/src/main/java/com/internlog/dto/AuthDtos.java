@@ -44,7 +44,8 @@ public class AuthDtos {
       Long id, Long userId, Long internshipId, Long companyId,
       String company, String role, String location, String internshipType,
       String appliedDate, String deadline, String interviewDate, Integer stipend,
-      String status, String url, String notes, String studentName, String studentEmail, String updatedAt) {}
+      String status, String url, String notes, String studentName, String studentEmail, String updatedAt,
+      String studentCollege, String studentCourse) {}
 
   public record SavedSearchResponse(
       Long id, Long userId, String query, String location, String type,

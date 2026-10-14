@@ -19,8 +19,8 @@ no browser-stored substitute for application data.
 - **Administrators:** verify companies, moderate internships, manage student
   accounts and monitor application activity.
 - Responsive layouts, light/dark themes, validation and notifications.
-- A shared moss-accent design system and accessible React Bits-inspired motion
-  connect the homepage, account pages and all three workspaces.
+- Original homepage sections, layouts and workspace styling are retained,
+  alongside functional accessibility, account and data fixes.
 
 ## Architecture
 

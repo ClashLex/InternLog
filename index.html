@@ -3,148 +3,154 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>InternLog — Find your start. Own your journey.</title>
-  <meta name="description" content="Discover reviewed internship opportunities, organize your applications, and make your next move with InternLog.">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2342613c'/%3E%3Ctext x='16' y='22' font-family='Helvetica, Arial, sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'%3EIL%3C/text%3E%3C/svg%3E">
+  <title>InternLog — Every internship application, in one place</title>
+  <meta name="description" content="InternLog helps students organize internship applications, monitor progress, and keep their entire internship search in one place.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/design-system.css">
-  <link rel="stylesheet" href="css/landing.css">
-  <script src="js/ui-components.js" defer></script>
+  <script src="js/accessibility.js" defer></script>
   <script src="js/script.js" defer></script>
   <script src="js/api.js" defer></script>
   <script src="js/landing.js" defer></script>
 </head>
-<body class="landing-page">
-  <a class="landing-skip" href="#mainContent">Skip to content</a>
+<body>
   <header class="site-header site-header--pill">
     <div class="wrap nav-bar nav-bar--pill">
-      <a class="brand" href="index.html" aria-label="InternLog home"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog<small>Track. Apply. Grow.</small></span></a>
+      <a class="brand" href="index.html" aria-label="InternLog home">
+        <span class="brand-mark" aria-hidden="true">IL</span>
+        <span>InternLog<small>Track. Apply. Grow.</small></span>
+      </a>
       <div class="pill-nav-container" data-pill-nav>
-        <nav class="pill-nav" aria-label="Primary navigation">
+        <nav class="pill-nav" aria-label="Primary">
           <div class="pill-nav-items desktop-only">
             <ul class="pill-list">
               <li><a class="pill is-active" href="index.html" aria-current="page"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Home</span><span class="pill-label-hover" aria-hidden="true">Home</span></span></a></li>
-              <li><a class="pill" href="#internships"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Internships</span><span class="pill-label-hover" aria-hidden="true">Internships</span></span></a></li>
+              <li><a class="pill" href="#about"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">About</span><span class="pill-label-hover" aria-hidden="true">About</span></span></a></li>
               <li><a class="pill" href="#features"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Features</span><span class="pill-label-hover" aria-hidden="true">Features</span></span></a></li>
-              <li><a class="pill" href="#companies"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">For companies</span><span class="pill-label-hover" aria-hidden="true">For companies</span></span></a></li>
-              <li><a class="pill" href="user/login.html" data-landing-account><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Log in</span><span class="pill-label-hover" aria-hidden="true">Log in</span></span></a></li>
-              <li><a class="pill pill--cta" href="user/register.html"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Get started</span><span class="pill-label-hover" aria-hidden="true">Get started</span></span></a></li>
+              <li><a class="pill" href="#internships"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Internships</span><span class="pill-label-hover" aria-hidden="true">Internships</span></span></a></li>
+              <li><a class="pill" href="company/login.html"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Companies</span><span class="pill-label-hover" aria-hidden="true">Companies</span></span></a></li>
+              <li><a class="pill" href="user/login.html" data-landing-account><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Login</span><span class="pill-label-hover" aria-hidden="true">Login</span></span></a></li>
+              <li><a class="pill pill--cta" href="user/register.html"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Register</span><span class="pill-label-hover" aria-hidden="true">Register</span></span></a></li>
+              <li><a class="pill" href="#get-started"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">Get started</span><span class="pill-label-hover" aria-hidden="true">Get started</span></span></a></li>
             </ul>
           </div>
-          <button class="mobile-menu-button mobile-only" id="pillMenuBtn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="pillMenuPopover"><span class="hamburger-line" aria-hidden="true"></span><span class="hamburger-line" aria-hidden="true"></span></button>
+          <button class="mobile-menu-button mobile-only" id="pillMenuBtn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="pillMenuPopover">
+            <span class="hamburger-line" aria-hidden="true"></span><span class="hamburger-line" aria-hidden="true"></span>
+          </button>
         </nav>
-        <div class="mobile-menu-popover mobile-only" id="pillMenuPopover">
-          <nav aria-label="Mobile navigation"><ul class="mobile-menu-list">
+        <div class="mobile-menu-popover mobile-only" id="pillMenuPopover" aria-label="Mobile navigation">
+          <ul class="mobile-menu-list">
             <li><a class="mobile-menu-link" href="index.html" aria-current="page">Home</a></li>
-            <li><a class="mobile-menu-link" href="#internships">Internships</a></li>
+            <li><a class="mobile-menu-link" href="#about">About</a></li>
             <li><a class="mobile-menu-link" href="#features">Features</a></li>
-            <li><a class="mobile-menu-link" href="#companies">For companies</a></li>
-            <li><a class="mobile-menu-link" href="user/login.html" data-landing-account>Log in</a></li>
-            <li><a class="mobile-menu-link" href="user/register.html">Get started</a></li>
-          </ul></nav>
+            <li><a class="mobile-menu-link" href="#internships">Browse Internships</a></li>
+            <li><a class="mobile-menu-link" href="company/login.html">For Companies</a></li>
+            <li><a class="mobile-menu-link" href="user/login.html" data-landing-account>Student Login</a></li>
+            <li><a class="mobile-menu-link" href="user/register.html">Register</a></li>
+            <li><a class="mobile-menu-link" href="#get-started">Get started</a></li>
+          </ul>
         </div>
       </div>
     </div>
   </header>
 
-  <main id="mainContent">
-    <section class="wrap hero landing-hero" aria-labelledby="heroTitle">
-      <div class="landing-hero-copy">
-        <p class="landing-eyebrow"><span class="landing-dot" aria-hidden="true"></span> A clearer path to your first opportunity</p>
-        <h1 id="heroTitle">Find your start.<br><span>Own your journey.</span></h1>
-        <p class="lead">Discover internships that fit your interests. Keep every application, deadline and next step in one place.</p>
-        <div class="cta-row"><a class="btn" href="#internships">Explore internships <span aria-hidden="true">↗</span></a><a class="btn btn-secondary" href="user/register.html">Start your tracker</a></div>
-        <p class="landing-hero-note">Browse first. Create a student account when you’re ready to save or apply.</p>
+  <main>
+    <div class="wrap hero hero-single">
+      <div>
+        <h1>Every internship application, in one place.</h1>
+        <p class="lead">InternLog helps students organize internship applications, monitor progress, and keep their entire internship search in one place — from first application to final offer.</p>
+        <p class="cta-row"><a class="btn" href="user/register.html">Create free account</a><a class="btn btn-secondary" href="user/login.html">Student Login</a></p>
+        <ul class="hero-proof" aria-label="At a glance"><li>Free for students</li><li>Company opportunities</li><li>Placement-cell ready</li></ul>
       </div>
-      <div class="landing-journey" aria-label="Application journey: discover, apply, follow up and move forward">
-        <div class="landing-journey-head"><span class="landing-eyebrow">Your next chapter</span><span class="landing-journey-mark" aria-hidden="true">↗</span></div>
-        <p class="landing-journey-title">Small steps.<br>Real momentum.</p>
-        <ol class="landing-journey-steps">
-          <li><span class="landing-step-number">01</span><div><strong>Discover your possibilities</strong><span>Explore reviewed opportunities.</span></div><span aria-hidden="true">↗</span></li>
-          <li><span class="landing-step-number">02</span><div><strong>Make your move</strong><span>Apply and keep a clear record.</span></div><span aria-hidden="true">↗</span></li>
-          <li><span class="landing-step-number">03</span><div><strong>Stay one step ahead</strong><span>Know when to prepare or follow up.</span></div><span aria-hidden="true">↗</span></li>
-        </ol>
-        <div class="landing-journey-foot"><span>Discover → Apply → Grow</span><span class="landing-journey-spark" aria-hidden="true">✳</span></div>
-      </div>
-    </section>
-
-    <div class="landing-proof-strip"><div class="wrap"><span>Company verification</span><span aria-hidden="true">✳</span><span>Reviewed opportunities</span><span aria-hidden="true">✳</span><span>Personal application tracking</span></div></div>
-
-    <section class="wrap section landing-section" id="internships" aria-labelledby="internshipsTitle">
-      <div class="landing-section-heading"><div><p class="landing-eyebrow">Discover</p><h2 id="internshipsTitle">Your next opportunity<br>could be right here.</h2></div><p class="landing-section-intro">Explore published internships from verified companies. Find a role, learn what it involves, and take your next step.</p></div>
-      <form class="landing-board-toolbar" id="landingSearchForm" role="search">
-        <div class="landing-search-field"><label for="landingSearch">Role, company, location or skill</label><input type="search" id="landingSearch" placeholder="What would you like to work on?" autocomplete="off"></div>
-        <div><label for="landingType">Work arrangement</label><select id="landingType"><option value="all">All arrangements</option><option value="Remote">Remote</option><option value="Hybrid">Hybrid</option><option value="On-site">On-site</option></select></div>
-        <button class="btn btn-secondary" type="button" id="landingReset">Clear filters</button>
-      </form>
-      <div class="landing-board-meta"><p id="landingResults" role="status" aria-live="polite">Loading published internships…</p><span>Browse without signing in</span></div>
-      <div class="landing-job-grid" id="landingJobs" aria-busy="true"><div class="landing-board-state"><p>Finding your next possibilities…</p></div></div>
-      <p class="landing-board-note">Keep applications from other platforms in your tracker too. <a href="user/register.html">Create your student account <span aria-hidden="true">↗</span></a></p>
-    </section>
-
-    <section class="landing-about-band" id="about" aria-labelledby="aboutTitle"><div class="wrap landing-about-grid">
-      <div><p class="landing-eyebrow">Less scattered. More focused.</p><h2 id="aboutTitle">An internship search<br>you can actually manage.</h2></div>
-      <div><p>Applications rarely move at the same pace. One needs a follow-up, another has an interview, and a new opportunity has just opened.</p><p>InternLog brings those moving pieces together, so you can focus on the next useful step—not another spreadsheet.</p><a class="landing-text-link" href="#features">See what’s in your workspace <span aria-hidden="true">↗</span></a></div>
-    </div></section>
-
-    <section class="wrap section landing-section" id="features" aria-labelledby="featuresTitle">
-      <div class="landing-section-heading"><div><p class="landing-eyebrow">Your workspace</p><h2 id="featuresTitle">Everything that helps.<br>Nothing that gets in the way.</h2></div><p class="landing-section-intro">A focused set of tools for the whole search—from an interesting role to a decision.</p></div>
-      <div class="landing-feature-grid bento" data-magic-bento>
-        <article class="card landing-feature magic-bento-card magic-bento-card--border-glow" tabindex="0"><span class="landing-feature-number">01 / ORGANIZE</span><h3>One application record</h3><p>Bring company details, deadlines, links and notes together—even for roles you find elsewhere.</p></article>
-        <article class="card landing-feature magic-bento-card magic-bento-card--border-glow" tabindex="0"><span class="landing-feature-number">02 / PROGRESS</span><h3>See where things stand</h3><p>Follow your pipeline from Applied to Shortlisted, Interview and a final decision.</p></article>
-        <article class="card landing-feature magic-bento-card magic-bento-card--border-glow" tabindex="0"><span class="landing-feature-number">03 / FOLLOW UP</span><h3>Know your next step</h3><p>Get timely nudges for quiet applications and upcoming interviews. Snooze when you need room.</p></article>
-        <article class="card landing-feature magic-bento-card magic-bento-card--border-glow" tabindex="0"><span class="landing-feature-number">04 / DISCOVER</span><h3>Keep good opportunities close</h3><p>Save internships and searches. Notice new matches when you return to your dashboard.</p></article>
-        <article class="card landing-feature magic-bento-card magic-bento-card--border-glow" tabindex="0"><span class="landing-feature-number">05 / OVERVIEW</span><h3>Your search, at a glance</h3><p>See recent activity, application counts and interviews without opening every record.</p></article>
-        <article class="card landing-feature magic-bento-card magic-bento-card--border-glow" tabindex="0"><span class="landing-feature-number">06 / SHARE</span><h3>Take your progress with you</h3><p>Export your application history to CSV for your own review, a mentor or your placement team.</p></article>
-      </div>
-    </section>
-
-    <section class="wrap section landing-section" id="how" aria-labelledby="howTitle">
-      <p class="landing-eyebrow">A simple rhythm</p><h2 id="howTitle">From “that looks interesting”<br>to “what’s next?”</h2>
-      <div class="landing-how-grid">
-        <article><span>01</span><h3>Find your fit</h3><p>Browse opportunities here or bring a role you found elsewhere.</p></article>
-        <article><span>02</span><h3>Make it a plan</h3><p>Create your student account. Apply or add the role to your tracker.</p></article>
-        <article><span>03</span><h3>Keep moving</h3><p>Track replies, prepare for interviews and follow up with context.</p></article>
-      </div>
-    </section>
-
-    <section class="wrap section landing-section" id="companies" aria-labelledby="companiesTitle"><div class="landing-company-band">
-      <div><p class="landing-eyebrow">For companies</p><h2 id="companiesTitle">Their first opportunity.<br>Your next fresh perspective.</h2><p>Give students a clear picture of the work, publish reviewed internships, and manage applicants in one workspace.</p><div class="cta-row"><a class="btn" href="company/register.html">Register your company <span aria-hidden="true">↗</span></a><a class="landing-company-login" href="company/login.html">Company login</a></div></div>
-      <ol class="landing-company-steps"><li><span>01</span><div><strong>Build trust first</strong><p>Register your company for administrator verification.</p></div></li><li><span>02</span><div><strong>Share the opportunity</strong><p>Describe the role and submit it for publication review.</p></div></li><li><span>03</span><div><strong>Keep applicants informed</strong><p>Review applications and update their status as decisions progress.</p></div></li></ol>
-    </div></section>
-
-    <section class="wrap section landing-section landing-faq" aria-labelledby="faqTitle">
-      <div><p class="landing-eyebrow">A few useful answers</p><h2 id="faqTitle">Before you<br>get started.</h2></div>
-      <div><details><summary>Do I need an account to browse?</summary><p>No. You can browse published internships and view their details here. A student account is required to save or apply.</p></details><details><summary>Can I track applications from other websites?</summary><p>Yes. Add a manual application in your student workspace with its company, role, dates, status and notes.</p></details><details><summary>When will a company’s internship appear here?</summary><p>After the company is verified and an administrator approves the internship. Expired or unpublished roles are not shown.</p></details><details><summary>Where do I see replies and follow-ups?</summary><p>Your student dashboard and application tracker show recorded statuses, recent activity and follow-up reminders.</p></details></div>
-    </section>
-
-    <div class="curved-loop-jacket" data-curved-loop data-text="TRACK ✦ APPLY ✦ GROW ✦ " data-speed="0.8" aria-hidden="true">
-      <svg class="curved-loop-svg" viewBox="0 0 1000 120" preserveAspectRatio="none" focusable="false">
-        <path id="curved-loop-path" d="M 0 60 Q 125 10 250 60 T 500 60 T 750 60 T 1000 60" fill="none"></path>
-        <text><textPath href="#curved-loop-path" startOffset="0">TRACK ✦ APPLY ✦ GROW ✦ TRACK ✦ APPLY ✦ GROW ✦ </textPath></text>
-      </svg>
-      <p class="curved-loop-fallback">Track. Apply. Grow.</p>
     </div>
 
-    <section class="wrap section landing-section" id="get-started"><div class="landing-final-cta"><p class="landing-eyebrow">Make your next move</p><h2>A little clarity goes a long way.</h2><p>Find a possibility. Keep a plan. Give your next chapter a place to start.</p><div class="cta-row"><a class="btn" href="user/register.html">Create student account</a><a class="btn btn-secondary" href="#internships">Explore internships <span aria-hidden="true">↗</span></a></div></div></section>
+    <div class="curved-loop-jacket" data-curved-loop data-text="TRACK ✦ APPLY ✦ GROW ✦ INTERNSHIPS ✦ " data-speed="0.8">
+      <svg class="curved-loop-svg" viewBox="0 0 1000 120" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+        <defs><path id="curved-loop-path-a" d="M -200 70 Q -100 20 0 70 T 200 70 T 400 70 T 600 70 T 800 70 T 1000 70 T 1200 70 T 1400 70" fill="none" /></defs>
+        <text><textPath href="#curved-loop-path-a" startOffset="0">TRACK ✦ APPLY ✦ GROW ✦ INTERNSHIPS ✦ TRACK ✦ APPLY ✦ GROW ✦ INTERNSHIPS ✦ TRACK ✦ APPLY ✦ GROW ✦ INTERNSHIPS ✦&#160;</textPath></text>
+      </svg>
+      <span class="curved-loop-fallback">Track, Apply, Grow — InternLog internships.</span>
+    </div>
+
+    <div class="wrap section" id="about">
+      <p class="soft-pill-button" data-size="sm" data-variant="light">Why InternLog</p>
+      <h2>For students in the middle of applications</h2>
+      <p class="sub">Stop juggling spreadsheets, emails, and deadlines. InternLog is an internship-only tracker designed around the student workflow.</p>
+      <div class="grid-2">
+        <div class="card"><h3>One place for everything</h3><p>Company, role, location, dates, stipend, notes, and status — stored together and searchable in seconds.</p></div>
+        <div class="card"><h3>Placement-ready discipline</h3><p>Consistent records, valid deadlines, and clear status history you can export to CSV and show mentors and placement officers.</p></div>
+      </div>
+    </div>
+
+    <section class="wrap section" id="internships" aria-labelledby="internshipsTitle">
+      <p class="soft-pill-button" data-size="sm" data-variant="light">Internships</p>
+      <h2 id="internshipsTitle">Browse internship opportunities</h2>
+      <p class="sub">Explore reviewed opportunities from verified companies. Sign in as a student to save or apply.</p>
+      <form class="toolbar" id="landingSearchForm" role="search">
+        <input class="search-input" type="search" id="landingSearch" placeholder="Search role, company, location or skill" aria-label="Search internships" autocomplete="off">
+        <select id="landingType" aria-label="Work arrangement"><option value="all">All arrangements</option><option>Remote</option><option>Hybrid</option><option>On-site</option></select>
+        <button class="btn btn-secondary btn-sm" type="button" id="landingReset">Clear filters</button>
+      </form>
+      <p class="muted" id="landingResults" role="status" aria-live="polite">Loading published internships…</p>
+      <div class="grid-2" id="landingJobs" aria-busy="true"><div class="empty"><p>Loading opportunities…</p></div></div>
+    </section>
+
+    <div class="wrap section section-roomy" id="features">
+      <p class="soft-pill-button" data-size="sm" data-variant="light">What you get</p>
+      <h2>Seven tools that do the remembering for you</h2>
+      <p class="sub">Seven focused tools. Nothing decorative.</p>
+      <div class="grid-2 bento" id="bentoGrid">
+        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Track</span><span class="magic-bento-card__index">01</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title">Internship Application Tracking</h3><p class="magic-bento-card__description">Add, edit, and organize every internship application with structured details.</p></div></div>
+        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Status</span><span class="magic-bento-card__index">02</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title">Application Status Management</h3><p class="magic-bento-card__description">Move applications from Applied to Selected with clear, readable status badges and visual progress bars.</p></div></div>
+        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Dashboard</span><span class="magic-bento-card__index">03</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title">Personal Dashboard</h3><p class="magic-bento-card__description">Totals, recent applications, status overview, and upcoming interviews in one view.</p></div></div>
+        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Search</span><span class="magic-bento-card__index">04</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title">Search, Filter &amp; Export</h3><p class="magic-bento-card__description">Find any application by company, role, or location, and export records to CSV when you need them.</p></div></div>
+        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Profile</span><span class="magic-bento-card__index">05</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title">Student Account Management</h3><p class="magic-bento-card__description">Profile, college details, and password controls built specifically for students.</p></div></div>
+        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Export</span><span class="magic-bento-card__index">06</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title">Placement-Ready Exports</h3><p class="magic-bento-card__description">Export your application history to CSV for placement cells and mentor reviews.</p></div></div>
+        <div class="card magic-bento-card magic-bento-card--border-glow magic-bento-card--text-autohide"><div class="magic-bento-card__header"><span class="magic-bento-card__label">Network</span><span class="magic-bento-card__index">07</span></div><div class="magic-bento-card__content"><h3 class="magic-bento-card__title">Company Opportunities</h3><p class="magic-bento-card__description">Companies can publish internship opportunities while the admin workspace monitors company accounts, posts, and applications.</p></div></div>
+      </div>
+    </div>
+
+    <div class="wrap section timeline" id="how">
+      <p class="soft-pill-button" data-size="sm" data-variant="light">How it works</p>
+      <h2>From first application to final offer</h2><p class="sub">Four stages, tracked in one list.</p>
+      <div class="steps">
+        <div class="step"><div class="num">1</div><h3>Create Account</h3><p class="muted">Register with your college details.</p></div>
+        <div class="step"><div class="num">2</div><h3>Add Internships</h3><p class="muted">Log every internship you apply to.</p></div>
+        <div class="step"><div class="num">3</div><h3>Track Applications</h3><p class="muted">Update status as replies come in.</p></div>
+        <div class="step"><div class="num">4</div><h3>Get Your Internship</h3><p class="muted">Convert interviews into offers.</p></div>
+      </div>
+    </div>
+
+    <div class="wrap section" id="get-started"><div class="cta-band">
+      <p class="soft-pill-button" data-size="sm" data-variant="light">Get started</p><h2>Start tracking in minutes</h2>
+      <p>Free for students. Companies publish opportunities after verification.</p>
+      <p class="cta-row"><a class="btn" href="user/register.html">Create student account</a><a class="btn btn-secondary" href="company/register.html">Register as a company</a></p>
+    </div></div>
+
+    <div class="curved-loop-jacket curved-loop-jacket--light curved-loop-jacket--tight" data-curved-loop data-text="APPLIED → SHORTLISTED → INTERVIEW → SELECTED → " data-speed="0.5">
+      <svg class="curved-loop-svg" viewBox="0 0 1000 120" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+        <defs><path id="curved-loop-path-b" d="M -200 70 Q -100 20 0 70 T 200 70 T 400 70 T 600 70 T 800 70 T 1000 70 T 1200 70 T 1400 70" fill="none" /></defs>
+        <text><textPath href="#curved-loop-path-b" startOffset="0">APPLIED → SHORTLISTED → INTERVIEW → SELECTED → APPLIED → SHORTLISTED → INTERVIEW → SELECTED →&#160;</textPath></text>
+      </svg>
+      <span class="curved-loop-fallback">Applied, Shortlisted, Interview, Selected.</span>
+    </div>
   </main>
 
   <footer class="site-footer"><div class="wrap footer-grid">
-    <div class="footer-col"><a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog</span></a><p>A clearer view of your internship search.<br>Track. Apply. Grow.</p></div>
-    <div class="footer-col"><p class="footer-heading">Explore</p><nav aria-label="Explore"><a href="#internships">Internships</a><a href="#about">About InternLog</a><a href="#features">Your workspace</a><a href="#how">How it works</a></nav></div>
-    <div class="footer-col"><p class="footer-heading">Get involved</p><nav aria-label="Accounts"><a href="user/register.html">Student registration</a><a href="user/login.html">Student login</a><a href="company/register.html">Company registration</a><a href="company/login.html">Company login</a></nav></div>
-    <div class="footer-base"><p>© 2026 InternLog.</p><p>Your next chapter, a little more organized.</p></div>
+    <div class="footer-col"><a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">IL</span><span>InternLog</span></a><p>InternLog helps students track internship applications in one organized place.<br>Track. Apply. Grow.</p></div>
+    <div class="footer-col"><p class="footer-heading">Product</p><nav aria-label="Product"><a href="#about">About</a><a href="#features">Features</a><a href="#how">How it works</a><a href="#internships">Browse internships</a></nav></div>
+    <div class="footer-col"><p class="footer-heading">Account</p><nav aria-label="Account"><a href="user/register.html">Student register</a><a href="user/login.html">Student login</a><a href="company/register.html">Company register</a><a href="company/login.html">Company login</a></nav></div>
+    <div class="footer-base"><p>© 2026 InternLog. All rights reserved.</p><p>Track. Apply. Grow.</p></div>
   </div></footer>
 
-  <dialog class="landing-job-dialog" id="landingJobDialog" aria-labelledby="landingJobTitle">
-    <div class="landing-dialog-header"><div><p class="landing-eyebrow" id="landingJobCompany"></p><h2 id="landingJobTitle">Internship details</h2></div><button class="modal-close-icon" type="button" id="landingJobClose" aria-label="Close internship details">&times;</button></div>
-    <dl id="landingJobMeta"></dl>
-    <h3>About the role</h3><p class="landing-role-description" id="landingJobDescription"></p>
-    <div id="landingJobSkills" class="landing-skills"></div>
-    <p id="landingJobEducation" class="landing-dialog-education"></p>
-    <a id="landingExternalLink" class="landing-text-link" target="_blank" rel="noopener noreferrer" hidden>View company application page <span aria-hidden="true">↗</span></a>
-    <p id="landingJobMessage" class="landing-dialog-message" role="status" aria-live="polite"></p>
-    <div class="landing-dialog-actions" id="landingJobActions"></div>
+  <dialog class="og-job-dialog" id="landingJobDialog" aria-labelledby="landingJobTitle">
+    <div class="modal-header"><div><p class="muted" id="landingJobCompany"></p><h2 id="landingJobTitle">Internship details</h2></div><button class="modal-close-icon" type="button" id="landingJobClose" aria-label="Close internship details">&times;</button></div>
+    <dl id="landingJobMeta"></dl><h3>About the role</h3><p id="landingJobDescription"></p>
+    <div id="landingJobSkills" class="og-job-skills"></div><p id="landingJobEducation" class="muted"></p>
+    <a id="landingExternalLink" target="_blank" rel="noopener noreferrer" hidden>View company application page ↗</a>
+    <p id="landingJobMessage" class="muted" role="status" aria-live="polite"></p><div class="modal-footer" id="landingJobActions"></div>
   </dialog>
 </body>
 </html>

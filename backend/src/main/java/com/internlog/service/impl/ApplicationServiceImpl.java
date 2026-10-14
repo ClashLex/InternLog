@@ -216,12 +216,14 @@ public class ApplicationServiceImpl implements ApplicationService {
   @Override
   public ApplicationResponse toResponse(Application app) {
     Long userId = null, internshipId = null, companyId = null;
-    String studentName = null, studentEmail = null;
+    String studentName = null, studentEmail = null, studentCollege = null, studentCourse = null;
     try {
       if (app.getUser() != null) {
         userId = app.getUser().getId();
         studentName = app.getUser().getName();
         studentEmail = app.getUser().getEmail();
+        studentCollege = app.getUser().getCollege();
+        studentCourse = app.getUser().getCourse();
       }
       if (app.getInternship() != null) internshipId = app.getInternship().getId();
       if (app.getCompany() != null) companyId = app.getCompany().getId();
@@ -233,6 +235,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         app.getDeadline() != null ? app.getDeadline().toString() : null,
         app.getInterviewDate() != null ? app.getInterviewDate().toString() : null,
         app.getStipend(), app.getStatus().name(), app.getUrl(), app.getNotes(),
-        studentName, studentEmail, app.getUpdatedAt() != null ? app.getUpdatedAt().toString() : null);
+        studentName, studentEmail, app.getUpdatedAt() != null ? app.getUpdatedAt().toString() : null,
+        studentCollege, studentCourse);
   }
 }

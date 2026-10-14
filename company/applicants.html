@@ -6,8 +6,7 @@
   <title>Applicants — InternLog</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2342613c'/><text x='16' y='22' font-family='Helvetica, Arial, sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>">
   <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/design-system.css">
-  <script src="../js/ui-components.js" defer></script>
+  <script src="../js/accessibility.js" defer></script>
   <script src="../js/script.js" defer></script>
   <script src="../js/api.js" defer></script>
   <script src="../js/applicants.js" defer></script>
@@ -25,7 +24,7 @@
       <main class="content">
         <p class="muted">Review students who applied to your internships. Changes are saved to the selected data source.</p>
         <div class="toolbar"><input class="search-input" id="search" type="search" placeholder="Search applicants, roles, or email" aria-label="Search applicants"><select id="status" aria-label="Filter status"><option value="all">All statuses</option><option>Applied</option><option>Shortlisted</option><option>Interview</option><option>Selected</option><option>Rejected</option></select></div>
-        <div class="table-wrap"><table><thead><tr><th>Student</th><th>Opportunity</th><th>Applied</th><th>Status</th><th>Action</th></tr></thead><tbody id="body"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Student</th><th>Opportunity</th><th>College</th><th>Applied</th><th>Status</th><th>Action</th></tr></thead><tbody id="body"></tbody></table></div>
       </main>
     </div>
   </div>

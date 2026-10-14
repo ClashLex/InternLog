@@ -35,7 +35,7 @@
 
     function showState(title, message, reset) {
       grid.textContent = "";
-      var state = element("div", "landing-board-state");
+      var state = element("div", "empty");
       state.appendChild(element("h3", "", title));
       state.appendChild(element("p", "", message));
       if (reset) {
@@ -63,7 +63,7 @@
     function clearFilters() { search.value = ""; type.value = "all"; render(); }
 
     function detail(text, icon) {
-      var row = element("p", "landing-job-detail");
+      var row = element("p", "muted");
       var mark = element("span", "", icon);
       mark.setAttribute("aria-hidden", "true");
       row.appendChild(mark);
@@ -93,19 +93,18 @@
       }
       grid.textContent = "";
       visible.forEach(function (job) {
-        var card = element("article", "landing-job-card");
-        var top = element("div", "landing-job-top");
-        top.appendChild(element("span", "landing-company-icon", String(job.company || "I").trim().charAt(0).toUpperCase()));
-        top.appendChild(element("span", "landing-arrangement", job.internshipType || job.type || "Not specified"));
+        var card = element("article", "card og-job-card");
+        var top = element("div", "og-job-top");
+        top.appendChild(element("strong", "", job.company || "Company"));
+        top.appendChild(element("span", "badge badge-applied", job.internshipType || job.type || "Not specified"));
         card.appendChild(top);
         card.appendChild(element("h3", "", job.title || "Internship"));
-        card.appendChild(element("p", "landing-job-company", job.company || "Company"));
         var description = String(job.description || "View the role to learn more about this opportunity.");
-        card.appendChild(element("p", "landing-job-description", description.length > 140 ? description.slice(0, 137) + "…" : description));
+        card.appendChild(element("p", "og-job-description", description.length > 140 ? description.slice(0, 137) + "…" : description));
         card.appendChild(detail(job.location || "Location not specified", "⌖"));
         card.appendChild(detail(stipendLabel(job), "◇"));
-        var bottom = element("div", "landing-job-bottom");
-        bottom.appendChild(element("span", "", job.deadline ? "Apply by " + dateLabel(job.deadline) : "Deadline not specified"));
+        var bottom = element("div", "og-job-bottom");
+        bottom.appendChild(element("span", "muted", job.deadline ? "Apply by " + dateLabel(job.deadline) : "Deadline not specified"));
         var view = element("button", "btn btn-secondary btn-sm", "View role ↗");
         view.type = "button";
         view.setAttribute("aria-label", "View " + (job.title || "internship") + " at " + (job.company || "company"));

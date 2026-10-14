@@ -1,4 +1,5 @@
 /*
+ * Archived redesign — not loaded by the original frontend.
  * Vanilla JavaScript adaptations of React Bits components, integrated as part
  * of the InternLog application (not a redistributed library):
  * SpotlightCard, Magic Bento, ClickSpark, AnimatedContent / FadeContent,
@@ -469,6 +470,14 @@
     if (initialized || !document.body) return;
     initialized = true;
     motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (document.querySelector('link[href$="classic.css"]')) {
+      var favicon = document.querySelector('link[rel~="icon"]');
+      if (favicon) favicon.setAttribute("href", (favicon.getAttribute("href") || "").replace("%2342613c", "%23000000"));
+      var sidebar = document.querySelector(".sidebar");
+      if (sidebar) sidebarAccessibility(sidebar);
+      modalAccessibility();
+      return;
+    }
     enhanceShell();
     modalAccessibility();
     if ("IntersectionObserver" in window) {

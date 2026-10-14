@@ -1,8 +1,9 @@
 # Third-party UI attribution
 
-InternLog includes application-specific vanilla JavaScript/CSS adaptations of these
-React Bits components, integrated as part of the application (not a standalone
-redistributed component library):
+The original frontend retains its existing Pill Nav, Bento grid, galaxy backdrop
+and curved-loop implementations. The later redesign sources listed below are
+preserved in `ui-archive/`, not loaded by the restored frontend or packaged as
+active website assets. License attribution is retained for those sources:
 
 - [SpotlightCard](https://github.com/DavidHDev/react-bits/tree/main/src/content/Components/SpotlightCard) — card spotlight (`rb-spotlight`)
 - [MagicBento](https://github.com/DavidHDev/react-bits/tree/main/src/content/Components/MagicBento) — feature grid glow + click wave
@@ -17,13 +18,11 @@ redistributed component library):
 - [StarBorder](https://github.com/DavidHDev/react-bits/tree/main/src/content/Animations/StarBorder) / Border Glow — primary button edge light
 - [CurvedLoop](https://github.com/DavidHDev/react-bits/tree/main/src/content/TextAnimations/CurvedLoop) — landing marquee band
 
-The adaptations are integrated in `js/ui-components.js` and the shared design
-system. They use native DOM, canvas, intersection observation and Web Animations
+The archived adaptations use native DOM, canvas, intersection observation and Web Animations
 instead of introducing React/GSAP into the Java-served static frontend.
 
 Upstream: [reactbits.dev](https://reactbits.dev/) / [React Bits](https://github.com/DavidHDev/react-bits).
-The upstream license notice is also included in the shipped JavaScript so it
-travels with the application’s packaged frontend.
+The upstream license notice remains with the archived JavaScript source.
 
 ## React Bits license
 

@@ -37,11 +37,13 @@
 
   /* ---------------- Dynamic Favicon Injection ---------------- */
   function injectFavicon() {
+    var existingIcon = document.querySelector("link[rel~='icon']");
+    if (existingIcon && (existingIcon.getAttribute("href") || "").startsWith("data:image/svg+xml,")) existingIcon.setAttribute("href", existingIcon.getAttribute("href").replace("%2342613c", "%232563eb"));
     if (!document.querySelector("link[rel~='icon']")) {
       var link = document.createElement("link");
       link.rel = "icon";
       link.type = "image/svg+xml";
-      link.href = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2342613c'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>";
+      link.href = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text x='16' y='22' font-family='system-ui,sans-serif' font-weight='800' font-size='16' fill='white' text-anchor='middle'>IL</text></svg>";
       document.head.appendChild(link);
     }
   }
@@ -1442,7 +1444,7 @@
         var href = a.getAttribute("href") || "";
         if (href.charAt(0) === "#") spyLinks[href] = a;
       });
-      var spyIds = ["#internships", "#features", "#companies", "#get-started"];
+      var spyIds = ["#about", "#internships", "#features", "#how", "#get-started"];
       var spyTargets = spyIds.map(function (sel) {
         try { return document.querySelector(sel); } catch (err) { return null; }
       }).filter(Boolean);
@@ -1761,7 +1763,7 @@
     initPillNav();
     initMagicBento();
     initThemeToggle();
-    if (window.InternLogUI) window.InternLogUI.init();
+    if (window.InternLogAccessibility) window.InternLogAccessibility.init();
     initGalaxy();
     initCurvedLoop();
     initUserLogin();

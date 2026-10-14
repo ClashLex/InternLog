@@ -89,7 +89,8 @@ class ApiWorkflowTest {
   @Test
   void applyAndCompanyStatusWorkflow() throws Exception {
     mvc.perform(post("/api/internships/" + job.getId() + "/apply").param("userId", student.getId().toString())
-        .header("Authorization", "Bearer " + studentToken)).andExpect(status().isOk()).andExpect(jsonPath("$.updatedAt").isNotEmpty());
+        .header("Authorization", "Bearer " + studentToken)).andExpect(status().isOk()).andExpect(jsonPath("$.updatedAt").isNotEmpty())
+        .andExpect(jsonPath("$.studentCollege").value("College")).andExpect(jsonPath("$.studentCourse").value("CS"));
     var app = applications.findByUserIdAndInternshipId(student.getId(), job.getId()).orElseThrow();
     mvc.perform(patch("/api/applications/" + app.getId() + "/status").header("Authorization", "Bearer " + companyToken)
         .contentType(MediaType.APPLICATION_JSON).content("{\"status\":\"Shortlisted\"}")).andExpect(status().isOk()).andExpect(jsonPath("$.role").value("Developer intern"));

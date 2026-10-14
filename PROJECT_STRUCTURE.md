@@ -11,13 +11,12 @@ not included in repository clones.
 index.html / 404.html             Homepage internship discovery and not-found pages
 user/ company/ admin/             Student, company and administrator workspaces
 css/style.css                    Shared styling and account connection dialog
-css/design-system.css            Application-wide colors, typography, forms and workspace shell
-css/landing.css                  Homepage-only layout and opportunity cards
 js/script.js                     UI logic, validation, rendering and visual effects
 js/api.js                        Java-only REST client, CSRF/session bootstrap, outage gate
 js/applicants.js                 Applicant review and confirmed status writes
-js/landing.js                    Public homepage board, filters, details, save/apply actions
-js/ui-components.js              InternLog-specific React Bits effects and shared navigation/header UX
+js/landing.js                    Homepage internship-link fix with Java-backed discovery/save/apply
+js/accessibility.js              Keyboard/focus bug fixes without presentation changes
+ui-archive/                      Preserved redesign sources, excluded from the active frontend
 THIRD_PARTY_NOTICES.md            React Bits attribution and license notice
 backend/
   pom.xml                        Java 17, Spring Boot, MySQL; packages frontend assets
