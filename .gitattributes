@@ -1,0 +1,33 @@
+# InternLog — line ending normalization
+# Auto-detect text files and normalize to LF in the repository.
+# Checkout converts to the platform's native line ending (CRLF on Windows).
+
+* text=auto
+
+# Web assets — always normalize to LF
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+
+# Java / Maven build files
+*.java text eol=lf
+*.xml text eol=lf
+*.properties text eol=lf
+*.gradle text eol=lf
+mvnw text eol=lf
+mvnw.cmd text eol=crlf
+
+# Fonts and binaries — do not normalize (binary)
+*.otf binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
+*.jar binary
+*.class binary
+*.war binary
+*.db binary
+*.mv.db binary
+
+# Plain text licenses / docs
+*.txt text
+*.md text
