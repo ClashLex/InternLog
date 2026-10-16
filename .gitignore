@@ -20,6 +20,9 @@ mysql-data/
 .env.*
 !.env.example
 
+# Local backend launcher with admin credentials (never commit real values)
+scripts/run-backend-with-admin.bat
+
 # Local-only startup and deployment instructions
 /STARTUP.md
 /RUN_COMMANDS.md
